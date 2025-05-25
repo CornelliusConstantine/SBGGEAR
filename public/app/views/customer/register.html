@@ -1,0 +1,106 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Register</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Create Your Account</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" ng-if="error">
+                        {{error}}
+                    </div>
+                    
+                    <form ng-submit="register()">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" class="form-control" id="name" ng-model="registration.name" required placeholder="Enter your full name">
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" class="form-control" id="email" ng-model="registration.email" required placeholder="Enter your email">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password" ng-model="registration.password" required placeholder="Create a password">
+                                </div>
+                                <small class="text-muted">Password must be at least 8 characters</small>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="password_confirmation" class="form-label">Confirm Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control" id="password_confirmation" ng-model="registration.password_confirmation" required placeholder="Confirm your password">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                    <input type="text" class="form-control" id="phone" ng-model="registration.phone" required placeholder="Enter your phone number">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Hidden address fields to satisfy backend validation -->
+                        <input type="hidden" ng-model="registration.address" ng-init="registration.address='N/A'">
+                        <input type="hidden" ng-model="registration.city" ng-init="registration.city='N/A'">
+                        <input type="hidden" ng-model="registration.postal_code" ng-init="registration.postal_code='N/A'">
+                        <input type="hidden" ng-model="registration.province" ng-init="registration.province='N/A'">
+                        <input type="hidden" ng-model="registration.country" ng-init="registration.country='N/A'">
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" required>
+                            <label class="form-check-label" for="terms">I agree to the <a href="#!/terms" class="text-dark">Terms & Conditions</a> and <a href="#!/privacy-policy" class="text-dark">Privacy Policy</a></label>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-dark" ng-disabled="loading">
+                                <span ng-if="loading">
+                                    <i class="fas fa-spinner fa-spin me-1"></i> Creating account...
+                                </span>
+                                <span ng-if="!loading">Create Account</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <div class="star-decoration d-inline-block mx-2">
+                            <span class="star-symbol">★</span>
+                        </div>
+                        <p class="d-inline-block">Already have an account? <a href="#!/login" class="text-decoration-none text-dark fw-bold">Login here</a></p>
+                        <div class="star-decoration d-inline-block mx-2">
+                            <span class="star-symbol">★</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

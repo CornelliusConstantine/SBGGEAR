@@ -22,6 +22,10 @@ class DatabaseSeeder extends Seeder
                 'email' => 'admin@sbggear.com',
                 'password' => Hash::make('password'),
                 'role' => 'admin',
+                'phone' => '1234567890',
+                'address' => '123 Admin Street',
+                'city' => 'Admin City',
+                'postal_code' => '12345',
             ]
         );
 
@@ -33,11 +37,16 @@ class DatabaseSeeder extends Seeder
                 'email' => 'user@sbggear.com',
                 'password' => Hash::make('password'),
                 'role' => 'customer',
+                'phone' => '0987654321',
+                'address' => '456 User Avenue',
+                'city' => 'User City',
+                'postal_code' => '54321',
             ]
         );
 
         $this->call([
             CategorySeeder::class,
+            ProductSeeder::class,
         ]);
     }
 }

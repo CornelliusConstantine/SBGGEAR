@@ -1,0 +1,325 @@
+<!-- Hero Section -->
+<section class="hero-section position-relative overflow-hidden py-5">
+    <div class="container animate-slide-up">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title text-uppercase fw-bold">
+                    FIND AFFORDABLE<br>
+                    SAFETY GEARS<br>
+                    THAT ARE HIGH QUALITY
+                </h1>
+                <p class="hero-subtitle mt-4">
+                    Browse through our diverse range of meticulously crafted garments, designed to bring out your individuality and cater to your sense of style.
+                </p>
+                <a href="#!/products" class="btn btn-dark px-4 py-2 mt-3">Shop Now</a>
+            </div>
+            <div class="col-lg-6 hero-image position-relative">
+                <div class="image-container position-relative">
+                    <img src="assets/img/construction_model/front-facing-construction-worker.png" alt="Safety Gear" class="img-fluid hero-img" style="max-height: 650px; filter: drop-shadow(0 10px 15px rgba(0,0,0,0.2));">
+                    <div class="hero-img-decoration position-absolute" style="width: 100%; height: 40%; bottom: -10%; left: 0; background: radial-gradient(ellipse at center, rgba(240,240,240,0.6) 0%, rgba(255,255,255,0) 70%); z-index: -1; transform: translateY(10%);"></div>
+                </div>
+                <div class="star-decoration position-absolute" style="top: 15%; right: 15%; z-index: 2;">
+                    <span class="star-symbol extra-big-star">★</span>
+                </div>
+                <div class="star-decoration position-absolute" style="bottom: 40%; right: 5%; z-index: 2;">
+                    <span class="star-symbol big-star">★</span>
+                </div>
+                <div class="star-decoration position-absolute" style="top: 30%; left: 10%; z-index: 2;">
+                    <span class="star-symbol big-star">★</span>
+                </div>
+                <div class="star-decoration position-absolute" style="bottom: 25%; left: 15%; z-index: 2;">
+                    <span class="star-symbol extra-big-star">★</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Brand Section -->
+<section class="brand-section">
+    <div class="container">
+        <div class="row justify-content-center align-items-center">
+            <div class="col-4 col-md-2 mb-3 mb-md-0 text-center">
+                <img src="assets/img/brand-msa.png" alt="MSA" class="brand-logo">
+            </div>
+            <div class="col-4 col-md-2 mb-3 mb-md-0 text-center">
+                <img src="assets/img/brand-honeywell.png" alt="Honeywell" class="brand-logo">
+            </div>
+            <div class="col-4 col-md-2 mb-3 mb-md-0 text-center">
+                <img src="assets/img/brand-moldex.png" alt="Moldex" class="brand-logo">
+            </div>
+            <div class="col-4 col-md-2 mb-3 mb-md-0 text-center">
+                <img src="assets/img/brand-3m.png" alt="3M" class="brand-logo">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- New Arrivals Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title mb-0">NEW ARRIVALS</h2>
+            <a href="#!/new-arrivals" class="view-all">View All</a>
+        </div>
+        
+        <div class="row">
+            <!-- Loading Spinner -->
+            <div class="col-12 text-center py-5" ng-if="loading.newArrivals">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Products -->
+            <div class="col-6 col-md-3 mb-4" ng-repeat="product in newArrivals">
+                <div class="product-card">
+                    <a href="#!/product/{{product.id}}">
+                        <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{product.name}}" class="product-image">
+                    </a>
+                    <div class="product-body">
+                        <div class="rating">
+                            <i class="fas fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:product.rating"></i>
+                            <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-product.rating)"></i>
+                            <span class="rating-count">({{product.rating_count || 0}})</span>
+                        </div>
+                        <h5 class="product-title">
+                            <a href="#!/product/{{product.id}}" class="text-decoration-none text-dark">{{product.name}}</a>
+                        </h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="product-price mb-0">Rp{{product.price | number}}</p>
+                            <button class="btn btn-sm btn-outline-primary" ng-click="addToCart(product)" ng-disabled="addingToCart === product.id">
+                                <i class="fas" ng-class="{'fa-spinner fa-spin': addingToCart === product.id, 'fa-cart-plus': addingToCart !== product.id}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div class="col-12 text-center py-5" ng-if="!loading.newArrivals && newArrivals.length === 0">
+                <p class="text-muted">No new arrivals found.</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3 d-md-none">
+            <a href="#!/new-arrivals" class="btn btn-outline-primary">View All</a>
+        </div>
+    </div>
+</section>
+
+<!-- Top Selling Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="section-title mb-0">TOP SELLING</h2>
+            <a href="#!/products?sort=sales_count&direction=desc" class="view-all">View All</a>
+        </div>
+        
+        <div class="row">
+            <!-- Loading Spinner -->
+            <div class="col-12 text-center py-5" ng-if="loading.bestSellers">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Products -->
+            <div class="col-6 col-md-3 mb-4" ng-repeat="product in bestSellers">
+                <div class="product-card">
+                    <a href="#!/product/{{product.id}}">
+                        <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{product.name}}" class="product-image">
+                    </a>
+                    <div class="product-body">
+                        <div class="rating">
+                            <i class="fas fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:product.rating"></i>
+                            <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-product.rating)"></i>
+                            <span class="rating-count">({{product.rating_count || 0}})</span>
+                        </div>
+                        <h5 class="product-title">
+                            <a href="#!/product/{{product.id}}" class="text-decoration-none text-dark">{{product.name}}</a>
+                        </h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="product-price mb-0">Rp{{product.price | number}}</p>
+                            <button class="btn btn-sm btn-outline-primary" ng-click="addToCart(product)" ng-disabled="addingToCart === product.id">
+                                <i class="fas" ng-class="{'fa-spinner fa-spin': addingToCart === product.id, 'fa-cart-plus': addingToCart !== product.id}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Empty State -->
+            <div class="col-12 text-center py-5" ng-if="!loading.bestSellers && bestSellers.length === 0">
+                <p class="text-muted">No top selling products found.</p>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3 d-md-none">
+            <a href="#!/products?sort=sales_count&direction=desc" class="btn btn-outline-primary">View All</a>
+        </div>
+    </div>
+</section>
+
+<!-- Browse by Category Section -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">BROWSE BY SAFETY GEAR TYPE</h2>
+        
+        <div class="row">
+            <!-- Loading Spinner -->
+            <div class="col-12 text-center py-5" ng-if="loading.categories">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Categories -->
+            <div class="col-6 col-md-3 mb-4" ng-repeat="category in categories | limitTo:8">
+                <a href="#!/category/{{category.slug}}" class="text-decoration-none">
+                    <div class="category-card">
+                        <img ng-src="{{category.image_url || 'assets/img/category-placeholder.jpg'}}" alt="{{category.name}}" class="category-image">
+                        <div class="category-overlay">
+                            <h5 class="category-title">{{category.name}}</h5>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Empty State -->
+            <div class="col-12 text-center py-5" ng-if="!loading.categories && categories.length === 0">
+                <p class="text-muted">No categories found.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="section-title text-center mb-4">OUR HAPPY CUSTOMERS</h2>
+        
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-user">
+                        <img src="assets/img/user1.jpg" alt="User" class="testimonial-avatar">
+                        <div>
+                            <h5 class="testimonial-name">Sarah M.</h5>
+                            <div class="testimonial-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">
+                        "I love how safe the quality and style of the clothes! I received from SBGear. Their safety boots are durable and comfortable for everyday use."
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-user">
+                        <img src="assets/img/user2.jpg" alt="User" class="testimonial-avatar">
+                        <div>
+                            <h5 class="testimonial-name">Alex K.</h5>
+                            <div class="testimonial-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">
+                        "Incredible service! Their gear kept me safe during a challenging work job. I recommend SBGear to a variety of clients and colleagues."
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4 mb-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-user">
+                        <img src="assets/img/user3.jpg" alt="User" class="testimonial-avatar">
+                        <div>
+                            <h5 class="testimonial-name">James L.</h5>
+                            <div class="testimonial-rating">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="testimonial-text">
+                        "The products which always on the lookout for unique fashion pieces. I'm thrilled to have discovered this gem of a store that offers quality and style."
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="py-5 bg-dark text-white">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 text-center">
+                <h3 class="mb-3">STAY UP TO DATE ABOUT OUR LATEST OFFERS</h3>
+                <form class="d-flex flex-column flex-md-row gap-2">
+                    <input type="email" class="form-control" placeholder="Enter your email">
+                    <button type="submit" class="btn btn-primary">Subscribe to Newsletter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-success text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div>
+
+<!-- Chat Widget -->
+<div class="chat-widget" ng-if="isLoggedIn">
+    <div class="chat-button" ng-click="toggleChat()" ng-if="!showChat">
+        <i class="fas fa-comments"></i>
+    </div>
+    
+    <div class="chat-window" ng-if="showChat">
+        <div class="chat-header">
+            <h5 class="chat-title">Customer Support</h5>
+            <button class="chat-close" ng-click="toggleChat()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chat-messages">
+            <div class="chat-message received">
+                <p class="mb-0">Hello! How can I help you today?</p>
+            </div>
+            <div class="chat-message sent" ng-repeat="message in chatMessages">
+                <p class="mb-0">{{message.text}}</p>
+            </div>
+        </div>
+        <div class="chat-input-container">
+            <input type="text" class="chat-input" placeholder="Type a message..." ng-model="chatMessage" ng-keyup="$event.keyCode === 13 && sendMessage()">
+            <button class="chat-send" ng-click="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+</div> 

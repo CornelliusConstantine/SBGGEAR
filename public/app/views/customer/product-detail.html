@@ -1,0 +1,255 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item"><a href="#!/products">Products</a></li>
+            <li class="breadcrumb-item"><a href="#!/category/{{product.category.slug}}">{{product.category.name}}</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{product.name}}</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Loading Spinner -->
+<div class="container py-5" ng-if="loading">
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading product details...</p>
+    </div>
+</div>
+
+<!-- Product Detail -->
+<div class="container py-5" ng-if="!loading && product">
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-md-6 mb-4">
+            <div class="product-images">
+                <!-- Main Image -->
+                <div class="main-image mb-3">
+                    <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{product.name}}" class="img-fluid rounded">
+                </div>
+                
+                <!-- Image Gallery -->
+                <div class="row" ng-if="product.gallery && product.gallery.length > 0">
+                    <div class="col-3 mb-3" ng-repeat="image in product.gallery">
+                        <img ng-src="{{image.url}}" alt="{{product.name}}" class="img-fluid rounded thumbnail">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-md-6">
+            <h1 class="mb-2">{{product.name}}</h1>
+            
+            <!-- Rating -->
+            <div class="d-flex align-items-center mb-3">
+                <div class="rating">
+                    <i class="fas fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:product.rating"></i>
+                    <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-product.rating)"></i>
+                </div>
+                <span class="ms-2 text-muted">{{product.rating_count || 0}} reviews</span>
+            </div>
+            
+            <!-- Price -->
+            <h2 class="text-primary mb-3">Rp{{product.price | number}}</h2>
+            
+            <!-- Stock Status -->
+            <p class="mb-3" ng-if="product.stock > 0">
+                <span class="badge bg-success">In Stock</span>
+                <span class="ms-2">{{product.stock}} items available</span>
+            </p>
+            <p class="mb-3" ng-if="product.stock <= 0">
+                <span class="badge bg-danger">Out of Stock</span>
+            </p>
+            
+            <!-- Short Description -->
+            <p class="mb-4">{{product.short_description}}</p>
+            
+            <!-- Add to Cart -->
+            <div class="d-flex align-items-center mb-4">
+                <div class="quantity-control me-3">
+                    <button class="quantity-btn" ng-click="changeQuantity(-1)">
+                        <i class="fas fa-minus"></i>
+                    </button>
+                    <input type="text" class="quantity-input" ng-model="quantity" readonly>
+                    <button class="quantity-btn" ng-click="changeQuantity(1)">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                
+                <button class="btn btn-primary px-4" ng-click="addToCart(product, quantity)" ng-disabled="addingToCart === product.id || product.stock <= 0">
+                    <i class="fas" ng-class="{'fa-spinner fa-spin': addingToCart === product.id, 'fa-cart-plus': addingToCart !== product.id}"></i>
+                    Add to Cart
+                </button>
+            </div>
+            
+            <!-- Category -->
+            <p class="mb-2">
+                <strong>Category:</strong>
+                <a href="#!/category/{{product.category.slug}}">{{product.category.name}}</a>
+            </p>
+            
+            <!-- Brand -->
+            <p class="mb-4" ng-if="product.brand">
+                <strong>Brand:</strong>
+                {{product.brand}}
+            </p>
+            
+            <!-- Social Share -->
+            <div class="d-flex align-items-center">
+                <span class="me-2">Share:</span>
+                <a href="#" class="me-2 social-icon"><i class="fab fa-facebook-f"></i></a>
+                <a href="#" class="me-2 social-icon"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="me-2 social-icon"><i class="fab fa-pinterest"></i></a>
+                <a href="#" class="me-2 social-icon"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Product Description and Reviews -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">Description</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab" aria-controls="specifications" aria-selected="false">Specifications</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">Reviews ({{product.rating_count || 0}})</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content p-4 border border-top-0 rounded-bottom" id="productTabsContent">
+                <!-- Description Tab -->
+                <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
+                    <div ng-bind-html="product.description"></div>
+                </div>
+                
+                <!-- Specifications Tab -->
+                <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
+                    <table class="table table-bordered" ng-if="product.specifications && product.specifications.length > 0">
+                        <tbody>
+                            <tr ng-repeat="spec in product.specifications">
+                                <th width="30%">{{spec.name}}</th>
+                                <td>{{spec.value}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p ng-if="!product.specifications || product.specifications.length === 0">No specifications available.</p>
+                </div>
+                
+                <!-- Reviews Tab -->
+                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+                    <!-- Reviews List -->
+                    <div class="reviews-list" ng-if="product.reviews && product.reviews.length > 0">
+                        <div class="review-item border-bottom pb-4 mb-4" ng-repeat="review in product.reviews">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="rating me-2">
+                                    <i class="fas fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:review.rating"></i>
+                                    <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-review.rating)"></i>
+                                </div>
+                                <strong>{{review.user_name}}</strong>
+                                <span class="ms-auto text-muted">{{review.created_at | date:'mediumDate'}}</span>
+                            </div>
+                            <p>{{review.comment}}</p>
+                        </div>
+                    </div>
+                    
+                    <p ng-if="!product.reviews || product.reviews.length === 0">No reviews yet. Be the first to review this product!</p>
+                    
+                    <!-- Review Form -->
+                    <div class="review-form mt-4" ng-if="isLoggedIn">
+                        <h4>Write a Review</h4>
+                        <form ng-submit="submitReview()">
+                            <div class="mb-3">
+                                <label class="form-label">Rating</label>
+                                <div class="rating-select">
+                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 1}" ng-click="newReview.rating = 1"></i>
+                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 2}" ng-click="newReview.rating = 2"></i>
+                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 3}" ng-click="newReview.rating = 3"></i>
+                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 4}" ng-click="newReview.rating = 4"></i>
+                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 5}" ng-click="newReview.rating = 5"></i>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reviewComment" class="form-label">Comment</label>
+                                <textarea class="form-control" id="reviewComment" rows="3" ng-model="newReview.comment" required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary" ng-disabled="submittingReview">
+                                <i class="fas" ng-class="{'fa-spinner fa-spin': submittingReview, 'fa-paper-plane': !submittingReview}"></i>
+                                Submit Review
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <div class="alert alert-info mt-4" ng-if="!isLoggedIn">
+                        <p class="mb-0">Please <a href="#!/login">login</a> to write a review.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    <div class="related-products mt-5">
+        <h3 class="mb-4">Related Products</h3>
+        
+        <div class="row">
+            <div class="col-6 col-md-3 mb-4" ng-repeat="product in relatedProducts">
+                <div class="product-card">
+                    <a href="#!/product/{{product.id}}">
+                        <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{product.name}}" class="product-image">
+                    </a>
+                    <div class="product-body">
+                        <div class="rating">
+                            <i class="fas fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:product.rating"></i>
+                            <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-product.rating)"></i>
+                            <span class="rating-count">({{product.rating_count || 0}})</span>
+                        </div>
+                        <h5 class="product-title">
+                            <a href="#!/product/{{product.id}}" class="text-decoration-none text-dark">{{product.name}}</a>
+                        </h5>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <p class="product-price mb-0">Rp{{product.price | number}}</p>
+                            <button class="btn btn-sm btn-outline-primary" ng-click="addToCart(product)" ng-disabled="addingToCart === product.id">
+                                <i class="fas" ng-class="{'fa-spinner fa-spin': addingToCart === product.id, 'fa-cart-plus': addingToCart !== product.id}"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-12 text-center" ng-if="!relatedProducts || relatedProducts.length === 0">
+                <p class="text-muted">No related products found.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Product Not Found -->
+<div class="container py-5" ng-if="!loading && !product">
+    <div class="text-center py-5">
+        <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+        <h3>Product Not Found</h3>
+        <p class="mb-4">The product you are looking for does not exist or has been removed.</p>
+        <a href="#!/products" class="btn btn-primary">Browse Products</a>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-success text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div> 

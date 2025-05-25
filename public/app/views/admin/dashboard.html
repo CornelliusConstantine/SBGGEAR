@@ -1,0 +1,240 @@
+<!-- Admin Dashboard -->
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block admin-sidebar">
+            <div class="position-sticky pt-3">
+                <h5 class="px-3 mb-3 text-white">Admin Panel</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#!/admin">
+                            <i class="fas fa-tachometer-alt"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/admin/products">
+                            <i class="fas fa-box"></i>
+                            Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/admin/categories">
+                            <i class="fas fa-tags"></i>
+                            Categories
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/admin/orders">
+                            <i class="fas fa-shopping-cart"></i>
+                            Orders
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/admin/stock">
+                            <i class="fas fa-warehouse"></i>
+                            Stock Management
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/admin/users">
+                            <i class="fas fa-users"></i>
+                            Users
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/admin/reports">
+                            <i class="fas fa-chart-bar"></i>
+                            Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#!/admin/chat">
+                            <i class="fas fa-comments"></i>
+                            Customer Chat
+                        </a>
+                    </li>
+                    <li class="nav-item mt-3">
+                        <a class="nav-link" href="#!/">
+                            <i class="fas fa-external-link-alt"></i>
+                            View Store
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="col-md-9 col-lg-10 admin-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="h2">Dashboard</h1>
+                <div>
+                    <span class="text-muted me-2">Today:</span>
+                    <strong>{{today | date:'mediumDate'}}</strong>
+                </div>
+            </div>
+            
+            <!-- Stats Cards -->
+            <div class="row mb-4">
+                <!-- Loading Spinner -->
+                <div class="col-12 text-center py-5" ng-if="loading.stats">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Loading statistics...</p>
+                </div>
+                
+                <!-- Stats -->
+                <div class="col-md-6 col-lg-3 mb-4" ng-if="!loading.stats">
+                    <div class="stat-card primary position-relative">
+                        <div class="stat-title">Total Sales</div>
+                        <div class="stat-value">{{formatCurrency(stats.totalSales)}}</div>
+                        <div class="stat-text">This month</div>
+                        <i class="fas fa-dollar-sign stat-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3 mb-4" ng-if="!loading.stats">
+                    <div class="stat-card success position-relative">
+                        <div class="stat-title">Orders</div>
+                        <div class="stat-value">{{stats.totalOrders}}</div>
+                        <div class="stat-text">This month</div>
+                        <i class="fas fa-shopping-cart stat-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3 mb-4" ng-if="!loading.stats">
+                    <div class="stat-card warning position-relative">
+                        <div class="stat-title">Products</div>
+                        <div class="stat-value">{{stats.totalProducts}}</div>
+                        <div class="stat-text">In inventory</div>
+                        <i class="fas fa-box stat-icon"></i>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3 mb-4" ng-if="!loading.stats">
+                    <div class="stat-card danger position-relative">
+                        <div class="stat-title">Customers</div>
+                        <div class="stat-value">{{stats.totalCustomers}}</div>
+                        <div class="stat-text">Registered users</div>
+                        <i class="fas fa-users stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Recent Orders -->
+                <div class="col-lg-8 mb-4">
+                    <div class="admin-card h-100">
+                        <div class="admin-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Recent Orders</h5>
+                            <a href="#!/admin/orders" class="btn btn-sm btn-primary">View All</a>
+                        </div>
+                        <div class="admin-card-body">
+                            <!-- Loading Spinner -->
+                            <div class="text-center py-4" ng-if="loading.recentOrders">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Orders Table -->
+                            <div class="table-responsive" ng-if="!loading.recentOrders">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Order #</th>
+                                            <th>Date</th>
+                                            <th>Customer</th>
+                                            <th>Total</th>
+                                            <th>Status</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr ng-repeat="order in recentOrders">
+                                            <td>#{{order.order_number}}</td>
+                                            <td>{{formatDate(order.created_at)}}</td>
+                                            <td>{{order.recipient_name}}</td>
+                                            <td>Rp{{order.total | number}}</td>
+                                            <td>
+                                                <span class="badge" ng-class="{
+                                                    'bg-warning': order.status === 'pending',
+                                                    'bg-primary': order.status === 'processing',
+                                                    'bg-info': order.status === 'shipped',
+                                                    'bg-success': order.status === 'delivered',
+                                                    'bg-danger': order.status === 'cancelled'
+                                                }">
+                                                    {{order.status}}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <a href="#!/admin/order/{{order.id}}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div class="text-center py-4" ng-if="!loading.recentOrders && (!recentOrders || recentOrders.length === 0)">
+                                <p class="text-muted mb-0">No recent orders found.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Low Stock Products -->
+                <div class="col-lg-4 mb-4">
+                    <div class="admin-card h-100">
+                        <div class="admin-card-header d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Low Stock Products</h5>
+                            <a href="#!/admin/stock" class="btn btn-sm btn-primary">Manage Stock</a>
+                        </div>
+                        <div class="admin-card-body">
+                            <!-- Loading Spinner -->
+                            <div class="text-center py-4" ng-if="loading.lowStock">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Low Stock List -->
+                            <div ng-if="!loading.lowStock">
+                                <div class="list-group list-group-flush">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center" ng-repeat="product in lowStockProducts">
+                                        <div>
+                                            <h6 class="mb-0">{{product.name}}</h6>
+                                            <small class="text-muted">{{product.category.name}}</small>
+                                        </div>
+                                        <span class="badge bg-danger">{{product.stock}} left</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Empty State -->
+                            <div class="text-center py-4" ng-if="!loading.lowStock && (!lowStockProducts || lowStockProducts.length === 0)">
+                                <p class="text-muted mb-0">No low stock products found.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-success text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div> 

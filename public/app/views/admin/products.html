@@ -1,0 +1,146 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container-fluid">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/admin">Dashboard</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Products</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Product Management</h4>
+        <a href="#!/admin/product" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i> Add New Product
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="alert alert-danger" ng-if="error">
+                {{error}}
+            </div>
+            <div class="alert alert-success" ng-if="success">
+                {{success}}
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <span class="me-2">Show</span>
+                    <select class="form-select form-select-sm" style="width: 70px;" ng-model="itemsPerPage" ng-change="loadProducts()">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                    <span class="ms-2">entries</span>
+                </div>
+                <div class="input-group" style="width: 300px;">
+                    <input type="text" class="form-control" placeholder="Search products..." ng-model="searchQuery">
+                    <button class="btn btn-outline-secondary" type="button" ng-click="searchProducts()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Image</th>
+                            <th scope="col">Name</th>
+                            <th scope="col">SKU</th>
+                            <th scope="col">Price</th>
+                            <th scope="col">Stock</th>
+                            <th scope="col">Category</th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-if="loading.products">
+                            <td colspan="9" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-if="!loading.products && products.length === 0">
+                            <td colspan="9" class="text-center py-4">No products found</td>
+                        </tr>
+                        <tr ng-repeat="product in products" ng-if="!loading.products">
+                            <td>{{product.id}}</td>
+                            <td>
+                                <img ng-src="{{product.image || 'assets/img/placeholder.png'}}" alt="{{product.name}}" class="img-thumbnail" style="height: 50px; width: 50px; object-fit: cover;">
+                            </td>
+                            <td>{{product.name}}</td>
+                            <td>{{product.sku}}</td>
+                            <td>Rp{{product.price | number}}</td>
+                            <td>
+                                <span class="badge" ng-class="{'bg-success': product.stock > 10, 'bg-warning': product.stock <= 10 && product.stock > 0, 'bg-danger': product.stock === 0}">
+                                    {{product.stock}}
+                                </span>
+                            </td>
+                            <td>{{product.category ? product.category.name : 'Uncategorized'}}</td>
+                            <td>
+                                <span class="badge" ng-class="{'bg-success': product.is_active, 'bg-secondary': !product.is_active}">
+                                    {{product.is_active ? 'Active' : 'Inactive'}}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#!/admin/product/{{product.id}}" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-outline-danger" ng-click="deleteProduct(product.id)">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <div>
+                    Showing {{(currentPage - 1) * itemsPerPage + 1}} to {{Math.min(currentPage * itemsPerPage, totalItems)}} of {{totalItems}} entries
+                </div>
+                <nav>
+                    <ul class="pagination mb-0">
+                        <li class="page-item" ng-class="{'disabled': currentPage === 1}">
+                            <a class="page-link" href="#" ng-click="loadProducts(1)">First</a>
+                        </li>
+                        <li class="page-item" ng-class="{'disabled': currentPage === 1}">
+                            <a class="page-link" href="#" ng-click="loadProducts(currentPage - 1)">Previous</a>
+                        </li>
+                        <li class="page-item" ng-repeat="page in getPages()" ng-class="{'active': currentPage === page}">
+                            <a class="page-link" href="#" ng-click="loadProducts(page)">{{page}}</a>
+                        </li>
+                        <li class="page-item" ng-class="{'disabled': currentPage === totalPages}">
+                            <a class="page-link" href="#" ng-click="loadProducts(currentPage + 1)">Next</a>
+                        </li>
+                        <li class="page-item" ng-class="{'disabled': currentPage === totalPages}">
+                            <a class="page-link" href="#" ng-click="loadProducts(totalPages)">Last</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-success text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div> 

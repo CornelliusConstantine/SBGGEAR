@@ -1,0 +1,146 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <h1 class="mb-4">Shopping Cart</h1>
+    
+    <!-- Loading Spinner -->
+    <div class="text-center py-5" ng-if="loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your cart...</p>
+    </div>
+    
+    <!-- Empty Cart -->
+    <div class="text-center py-5" ng-if="!loading && (!cart.items || cart.items.length === 0)">
+        <i class="fas fa-shopping-cart fa-4x text-muted mb-3"></i>
+        <h3>Your cart is empty</h3>
+        <p class="mb-4">Looks like you haven't added any products to your cart yet.</p>
+        <a href="#!/products" class="btn btn-primary">Start Shopping</a>
+    </div>
+    
+    <!-- Cart Items -->
+    <div ng-if="!loading && cart.items && cart.items.length > 0">
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th scope="col" colspan="2">Product</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Quantity</th>
+                        <th scope="col">Subtotal</th>
+                        <th scope="col"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="item in cart.items">
+                        <!-- Product Image -->
+                        <td width="80">
+                            <a href="#!/product/{{item.product_id}}">
+                                <img ng-src="{{item.product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{item.product.name}}" class="cart-item-image">
+                            </a>
+                        </td>
+                        
+                        <!-- Product Name -->
+                        <td>
+                            <a href="#!/product/{{item.product_id}}" class="text-decoration-none text-dark">
+                                <h5 class="mb-0">{{item.product.name}}</h5>
+                            </a>
+                            <small class="text-muted" ng-if="item.product.category">{{item.product.category.name}}</small>
+                        </td>
+                        
+                        <!-- Price -->
+                        <td>Rp{{item.price | number}}</td>
+                        
+                        <!-- Quantity -->
+                        <td>
+                            <div class="quantity-control">
+                                <button class="quantity-btn" ng-click="updateQuantity(item, -1)" ng-disabled="updatingItem === item.product_id">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="text" class="quantity-input" value="{{item.quantity}}" readonly>
+                                <button class="quantity-btn" ng-click="updateQuantity(item, 1)" ng-disabled="updatingItem === item.product_id">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </td>
+                        
+                        <!-- Subtotal -->
+                        <td>Rp{{item.price * item.quantity | number}}</td>
+                        
+                        <!-- Remove Button -->
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" ng-click="removeItem(item)" ng-disabled="removingItem === item.product_id">
+                                <i class="fas" ng-class="{'fa-spinner fa-spin': removingItem === item.product_id, 'fa-trash': removingItem !== item.product_id}"></i>
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Cart Actions -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <div>
+                <button class="btn btn-outline-danger" ng-click="clearCart()" ng-disabled="clearingCart">
+                    <i class="fas" ng-class="{'fa-spinner fa-spin': clearingCart, 'fa-trash': !clearingCart}"></i>
+                    Clear Cart
+                </button>
+                <button class="btn btn-outline-secondary ms-2" ng-click="continueShopping()">
+                    <i class="fas fa-arrow-left"></i>
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+        
+        <!-- Cart Summary -->
+        <div class="row mt-5">
+            <div class="col-md-6 offset-md-6">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Cart Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>Rp{{cart.total | number}}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping:</span>
+                            <span>Calculated at checkout</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong class="text-primary">Rp{{cart.total | number}}</strong>
+                        </div>
+                        <button class="btn btn-primary w-100" ng-click="checkout()">
+                            Proceed to Checkout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-success text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div> 

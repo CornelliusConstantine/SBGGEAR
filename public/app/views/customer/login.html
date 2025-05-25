@@ -1,0 +1,71 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Login</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-dark text-white">
+                    <h4 class="mb-0">Login to Your Account</h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-danger" ng-if="error">
+                        {{error}}
+                    </div>
+                    
+                    <form ng-submit="login()">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" ng-model="credentials.email" required placeholder="Enter your email">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                <input type="password" class="form-control" id="password" ng-model="credentials.password" required placeholder="Enter your password">
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remember" ng-model="credentials.remember">
+                                <label class="form-check-label" for="remember">Remember me</label>
+                            </div>
+                            <a href="#!/forgot-password" class="text-decoration-none text-dark fw-bold">Forgot password?</a>
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-dark" ng-disabled="loading">
+                                <span ng-if="loading">
+                                    <i class="fas fa-spinner fa-spin me-1"></i> Logging in...
+                                </span>
+                                <span ng-if="!loading">Login</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <div class="star-decoration d-inline-block mx-2">
+                            <span class="star-symbol">★</span>
+                        </div>
+                        <p class="d-inline-block">Don't have an account? <a href="#!/register" class="text-decoration-none text-dark fw-bold">Register here</a></p>
+                        <div class="star-decoration d-inline-block mx-2">
+                            <span class="star-symbol">★</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 
