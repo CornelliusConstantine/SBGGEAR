@@ -90,10 +90,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'app/views/customer/new-arrivals.html',
             controller: 'ProductController'
         })
-        .when('/brands', {
-            templateUrl: 'app/views/customer/brands.html',
-            controller: 'ProductController'
-        })
         .when('/category/:slug', {
             templateUrl: 'app/views/customer/category.html',
             controller: 'ProductController'

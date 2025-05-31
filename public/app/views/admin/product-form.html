@@ -53,8 +53,9 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label for="sku" class="form-label">SKU *</label>
-                                    <input type="text" class="form-control" id="sku" ng-model="product.sku" required>
+                                    <label for="sku" class="form-label">SKU (Stock Keeping Unit)</label>
+                                    <input type="text" class="form-control" id="sku" ng-model="product.sku" placeholder="Leave blank to auto-generate">
+                                    <small class="text-muted">A unique identifier for this product. Leave blank to auto-generate.</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -79,12 +80,6 @@
                                         </a>
                                     </div>
                                     <small class="text-muted" ng-if="!categories || categories.length === 0">No categories available. <a href="#!/admin/categories">Create a category</a> first.</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="brand" class="form-label">Brand</label>
-                                    <input type="text" class="form-control" id="brand" ng-model="product.brand">
                                 </div>
                             </div>
                         </div>

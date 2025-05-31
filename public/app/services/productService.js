@@ -148,21 +148,6 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         return deferred.promise;
     };
     
-    // Get all unique brands
-    service.getBrands = function() {
-        var deferred = $q.defer();
-        
-        $http.get(API_URL + '/brands')
-            .then(function(response) {
-                deferred.resolve(response.data);
-            })
-            .catch(function(error) {
-                deferred.reject(error.data);
-            });
-        
-        return deferred.promise;
-    };
-    
     // Submit a product review
     service.submitReview = function(productId, reviewData) {
         var deferred = $q.defer();

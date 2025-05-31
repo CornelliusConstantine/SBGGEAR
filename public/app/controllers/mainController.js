@@ -99,11 +99,6 @@ app.controller('MainController', ['$scope', 'ProductService', 'CartService', fun
                 product.short_description = product.description;
             }
             
-            // Add default brand if not present
-            if (!product.hasOwnProperty('brand')) {
-                product.brand = 'SBG';
-            }
-            
             // Add default is_featured if not present
             if (!product.hasOwnProperty('is_featured')) {
                 product.is_featured = false;

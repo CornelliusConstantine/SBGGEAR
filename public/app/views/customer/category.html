@@ -54,21 +54,6 @@
                         </div>
                     </div>
                     
-                    <!-- Brand Filter -->
-                    <div class="mb-4">
-                        <h6 class="mb-3">Brands</h6>
-                        <div class="brand-list">
-                            <div class="form-check mb-2" ng-repeat="brand in brands">
-                                <input class="form-check-input" type="checkbox" id="brand-{{$index}}" 
-                                       ng-model="filters.selectedBrands[brand]" 
-                                       ng-change="applyFilters()">
-                                <label class="form-check-label" for="brand-{{$index}}">
-                                    {{brand}}
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <!-- Rating Filter -->
                     <div class="mb-4">
                         <h6 class="mb-3">Rating</h6>

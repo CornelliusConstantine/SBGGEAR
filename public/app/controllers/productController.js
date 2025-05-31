@@ -6,7 +6,6 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         $scope.loading = true;
         $scope.products = [];
         $scope.categories = [];
-        $scope.brands = [];
         $scope.product = null;
         $scope.quantity = 1;
         $scope.currentPage = 1;
@@ -31,7 +30,6 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             maxPrice: null,
             sort: 'created_at,desc',
             selectedCategories: {},
-            selectedBrands: {},
             selectedRatings: {}
         };
         
@@ -55,9 +53,6 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         
         // Load categories for filter sidebar
         $scope.loadCategories();
-        
-        // Load unique brands for filter
-        $scope.loadBrands();
     };
     
     // Load all products with filters
@@ -104,17 +99,6 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             params.categories = selectedCategories.join(',');
         }
         
-        // Brand filters
-        var selectedBrands = [];
-        for (var brand in $scope.filters.selectedBrands) {
-            if ($scope.filters.selectedBrands[brand]) {
-                selectedBrands.push(brand);
-            }
-        }
-        if (selectedBrands.length > 0) {
-            params.brands = selectedBrands.join(',');
-        }
-        
         // Rating filters
         var selectedRatings = [];
         for (var rating in $scope.filters.selectedRatings) {
@@ -159,7 +143,6 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             maxPrice: null,
             sort: 'created_at,desc',
             selectedCategories: {},
-            selectedBrands: {},
             selectedRatings: {}
         };
         $scope.applyFilters();
@@ -249,19 +232,6 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                 product.short_description = product.description ? 
                     (product.description.length > 200 ? product.description.substring(0, 200) + '...' : product.description) : 
                     '';
-            }
-            
-            if (!product.hasOwnProperty('brand')) {
-                product.brand = 'Generic';
-            }
-            
-            if (!product.hasOwnProperty('is_featured')) {
-                product.is_featured = false;
-            }
-            
-            // Calculate discount percentage if original_price exists
-            if (product.original_price && product.price < product.original_price) {
-                product.discount_percentage = Math.round((1 - (product.price / product.original_price)) * 100);
             }
         });
     };
@@ -372,17 +342,6 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             })
             .catch(function(error) {
                 console.error('Error loading categories', error);
-            });
-    };
-    
-    // Load unique brands for filtering
-    $scope.loadBrands = function() {
-        ProductService.getBrands()
-            .then(function(response) {
-                $scope.brands = response.data;
-            })
-            .catch(function(error) {
-                console.error('Error loading brands', error);
             });
     };
     
