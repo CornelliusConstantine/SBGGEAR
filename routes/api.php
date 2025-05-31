@@ -31,8 +31,9 @@ Route::get('/categories/{category}', [CategoryController::class, 'show']);
 
 // Products
 Route::get('/products', [ProductController::class, 'index']);
-Route::get('/products/{product}', [ProductController::class, 'show']);
+Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/products/search/{query}', [ProductController::class, 'search']);
+Route::get('/products/{product}', [ProductController::class, 'show']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -53,6 +54,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::post('/orders/{order}/pay', [OrderController::class, 'pay']);
     Route::get('/orders/{order}/status', [OrderController::class, 'checkStatus']);
+    
+    // Product operations that require authentication
+    Route::delete('/products/{product}', [ProductController::class, 'destroy']);
     
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {

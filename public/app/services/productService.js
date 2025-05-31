@@ -242,17 +242,53 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
-        $http.delete(API_URL + '/admin/products/' + id, {
-            headers: {
-                'Authorization': 'Bearer ' + token
-            }
-        })
+        // Function to attempt deletion
+        var attemptDeletion = function(retryCount) {
+            console.log('Attempting to delete product ID:', id);
+            
+            $http.delete(API_URL + '/products/' + id, {
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                }
+            })
             .then(function(response) {
-                deferred.resolve(response.data);
+                console.log('Delete product response:', response);
+                if (response.data && response.data.success === true) {
+                    deferred.resolve(response.data);
+                } else {
+                    // If we got a response but success is not true, resolve with the response
+                    // but add a warning
+                    console.warn('Product deletion returned non-success response:', response.data);
+                    deferred.resolve({
+                        ...response.data,
+                        warning: 'The server returned a non-success response. The product may not have been fully deleted.'
+                    });
+                }
             })
             .catch(function(error) {
-                deferred.reject(error.data);
+                console.error('Error deleting product:', error);
+                
+                // If we have retries left and it's a network error, retry
+                if (retryCount > 0 && (!error.status || error.status >= 500)) {
+                    console.log('Retrying product deletion, attempts left:', retryCount);
+                    setTimeout(function() {
+                        attemptDeletion(retryCount - 1);
+                    }, 1000);
+                } else {
+                    // No retries left or not a retryable error
+                    if (error.data && error.data.message) {
+                        deferred.reject({message: error.data.message});
+                    } else if (error.status === 405) {
+                        deferred.reject({message: 'Method not allowed. The API endpoint may have changed or you may not have permission to delete this product.'});
+                    } else {
+                        deferred.reject({message: 'Failed to delete product. Please try again.'});
+                    }
+                }
             });
+        };
+        
+        // Start with 2 retry attempts
+        attemptDeletion(2);
         
         return deferred.promise;
     };
@@ -318,6 +354,33 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
             })
             .catch(function(error) {
                 deferred.reject(error.data);
+            });
+        
+        return deferred.promise;
+    };
+    
+    // Get featured products
+    service.getFeaturedProducts = function(limit) {
+        var deferred = $q.defer();
+        var params = {};
+        
+        if (limit) {
+            params.limit = limit;
+        }
+        
+        $http.get(API_URL + '/products/featured', { params: params })
+            .then(function(response) {
+                if (response.data && response.data.data) {
+                    // New API format with data wrapper
+                    deferred.resolve(response.data.data);
+                } else {
+                    // Old API format or fallback
+                    deferred.resolve(response.data);
+                }
+            })
+            .catch(function(error) {
+                console.error('ProductService: Error fetching featured products:', error);
+                deferred.reject(error.data || { message: 'Error loading featured products' });
             });
         
         return deferred.promise;

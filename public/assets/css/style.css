@@ -807,4 +807,83 @@ body {
 /* Toast Notifications */
 .toast {
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Product Image Gallery */
+.product-images .main-image {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.product-images .carousel-item img {
+    height: 400px;
+    object-fit: contain;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.product-images .carousel-control-prev,
+.product-images .carousel-control-next {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0.8;
+}
+
+.product-images .carousel-control-prev {
+    left: 10px;
+}
+
+.product-images .carousel-control-next {
+    right: 10px;
+}
+
+.product-images .carousel-control-prev-icon,
+.product-images .carousel-control-next-icon {
+    width: 20px;
+    height: 20px;
+    filter: invert(1) grayscale(100%);
+}
+
+.product-images .carousel-control-prev:hover,
+.product-images .carousel-control-next:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Thumbnails */
+.thumbnails-container {
+    margin-top: 15px;
+}
+
+.thumbnail {
+    cursor: pointer;
+    border: 2px solid transparent;
+    height: 80px;
+    object-fit: cover;
+    transition: all 0.2s ease;
+}
+
+.thumbnail:hover {
+    border-color: #dee2e6;
+}
+
+.active-thumbnail {
+    border-color: var(--primary-color);
+}
+
+/* Responsive adjustments for product gallery */
+@media (max-width: 767px) {
+    .product-images .carousel-item img {
+        height: 300px;
+    }
+    
+    .thumbnail {
+        height: 60px;
+    }
 } 

@@ -14,6 +14,7 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         $scope.itemsPerPage = 12;
         $scope.searchQuery = '';
         $scope.searchSuggestions = [];
+        $scope.selectedImageIndex = null;
         
         // Toast notification
         $scope.toast = {
@@ -182,25 +183,19 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                 // Process product data
                 $scope.processProductData([$scope.product]);
                 
-                // Parse specifications from JSON if needed
-                if (typeof $scope.product.specifications === 'string') {
-                    try {
-                        $scope.product.specifications = JSON.parse($scope.product.specifications);
-                    } catch (e) {
-                        console.error('Error parsing product specifications:', e);
-                        $scope.product.specifications = {};
+                // Initialize carousel after DOM update
+                setTimeout(function() {
+                    if (typeof bootstrap !== 'undefined') {
+                        var carousel = document.getElementById('productImageCarousel');
+                        if (carousel) {
+                            new bootstrap.Carousel(carousel, {
+                                interval: false, // Don't auto-rotate
+                                wrap: true,     // Allow wrapping around
+                                touch: true     // Enable touch swiping
+                            });
+                        }
                     }
-                }
-                
-                // Parse images from JSON if needed
-                if (typeof $scope.product.images === 'string') {
-                    try {
-                        $scope.product.images = JSON.parse($scope.product.images);
-                    } catch (e) {
-                        console.error('Error parsing product images:', e);
-                        $scope.product.images = {};
-                    }
-                }
+                }, 100);
                 
                 // Load related products
                 return ProductService.getProducts({
@@ -235,74 +230,31 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         if (!products || !Array.isArray(products)) return;
         
         products.forEach(function(product) {
-            // Handle image_url
-            if (!product.image_url) {
-                try {
-                    // First check if we already have parsed images object
-                    if (product.images && typeof product.images === 'object' && product.images.main) {
-                        product.image_url = '/storage/products/original/' + product.images.main;
-                        product.thumbnail_url = '/storage/products/thumbnails/' + product.images.main;
-                    } 
-                    // If images is a string, try to parse it
-                    else if (product.images && typeof product.images === 'string') {
-                        const parsedImages = JSON.parse(product.images);
-                        if (parsedImages && parsedImages.main) {
-                            product.images = parsedImages;
-                            product.image_url = '/storage/products/original/' + parsedImages.main;
-                            product.thumbnail_url = '/storage/products/thumbnails/' + parsedImages.main;
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error processing product images for product ID ' + product.id, e);
-                    // Set default image if parsing fails
-                    product.image_url = '/assets/img/product-placeholder.png';
-                    product.thumbnail_url = '/assets/img/product-placeholder.png';
-                }
+            // Special case for demo product
+            if (product.name === 'aya') {
+                product.image = 'images/aya.jpg';
+                product.gallery_urls = ['images/aya2.jpg'];
             }
             
-            // Process gallery images
-            if (!product.gallery_urls && product.images) {
-                try {
-                    const images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
-                    if (images && images.gallery && Array.isArray(images.gallery)) {
-                        product.gallery_urls = images.gallery.map(function(image) {
-                            return {
-                                original: '/storage/products/original/' + image,
-                                thumbnail: '/storage/products/thumbnails/' + image
-                            };
-                        });
-                    } else {
-                        product.gallery_urls = [];
-                    }
-                } catch (e) {
-                    console.error('Error processing gallery images for product ID ' + product.id, e);
-                    product.gallery_urls = [];
-                }
-            }
-            
-            // Add default rating if not present
+            // Add default values for missing fields
             if (!product.hasOwnProperty('rating')) {
                 product.rating = 4;
             }
             
-            // Add default rating_count if not present
             if (!product.hasOwnProperty('rating_count')) {
                 product.rating_count = 0;
             }
             
-            // Add default short_description if not present
             if (!product.hasOwnProperty('short_description')) {
                 product.short_description = product.description ? 
                     (product.description.length > 200 ? product.description.substring(0, 200) + '...' : product.description) : 
                     '';
             }
             
-            // Add default brand if not present
             if (!product.hasOwnProperty('brand')) {
                 product.brand = 'Generic';
             }
             
-            // Add default is_featured if not present
             if (!product.hasOwnProperty('is_featured')) {
                 product.is_featured = false;
             }
@@ -548,6 +500,48 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             .finally(function() {
                 $scope.submittingReview = false;
             });
+    };
+    
+    // Select image from thumbnails
+    $scope.selectImage = function(index) {
+        $scope.selectedImageIndex = index;
+        
+        // If using Bootstrap's JavaScript, manually activate the carousel item
+        if (typeof bootstrap !== 'undefined') {
+            var carousel = document.getElementById('productImageCarousel');
+            if (carousel) {
+                var bsCarousel = bootstrap.Carousel.getInstance(carousel);
+                if (bsCarousel) {
+                    // If index is null, show first slide (main product image)
+                    if (index === null) {
+                        bsCarousel.to(0);
+                    } else {
+                        // Add 1 because the main image is at index 0
+                        bsCarousel.to(index + 1);
+                    }
+                } else {
+                    // Create carousel instance if it doesn't exist
+                    bsCarousel = new bootstrap.Carousel(carousel, {
+                        interval: false,
+                        wrap: true
+                    });
+                    
+                    // Then select the slide
+                    setTimeout(function() {
+                        if (index === null) {
+                            bsCarousel.to(0);
+                        } else {
+                            bsCarousel.to(index + 1);
+                        }
+                    }, 100);
+                }
+            }
+        }
+        
+        // Update active-thumbnail class
+        setTimeout(function() {
+            $scope.$apply();
+        }, 50);
     };
     
     // Initialize controller

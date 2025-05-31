@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Run the fix-slugs command daily
+        $schedule->command('products:fix-slugs')->daily();
     }
 
     /**
@@ -24,4 +25,8 @@ class Kernel extends ConsoleKernel
 
         require base_path('routes/console.php');
     }
+
+    protected $commands = [
+        Commands\FixDuplicateSlugs::class,
+    ];
 }

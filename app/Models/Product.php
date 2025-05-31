@@ -22,6 +22,7 @@ class Product extends Model
         'images',
         'is_active',
         'weight',
+        'is_featured',
     ];
 
     protected $casts = [
@@ -30,6 +31,7 @@ class Product extends Model
         'specifications' => 'array',
         'images' => 'array',
         'is_active' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 
     protected $appends = ['image_url', 'thumbnail_url', 'gallery_urls'];
@@ -87,12 +89,34 @@ class Product extends Model
         
         $urls = [];
         foreach ($this->images['gallery'] as $image) {
-            $urls[] = [
-                'original' => asset('storage/products/original/' . $image),
-                'thumbnail' => asset('storage/products/thumbnails/' . $image)
-            ];
+            $urls[] = asset('storage/products/original/' . $image);
         }
         
         return $urls;
+    }
+
+    /**
+     * Boot the model.
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        static::saving(function ($product) {
+            // Ensure slug is unique
+            if ($product->isDirty('slug')) {
+                $baseSlug = $product->slug;
+                $slug = $baseSlug;
+                $counter = 1;
+                
+                while (static::where('slug', $slug)
+                        ->where('id', '!=', $product->id)
+                        ->exists()) {
+                    $slug = $baseSlug . '-' . $counter++;
+                }
+                
+                $product->slug = $slug;
+            }
+        });
     }
 } 

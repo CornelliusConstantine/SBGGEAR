@@ -26,15 +26,52 @@
         <!-- Product Images -->
         <div class="col-md-6 mb-4">
             <div class="product-images">
-                <!-- Main Image -->
-                <div class="main-image mb-3">
-                    <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{product.name}}" class="img-fluid rounded">
+                <!-- Main Image with Slider -->
+                <div class="main-image mb-3 position-relative">
+                    <div id="productImageCarousel" class="carousel slide" data-bs-ride="false" data-bs-interval="false">
+                        <div class="carousel-inner">
+                            <!-- Main product image -->
+                            <div class="carousel-item active">
+                                <img ng-src="{{product.image || product.image_url || 'images/aya.jpg'}}" alt="{{product.name}}" class="img-fluid rounded d-block w-100">
+                            </div>
+                            
+                            <!-- Gallery images -->
+                            <div class="carousel-item" ng-repeat="image in product.gallery_urls track by $index">
+                                <img ng-src="{{image}}" alt="{{product.name}}" class="img-fluid rounded d-block w-100">
+                            </div>
+                        </div>
+                        
+                        <!-- Carousel controls -->
+                        <button class="carousel-control-prev" type="button" data-bs-target="#productImageCarousel" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Previous</span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#productImageCarousel" data-bs-slide="next">
+                            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                            <span class="visually-hidden">Next</span>
+                        </button>
+                    </div>
                 </div>
                 
-                <!-- Image Gallery -->
-                <div class="row" ng-if="product.gallery_urls && product.gallery_urls.length > 0">
-                    <div class="col-3 mb-3" ng-repeat="image in product.gallery_urls">
-                        <img ng-src="{{image.thumbnail}}" alt="{{product.name}}" class="img-fluid rounded thumbnail">
+                <!-- Thumbnails -->
+                <div class="thumbnails-container">
+                    <div class="row">
+                        <!-- Main image thumbnail -->
+                        <div class="col-3 mb-2">
+                            <img ng-src="{{product.image || product.image_url || 'images/aya.jpg'}}" 
+                                 alt="{{product.name}}" 
+                                 class="img-fluid rounded thumbnail active-thumbnail" 
+                                 ng-click="selectImage(null)">
+                        </div>
+                        
+                        <!-- Gallery thumbnails -->
+                        <div class="col-3 mb-2" ng-repeat="image in product.gallery_urls track by $index">
+                            <img ng-src="{{image}}" 
+                                 alt="{{product.name}}" 
+                                 class="img-fluid rounded thumbnail" 
+                                 ng-class="{'active-thumbnail': selectedImageIndex === $index}"
+                                 ng-click="selectImage($index)">
+                        </div>
                     </div>
                 </div>
             </div>

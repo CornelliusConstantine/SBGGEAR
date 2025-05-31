@@ -1,0 +1,18 @@
+<th>Name</th>
+<th>Category</th>
+<th>Price</th>
+<th>Stock</th>
+<th>Status</th>
+<th>Featured</th>
+<th>Actions</th>
+
+<td>
+    <span class="badge" ng-class="{'badge-success': product.is_active, 'badge-danger': !product.is_active}">
+        {{product.is_active ? 'Active' : 'Inactive'}}
+    </span>
+</td>
+<td>
+    <span class="badge" ng-class="{'badge-success': product.is_featured, 'badge-secondary': !product.is_featured}">
+        {{product.is_featured ? 'Featured' : 'No'}}
+    </span>
+</td> 

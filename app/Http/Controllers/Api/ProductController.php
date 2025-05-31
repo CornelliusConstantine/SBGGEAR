@@ -24,6 +24,10 @@ class ProductController extends Controller
             ->when($request->filled('price_max'), function ($query) use ($request) {
                 $query->where('price', '<=', $request->price_max);
             })
+            ->when($request->filled('featured'), function ($query) use ($request) {
+                $featured = filter_var($request->featured, FILTER_VALIDATE_BOOLEAN);
+                $query->where('is_featured', $featured);
+            })
             ->when($request->filled('sort'), function ($query) use ($request) {
                 switch ($request->sort) {
                     case 'price_asc':
@@ -101,6 +105,8 @@ class ProductController extends Controller
             'weight' => ['required', 'numeric', 'min:0'],
             'image' => ['nullable', 'image', 'max:5120'], // 5MB max
             'additional_images.*' => ['nullable', 'image', 'max:5120'], // 5MB max
+            'is_active' => ['nullable', 'boolean'],
+            'is_featured' => ['nullable', 'boolean'],
         ]);
 
         $images = [];
@@ -151,25 +157,52 @@ class ProductController extends Controller
             }
         }
 
-        $product = Product::create([
-            'category_id' => $request->category_id,
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'price' => $request->price,
-            'stock' => $request->stock,
-            'sku' => $request->sku ?? $this->generateSku($request->name),
-            'specifications' => $specifications,
-            'images' => $images,
-            'weight' => $request->weight,
-            'is_active' => $request->has('is_active') ? $request->is_active : true,
-            'is_featured' => $request->has('is_featured') ? $request->is_featured : false,
-        ]);
+        // Process boolean fields
+        $isActive = $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : true;
+        $isFeatured = $request->has('is_featured') ? filter_var($request->is_featured, FILTER_VALIDATE_BOOLEAN) : false;
 
-        return response()->json([
-            'message' => 'Product created successfully',
-            'product' => $product,
-        ], 201);
+        try {
+            $product = Product::create([
+                'category_id' => $request->category_id,
+                'name' => $request->name,
+                'slug' => Str::slug($request->name), // Model boot method will ensure uniqueness
+                'description' => $request->description,
+                'price' => $request->price,
+                'stock' => $request->stock,
+                'sku' => $request->sku ?? $this->generateSku($request->name),
+                'specifications' => $specifications,
+                'images' => $images,
+                'weight' => $request->weight,
+                'is_active' => $isActive,
+                'is_featured' => $isFeatured,
+            ]);
+
+            return response()->json([
+                'message' => 'Product created successfully',
+                'product' => $product,
+                'success' => true
+            ], 201);
+        } catch (\Exception $e) {
+            // Delete uploaded images if product creation fails
+            if (!empty($images)) {
+                if (isset($images['main'])) {
+                    Storage::disk('public')->delete('products/original/' . $images['main']);
+                    Storage::disk('public')->delete('products/thumbnails/' . $images['main']);
+                }
+                
+                if (isset($images['gallery']) && is_array($images['gallery'])) {
+                    foreach ($images['gallery'] as $image) {
+                        Storage::disk('public')->delete('products/original/' . $image);
+                        Storage::disk('public')->delete('products/thumbnails/' . $image);
+                    }
+                }
+            }
+            
+            return response()->json([
+                'message' => 'Failed to create product: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function update(Request $request, Product $product)
@@ -201,80 +234,99 @@ class ProductController extends Controller
             }
         }
 
-        // Update product data
-        $product->update([
-            'category_id' => $request->category_id,
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'price' => $request->price,
-            'specifications' => $specifications,
-            'weight' => $request->weight,
-            'is_active' => $request->has('is_active') ? $request->is_active : $product->is_active,
-            'is_featured' => $request->has('is_featured') ? $request->is_featured : $product->is_featured,
-            'sku' => $request->sku ?? $product->sku,
-        ]);
+        // Process boolean fields
+        $isActive = $request->has('is_active') ? filter_var($request->is_active, FILTER_VALIDATE_BOOLEAN) : $product->is_active;
+        $isFeatured = $request->has('is_featured') ? filter_var($request->is_featured, FILTER_VALIDATE_BOOLEAN) : $product->is_featured;
 
-        // Process main image
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
-            
-            // Create thumbnail using native PHP GD
-            $thumbnail = $this->createThumbnail($image->getRealPath(), 300, 300);
-            
-            // Store original and thumbnail
-            Storage::disk('public')->put('products/original/' . $filename, file_get_contents($image));
-            Storage::disk('public')->put('products/thumbnails/' . $filename, $thumbnail);
+        try {
+            // Update product data
+            $product->update([
+                'category_id' => $request->category_id,
+                'name' => $request->name,
+                'slug' => Str::slug($request->name), // Model boot method will ensure uniqueness
+                'description' => $request->description,
+                'price' => $request->price,
+                'specifications' => $specifications,
+                'weight' => $request->weight,
+                'is_active' => $isActive,
+                'is_featured' => $isFeatured,
+                'sku' => $request->sku ?? $product->sku,
+            ]);
 
-            // Update images array
-            $images = $product->images ?? [];
-            if (is_string($images)) {
-                try {
-                    $images = json_decode($images, true) ?: [];
-                } catch (\Exception $e) {
-                    $images = [];
-                }
-            }
-            $images['main'] = $filename;
-            $product->update(['images' => $images]);
-        }
-        
-        // Process additional images
-        if ($request->hasFile('additional_images')) {
-            $images = $product->images ?? [];
-            if (is_string($images)) {
-                try {
-                    $images = json_decode($images, true) ?: [];
-                } catch (\Exception $e) {
-                    $images = [];
-                }
-            }
-            
-            if (!isset($images['gallery'])) {
-                $images['gallery'] = [];
-            }
-            
-            foreach ($request->file('additional_images') as $image) {
+            // Process main image
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
                 $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
                 
                 // Create thumbnail using native PHP GD
                 $thumbnail = $this->createThumbnail($image->getRealPath(), 300, 300);
-
+                
                 // Store original and thumbnail
                 Storage::disk('public')->put('products/original/' . $filename, file_get_contents($image));
                 Storage::disk('public')->put('products/thumbnails/' . $filename, $thumbnail);
 
-                $images['gallery'][] = $filename;
+                // Update images array
+                $images = $product->images ?? [];
+                if (is_string($images)) {
+                    try {
+                        $images = json_decode($images, true) ?: [];
+                    } catch (\Exception $e) {
+                        $images = [];
+                    }
+                }
+                
+                // Delete old main image if exists
+                if (isset($images['main'])) {
+                    Storage::disk('public')->delete('products/original/' . $images['main']);
+                    Storage::disk('public')->delete('products/thumbnails/' . $images['main']);
+                }
+                
+                $images['main'] = $filename;
+                $product->update(['images' => $images]);
             }
             
-            $product->update(['images' => $images]);
-        }
+            // Process additional images
+            if ($request->hasFile('additional_images')) {
+                $images = $product->images ?? [];
+                if (is_string($images)) {
+                    try {
+                        $images = json_decode($images, true) ?: [];
+                    } catch (\Exception $e) {
+                        $images = [];
+                    }
+                }
+                
+                if (!isset($images['gallery'])) {
+                    $images['gallery'] = [];
+                }
+                
+                foreach ($request->file('additional_images') as $image) {
+                    $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
+                    
+                    // Create thumbnail using native PHP GD
+                    $thumbnail = $this->createThumbnail($image->getRealPath(), 300, 300);
 
-        return response()->json([
-            'message' => 'Product updated successfully',
-            'product' => $product->fresh(),
-        ]);
+                    // Store original and thumbnail
+                    Storage::disk('public')->put('products/original/' . $filename, file_get_contents($image));
+                    Storage::disk('public')->put('products/thumbnails/' . $filename, $thumbnail);
+
+                    $images['gallery'][] = $filename;
+                }
+                
+                $product->update(['images' => $images]);
+            }
+
+            return response()->json([
+                'message' => 'Product updated successfully',
+                'product' => $product->fresh(),
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to update product: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function uploadImages(Request $request, Product $product)
@@ -283,7 +335,25 @@ class ProductController extends Controller
             'images.*' => ['required', 'image', 'max:5120'], // 5MB max
         ]);
 
+        if (!$request->hasFile('images')) {
+            return response()->json([
+                'message' => 'No images provided',
+                'success' => false
+            ], 400);
+        }
+
         $images = $product->images ?? [];
+        if (is_string($images)) {
+            try {
+                $images = json_decode($images, true) ?: [];
+            } catch (\Exception $e) {
+                $images = [];
+            }
+        }
+
+        if (!isset($images['gallery'])) {
+            $images['gallery'] = [];
+        }
 
         foreach ($request->file('images') as $image) {
             $filename = Str::uuid() . '.' . $image->getClientOriginalExtension();
@@ -294,33 +364,69 @@ class ProductController extends Controller
             // Store original and thumbnail
             Storage::disk('public')->put('products/original/' . $filename, file_get_contents($image));
             Storage::disk('public')->put('products/thumbnails/' . $filename, $thumbnail);
-
-            $images[] = $filename;
+            
+            // Add to gallery
+            $images['gallery'][] = $filename;
         }
 
         $product->update(['images' => $images]);
 
+        // Return updated product with image URLs
+        $product->refresh();
+        
         return response()->json([
-            'message' => 'Product images uploaded successfully',
+            'message' => 'Images uploaded successfully',
             'product' => $product,
+            'image_url' => $product->image_url,
+            'gallery_urls' => $product->gallery_urls,
+            'success' => true
         ]);
     }
 
     public function destroy(Product $product)
     {
-        // Delete product images
-        if (!empty($product->images)) {
-            foreach ($product->images as $image) {
-                Storage::disk('public')->delete('products/original/' . $image);
-                Storage::disk('public')->delete('products/thumbnails/' . $image);
+        try {
+            // Get product ID before deletion for confirmation
+            $productId = $product->id;
+            $productName = $product->name;
+            
+            // Delete product images
+            if (!empty($product->images)) {
+                $images = $product->images;
+                
+                // Handle string format if needed
+                if (is_string($images)) {
+                    $images = json_decode($images, true);
+                }
+                
+                // Delete main image if exists
+                if (isset($images['main'])) {
+                    Storage::disk('public')->delete('products/original/' . $images['main']);
+                    Storage::disk('public')->delete('products/thumbnails/' . $images['main']);
+                }
+                
+                // Delete gallery images if exist
+                if (isset($images['gallery']) && is_array($images['gallery'])) {
+                    foreach ($images['gallery'] as $image) {
+                        Storage::disk('public')->delete('products/original/' . $image);
+                        Storage::disk('public')->delete('products/thumbnails/' . $image);
+                    }
+                }
             }
+
+            // Force delete to ensure it's removed from database
+            $product->forceDelete();
+
+            return response()->json([
+                'message' => "Product '$productName' (ID: $productId) deleted successfully",
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to delete product: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
         }
-
-        $product->delete();
-
-        return response()->json([
-            'message' => 'Product deleted successfully',
-        ]);
     }
 
     private function generateSku($name)
@@ -398,5 +504,32 @@ class ProductController extends Controller
         imagedestroy($target);
         
         return $imageData;
+    }
+
+    /**
+     * Get featured products
+     */
+    public function featured(Request $request)
+    {
+        try {
+            $limit = $request->input('limit', 8);
+            
+            $products = Product::with('category')
+                ->where('is_active', true)
+                ->where('is_featured', true)
+                ->orderBy('created_at', 'desc')
+                ->limit($limit)
+                ->get();
+                
+            return response()->json([
+                'data' => $products,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error loading featured products: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 } 

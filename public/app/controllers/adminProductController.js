@@ -11,7 +11,17 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
         };
         
         $scope.products = [];
-        $scope.product = {};
+        $scope.product = {
+            name: '',
+            description: '',
+            price: 0,
+            stock: 0,
+            weight: 0,
+            category_id: '',
+            specifications: {},
+            is_active: true,
+            is_featured: false
+        };
         $scope.productImages = {
             main: null,
             additional: []
@@ -44,12 +54,11 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                 description: '',
                 price: 0,
                 stock: 0,
-                category_id: '',
-                sku: '',
                 weight: 0,
+                category_id: '',
+                specifications: {},
                 is_active: true,
-                is_featured: false,
-                specifications: {}
+                is_featured: false
             };
             
             // Initialize with one empty specification row
@@ -166,12 +175,11 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                     description: '',
                     price: 0,
                     stock: 0,
-                    category_id: '',
-                    sku: '',
                     weight: 0,
+                    category_id: '',
+                    specifications: {},
                     is_active: true,
-                    is_featured: false,
-                    specifications: {}
+                    is_featured: false
                 };
                 $scope.specKeys = [];
                 $scope.specValues = [];
@@ -246,12 +254,19 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
         // Create FormData for file uploads
         var formData = new FormData();
         
+        // Ensure boolean fields are properly formatted
+        var productData = angular.copy($scope.product);
+        productData.is_active = productData.is_active === true;
+        productData.is_featured = productData.is_featured === true;
+        
         // Append product data
-        Object.keys($scope.product).forEach(function(key) {
+        Object.keys(productData).forEach(function(key) {
             if (key === 'specifications') {
                 formData.append(key, JSON.stringify(specifications));
+            } else if (key === 'is_active' || key === 'is_featured') {
+                formData.append(key, productData[key] ? '1' : '0');
             } else {
-                formData.append(key, $scope.product[key]);
+                formData.append(key, productData[key]);
             }
         });
         
@@ -320,16 +335,51 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
             return;
         }
         
-        $scope.loading.delete = true;
+        // Check if user is authenticated
+        var token = localStorage.getItem('token');
+        if (!token) {
+            alert('You must be logged in to delete products');
+            $location.path('/login');
+            return;
+        }
+        
+        $scope.loading.delete = id; // Track which product is being deleted
+        $scope.error = null;
+        $scope.success = null;
+        
+        console.log('Deleting product ID:', id);
         
         ProductService.deleteProduct(id)
-            .then(function() {
+            .then(function(response) {
+                console.log('Product deletion successful:', response);
                 $scope.success = 'Product deleted successfully';
+                // Reload the current page of products
                 $scope.loadProducts($scope.currentPage);
             })
             .catch(function(error) {
-                console.error('Error deleting product', error);
-                $scope.error = 'Failed to delete product';
+                console.error('Error deleting product:', error);
+                
+                // Create a detailed error message
+                var errorMessage = 'Failed to delete product';
+                
+                if (error.message) {
+                    errorMessage += ': ' + error.message;
+                }
+                
+                if (error.status) {
+                    errorMessage += ' (Status: ' + error.status + ')';
+                }
+                
+                $scope.error = errorMessage;
+                
+                // Show alert to user
+                alert(errorMessage);
+                
+                // If unauthorized, redirect to login
+                if (error.status === 401) {
+                    localStorage.removeItem('token');
+                    $location.path('/login');
+                }
             })
             .finally(function() {
                 $scope.loading.delete = false;
