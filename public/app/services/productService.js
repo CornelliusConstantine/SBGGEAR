@@ -27,10 +27,34 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         
         $http.get(API_URL + '/products/' + id)
             .then(function(response) {
-                deferred.resolve(response.data);
+                // Check for different response formats
+                if (response.data && response.data.success === true && response.data.data) {
+                    // New API format with success flag and data wrapper
+                    deferred.resolve({
+                        data: response.data.data,
+                        success: response.data.success
+                    });
+                } else if (response.data && response.data.data) {
+                    // API format with just data wrapper
+                    deferred.resolve({
+                        data: response.data.data
+                    });
+                } else {
+                    // Old API format or fallback
+                    deferred.resolve({
+                        data: response.data
+                    });
+                }
             })
             .catch(function(error) {
-                deferred.reject(error.data);
+                console.error('ProductService: Error fetching product details:', error);
+                if (error.status === 404) {
+                    deferred.reject({message: 'Product not found or has been removed.'});
+                } else if (error.data && error.data.message) {
+                    deferred.reject({message: error.data.message});
+                } else {
+                    deferred.reject({message: 'Error loading product details. Please try again later.'});
+                }
             });
         
         return deferred.promise;

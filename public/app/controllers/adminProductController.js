@@ -84,39 +84,98 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
     // Load single product
     $scope.loadProduct = function(id) {
         $scope.loading.product = true;
+        $scope.error = null;
         
         ProductService.getProduct(id)
             .then(function(response) {
+                // Check if we have a valid product object
+                if (!response.data) {
+                    throw new Error('Invalid product data received');
+                }
+                
                 $scope.product = response.data;
                 
                 // Set up specifications for editing
                 if ($scope.product.specifications) {
-                    var specs = typeof $scope.product.specifications === 'string' ? 
-                        JSON.parse($scope.product.specifications) : $scope.product.specifications;
-                    
-                    $scope.product.specifications = specs;
-                    $scope.specKeys = [];
-                    $scope.specValues = [];
-                    
-                    // Extract keys and values for the form
-                    Object.keys(specs).forEach(function(key) {
-                        $scope.specKeys.push(key);
-                        $scope.specValues.push(specs[key]);
-                    });
-                    
-                    // If no specifications, add an empty row
-                    if ($scope.specKeys.length === 0) {
-                        $scope.addSpecification();
+                    try {
+                        var specs = typeof $scope.product.specifications === 'string' ? 
+                            JSON.parse($scope.product.specifications) : $scope.product.specifications;
+                        
+                        $scope.product.specifications = specs;
+                        $scope.specKeys = [];
+                        $scope.specValues = [];
+                        
+                        // Extract keys and values for the form
+                        Object.keys(specs).forEach(function(key) {
+                            $scope.specKeys.push(key);
+                            $scope.specValues.push(specs[key]);
+                        });
+                    } catch (e) {
+                        console.error('Error parsing specifications:', e);
+                        $scope.product.specifications = {};
+                        $scope.specKeys = [];
+                        $scope.specValues = [];
                     }
                 } else {
                     $scope.product.specifications = {};
-                    // Add an empty specification row
+                    $scope.specKeys = [];
+                    $scope.specValues = [];
+                }
+                
+                // If no specifications, add an empty row
+                if ($scope.specKeys.length === 0) {
                     $scope.addSpecification();
+                }
+                
+                // Process images
+                if ($scope.product.images) {
+                    try {
+                        if (typeof $scope.product.images === 'string') {
+                            $scope.product.images = JSON.parse($scope.product.images);
+                        }
+                        
+                        // Set thumbnail URL if available
+                        if ($scope.product.images && $scope.product.images.main) {
+                            $scope.product.thumbnail_url = '/storage/products/thumbnails/' + $scope.product.images.main;
+                        }
+                        
+                        // Set gallery URLs if available
+                        if ($scope.product.images && $scope.product.images.gallery && Array.isArray($scope.product.images.gallery)) {
+                            $scope.product.gallery_urls = $scope.product.images.gallery.map(function(image) {
+                                return {
+                                    original: '/storage/products/original/' + image,
+                                    thumbnail: '/storage/products/thumbnails/' + image
+                                };
+                            });
+                        } else {
+                            $scope.product.gallery_urls = [];
+                        }
+                    } catch (e) {
+                        console.error('Error processing product images:', e);
+                        $scope.product.gallery_urls = [];
+                    }
                 }
             })
             .catch(function(error) {
-                console.error('Error loading product', error);
-                $scope.error = 'Failed to load product details';
+                console.error('Error loading product:', error);
+                $scope.error = error.message || 'Failed to load product details. The product may not exist or has been removed.';
+                
+                // Initialize empty product to prevent UI errors
+                $scope.product = {
+                    name: '',
+                    description: '',
+                    price: 0,
+                    stock: 0,
+                    category_id: '',
+                    sku: '',
+                    weight: 0,
+                    is_active: true,
+                    is_featured: false,
+                    specifications: {}
+                };
+                $scope.specKeys = [];
+                $scope.specValues = [];
+                $scope.addSpecification();
             })
             .finally(function() {
                 $scope.loading.product = false;

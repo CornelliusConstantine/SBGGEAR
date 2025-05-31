@@ -47,8 +47,29 @@ class ProductController extends Controller
 
     public function show(Product $product)
     {
-        $product->load('category');
-        return response()->json($product);
+        try {
+            $product->load('category');
+            
+            // Ensure images are properly formatted
+            if (is_string($product->images)) {
+                $product->images = json_decode($product->images, true);
+            }
+            
+            // Ensure specifications are properly formatted
+            if (is_string($product->specifications)) {
+                $product->specifications = json_decode($product->specifications, true);
+            }
+            
+            return response()->json([
+                'data' => $product,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error loading product details: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function search(Request $request)

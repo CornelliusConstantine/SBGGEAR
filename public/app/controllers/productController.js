@@ -170,7 +170,14 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         
         ProductService.getProduct(id)
             .then(function(response) {
-                $scope.product = response.data;
+                // Handle different response formats
+                if (response.data && response.success === true) {
+                    $scope.product = response.data;
+                } else if (response.data) {
+                    $scope.product = response.data;
+                } else {
+                    throw new Error('Invalid product data received');
+                }
                 
                 // Process product data
                 $scope.processProductData([$scope.product]);
@@ -180,6 +187,7 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                     try {
                         $scope.product.specifications = JSON.parse($scope.product.specifications);
                     } catch (e) {
+                        console.error('Error parsing product specifications:', e);
                         $scope.product.specifications = {};
                     }
                 }
@@ -189,6 +197,7 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                     try {
                         $scope.product.images = JSON.parse($scope.product.images);
                     } catch (e) {
+                        console.error('Error parsing product images:', e);
                         $scope.product.images = {};
                     }
                 }
@@ -201,14 +210,20 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                 });
             })
             .then(function(response) {
-                $scope.relatedProducts = response.data;
-                
-                // Process related products data
-                $scope.processProductData($scope.relatedProducts);
+                if (response && response.data) {
+                    $scope.relatedProducts = response.data;
+                    
+                    // Process related products data
+                    $scope.processProductData($scope.relatedProducts);
+                } else {
+                    $scope.relatedProducts = [];
+                }
             })
             .catch(function(error) {
-                console.error('Error loading product detail', error);
-                $scope.showToast('Error loading product details', 'error');
+                console.error('Error loading product detail:', error);
+                // Set product to null to show the "Product Not Found" message
+                $scope.product = null;
+                $scope.showToast('Error loading product details. Please try again later.', 'error');
             })
             .finally(function() {
                 $scope.loading = false;
@@ -217,18 +232,51 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     
     // Process product data to add missing fields needed by the frontend
     $scope.processProductData = function(products) {
-        if (!products) return;
+        if (!products || !Array.isArray(products)) return;
         
         products.forEach(function(product) {
-            // Add image_url if not present
-            if (!product.image_url && product.images) {
+            // Handle image_url
+            if (!product.image_url) {
                 try {
-                    const images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
-                    if (images && images.main) {
-                        product.image_url = '/storage/products/' + images.main;
+                    // First check if we already have parsed images object
+                    if (product.images && typeof product.images === 'object' && product.images.main) {
+                        product.image_url = '/storage/products/original/' + product.images.main;
+                        product.thumbnail_url = '/storage/products/thumbnails/' + product.images.main;
+                    } 
+                    // If images is a string, try to parse it
+                    else if (product.images && typeof product.images === 'string') {
+                        const parsedImages = JSON.parse(product.images);
+                        if (parsedImages && parsedImages.main) {
+                            product.images = parsedImages;
+                            product.image_url = '/storage/products/original/' + parsedImages.main;
+                            product.thumbnail_url = '/storage/products/thumbnails/' + parsedImages.main;
+                        }
                     }
                 } catch (e) {
-                    console.error('Error parsing product images', e);
+                    console.error('Error processing product images for product ID ' + product.id, e);
+                    // Set default image if parsing fails
+                    product.image_url = '/assets/img/product-placeholder.png';
+                    product.thumbnail_url = '/assets/img/product-placeholder.png';
+                }
+            }
+            
+            // Process gallery images
+            if (!product.gallery_urls && product.images) {
+                try {
+                    const images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
+                    if (images && images.gallery && Array.isArray(images.gallery)) {
+                        product.gallery_urls = images.gallery.map(function(image) {
+                            return {
+                                original: '/storage/products/original/' + image,
+                                thumbnail: '/storage/products/thumbnails/' + image
+                            };
+                        });
+                    } else {
+                        product.gallery_urls = [];
+                    }
+                } catch (e) {
+                    console.error('Error processing gallery images for product ID ' + product.id, e);
+                    product.gallery_urls = [];
                 }
             }
             
@@ -244,12 +292,14 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             
             // Add default short_description if not present
             if (!product.hasOwnProperty('short_description')) {
-                product.short_description = product.description;
+                product.short_description = product.description ? 
+                    (product.description.length > 200 ? product.description.substring(0, 200) + '...' : product.description) : 
+                    '';
             }
             
             // Add default brand if not present
             if (!product.hasOwnProperty('brand')) {
-                product.brand = 'SBG';
+                product.brand = 'Generic';
             }
             
             // Add default is_featured if not present
