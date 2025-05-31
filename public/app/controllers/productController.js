@@ -233,6 +233,25 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                     (product.description.length > 200 ? product.description.substring(0, 200) + '...' : product.description) : 
                     '';
             }
+            
+            // Process specifications if they exist
+            if (product.hasOwnProperty('specifications')) {
+                // If specifications is a string, try to parse it
+                if (typeof product.specifications === 'string' && product.specifications) {
+                    try {
+                        product.specifications = JSON.parse(product.specifications);
+                    } catch (e) {
+                        console.error('Error parsing specifications:', e);
+                        product.specifications = {};
+                    }
+                } 
+                // If specifications is null or undefined, set to empty object
+                else if (!product.specifications) {
+                    product.specifications = {};
+                }
+            } else {
+                product.specifications = {};
+            }
         });
     };
     

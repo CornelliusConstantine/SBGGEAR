@@ -96,6 +96,27 @@ class Product extends Model
     }
 
     /**
+     * Get specifications attribute
+     * This ensures specifications are always returned as an array/object
+     */
+    public function getSpecificationsAttribute($value)
+    {
+        if (empty($value)) {
+            return [];
+        }
+        
+        if (is_string($value)) {
+            try {
+                return json_decode($value, true) ?: [];
+            } catch (\Exception $e) {
+                return [];
+            }
+        }
+        
+        return $value;
+    }
+
+    /**
      * Boot the model.
      */
     protected static function boot()
