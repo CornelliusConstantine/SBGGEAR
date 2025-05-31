@@ -32,6 +32,8 @@ class Product extends Model
         'is_active' => 'boolean',
     ];
 
+    protected $appends = ['image_url', 'thumbnail_url', 'gallery_urls'];
+
     public function category()
     {
         return $this->belongsTo(Category::class);
@@ -50,5 +52,47 @@ class Product extends Model
     public function orderItems()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Get the main image URL for the product
+     */
+    public function getImageUrlAttribute()
+    {
+        if (empty($this->images) || !is_array($this->images) || !isset($this->images['main'])) {
+            return null;
+        }
+        return asset('storage/products/original/' . $this->images['main']);
+    }
+
+    /**
+     * Get the thumbnail URL for the product
+     */
+    public function getThumbnailUrlAttribute()
+    {
+        if (empty($this->images) || !is_array($this->images) || !isset($this->images['main'])) {
+            return null;
+        }
+        return asset('storage/products/thumbnails/' . $this->images['main']);
+    }
+
+    /**
+     * Get gallery image URLs for the product
+     */
+    public function getGalleryUrlsAttribute()
+    {
+        if (empty($this->images) || !is_array($this->images) || !isset($this->images['gallery'])) {
+            return [];
+        }
+        
+        $urls = [];
+        foreach ($this->images['gallery'] as $image) {
+            $urls[] = [
+                'original' => asset('storage/products/original/' . $image),
+                'thumbnail' => asset('storage/products/thumbnails/' . $image)
+            ];
+        }
+        
+        return $urls;
     }
 } 

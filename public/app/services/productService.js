@@ -51,6 +51,21 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         return deferred.promise;
     };
     
+    // Get search suggestions for autocomplete
+    service.getSearchSuggestions = function(query) {
+        var deferred = $q.defer();
+        
+        $http.get(API_URL + '/products/suggestions/' + encodeURIComponent(query))
+            .then(function(response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function(error) {
+                deferred.reject(error.data);
+            });
+        
+        return deferred.promise;
+    };
+    
     // Get products by category
     service.getProductsByCategory = function(categorySlug, filters) {
         var deferred = $q.defer();
@@ -71,12 +86,23 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
     // Get all categories
     service.getCategories = function() {
         var deferred = $q.defer();
+        console.log('ProductService: Fetching categories from', API_URL + '/categories');
         
         $http.get(API_URL + '/categories')
             .then(function(response) {
-                deferred.resolve(response.data);
+                console.log('ProductService: Categories API response:', response);
+                if (response.data && response.data.data) {
+                    // New API format with data wrapper
+                    deferred.resolve({
+                        data: response.data.data
+                    });
+                } else {
+                    // Old API format or fallback
+                    deferred.resolve(response);
+                }
             })
             .catch(function(error) {
+                console.error('ProductService: Error fetching categories:', error);
                 deferred.reject(error.data);
             });
         
@@ -98,29 +124,30 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         return deferred.promise;
     };
     
-    // Admin: Create a new product
-    service.createProduct = function(productData) {
+    // Get all unique brands
+    service.getBrands = function() {
+        var deferred = $q.defer();
+        
+        $http.get(API_URL + '/brands')
+            .then(function(response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function(error) {
+                deferred.reject(error.data);
+            });
+        
+        return deferred.promise;
+    };
+    
+    // Submit a product review
+    service.submitReview = function(productId, reviewData) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
-        // Create FormData object for file uploads
-        var formData = new FormData();
-        
-        // Append all product data
-        for (var key in productData) {
-            if (key === 'image' && productData[key] instanceof File) {
-                formData.append('image', productData[key]);
-            } else {
-                formData.append(key, productData[key]);
-            }
-        }
-        
-        $http.post(API_URL + '/admin/products', formData, {
+        $http.post(API_URL + '/products/' + productId + '/reviews', reviewData, {
             headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': undefined // Let the browser set the content type for FormData
-            },
-            transformRequest: angular.identity // Don't transform the FormData
+                'Authorization': 'Bearer ' + token
+            }
         })
             .then(function(response) {
                 deferred.resolve(response.data);
@@ -132,24 +159,12 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         return deferred.promise;
     };
     
-    // Admin: Update a product
-    service.updateProduct = function(id, productData) {
+    // Admin: Create a new product
+    service.createProduct = function(productData) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
-        // Create FormData object for file uploads
-        var formData = new FormData();
-        
-        // Append all product data
-        for (var key in productData) {
-            if (key === 'image' && productData[key] instanceof File) {
-                formData.append('image', productData[key]);
-            } else {
-                formData.append(key, productData[key]);
-            }
-        }
-        
-        $http.post(API_URL + '/admin/products/' + id, formData, {
+        $http.post(API_URL + '/admin/products', productData, {
             headers: {
                 'Authorization': 'Bearer ' + token,
                 'Content-Type': undefined // Let the browser set the content type for FormData
@@ -160,7 +175,39 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
                 deferred.resolve(response.data);
             })
             .catch(function(error) {
-                deferred.reject(error.data);
+                console.error('Error creating product:', error);
+                if (error.data) {
+                    deferred.reject(error.data);
+                } else {
+                    deferred.reject({ message: 'Network error. Please try again.' });
+                }
+            });
+        
+        return deferred.promise;
+    };
+    
+    // Admin: Update a product
+    service.updateProduct = function(id, productData) {
+        var deferred = $q.defer();
+        var token = localStorage.getItem('token');
+        
+        $http.post(API_URL + '/admin/products/' + id, productData, {
+            headers: {
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': undefined // Let the browser set the content type for FormData
+            },
+            transformRequest: angular.identity // Don't transform the FormData
+        })
+            .then(function(response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function(error) {
+                console.error('Error updating product:', error);
+                if (error.data) {
+                    deferred.reject(error.data);
+                } else {
+                    deferred.reject({ message: 'Network error. Please try again.' });
+                }
             });
         
         return deferred.promise;
@@ -193,14 +240,20 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         
         $http.post(API_URL + '/admin/categories', categoryData, {
             headers: {
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + token,
+                'Content-Type': 'application/json'
             }
         })
             .then(function(response) {
                 deferred.resolve(response.data);
             })
             .catch(function(error) {
-                deferred.reject(error.data);
+                console.error('Error creating category:', error);
+                if (error.data) {
+                    deferred.reject(error.data);
+                } else {
+                    deferred.reject({ message: 'Network error. Please try again.' });
+                }
             });
         
         return deferred.promise;

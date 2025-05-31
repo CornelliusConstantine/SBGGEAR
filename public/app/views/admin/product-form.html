@@ -69,10 +69,16 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="category" class="form-label">Category *</label>
-                                    <select class="form-select" id="category" ng-model="product.category_id" required>
-                                        <option value="">Select Category</option>
-                                        <option ng-repeat="category in categories" value="{{category.id}}">{{category.name}}</option>
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select" id="category" ng-model="product.category_id" required ng-disabled="!categories || categories.length === 0">
+                                            <option value="">{{categories && categories.length > 0 ? 'Select Category' : 'No categories available'}}</option>
+                                            <option ng-repeat="category in categories" value="{{category.id}}">{{category.name}}</option>
+                                        </select>
+                                        <a href="#!/admin/categories" class="btn btn-outline-secondary" title="Manage Categories">
+                                            <i class="fas fa-cog"></i>
+                                        </a>
+                                    </div>
+                                    <small class="text-muted" ng-if="!categories || categories.length === 0">No categories available. <a href="#!/admin/categories">Create a category</a> first.</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -84,15 +90,17 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label class="form-label">Specifications</label>
+                            <label class="form-label">Specifications <small class="text-muted">(Optional)</small></label>
                             <div class="card">
                                 <div class="card-body p-3">
-                                    <div class="row mb-2" ng-repeat="(key, value) in product.specifications track by $index">
+                                    <p class="text-muted small mb-3">Add product specifications like size, color, material, etc. as key-value pairs.</p>
+                                    
+                                    <div class="row mb-2" ng-repeat="key in specKeys track by $index">
                                         <div class="col-md-5">
-                                            <input type="text" class="form-control" ng-model="specKeys[$index]" placeholder="Property">
+                                            <input type="text" class="form-control" ng-model="specKeys[$index]" placeholder="Property (e.g. Size, Color)">
                                         </div>
                                         <div class="col-md-5">
-                                            <input type="text" class="form-control" ng-model="specValues[$index]" placeholder="Value">
+                                            <input type="text" class="form-control" ng-model="specValues[$index]" placeholder="Value (e.g. Large, Red)">
                                         </div>
                                         <div class="col-md-2">
                                             <button type="button" class="btn btn-danger btn-sm" ng-click="removeSpecification($index)">
@@ -100,6 +108,7 @@
                                             </button>
                                         </div>
                                     </div>
+                                    
                                     <button type="button" class="btn btn-sm btn-outline-secondary mt-2" ng-click="addSpecification()">
                                         <i class="fas fa-plus me-1"></i> Add Specification
                                     </button>
@@ -133,8 +142,8 @@
                                 <div class="mb-3">
                                     <label for="main_image" class="form-label">Main Image</label>
                                     <input type="file" class="form-control" id="main_image" file-model="productImages.main">
-                                    <div class="mt-2" ng-if="product.image">
-                                        <img ng-src="{{product.image}}" class="img-thumbnail" style="height: 100px;">
+                                    <div class="mt-2" ng-if="product.thumbnail_url">
+                                        <img ng-src="{{product.thumbnail_url}}" class="img-thumbnail" style="height: 100px;">
                                     </div>
                                 </div>
                                 
@@ -142,8 +151,8 @@
                                     <label class="form-label">Additional Images</label>
                                     <input type="file" class="form-control mb-2" multiple file-model="productImages.additional">
                                     <div class="d-flex flex-wrap mt-2">
-                                        <div class="position-relative me-2 mb-2" ng-repeat="image in product.additional_images track by $index">
-                                            <img ng-src="{{image}}" class="img-thumbnail" style="height: 80px; width: 80px; object-fit: cover;">
+                                        <div class="position-relative me-2 mb-2" ng-repeat="image in product.gallery_urls track by $index">
+                                            <img ng-src="{{image.thumbnail}}" class="img-thumbnail" style="height: 80px; width: 80px; object-fit: cover;">
                                             <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0" ng-click="removeAdditionalImage($index)">
                                                 <i class="fas fa-times"></i>
                                             </button>
@@ -157,11 +166,11 @@
                 
                 <div class="d-flex justify-content-end mt-4">
                     <a href="#!/admin/products" class="btn btn-secondary me-2">Cancel</a>
-                    <button type="submit" class="btn btn-primary" ng-disabled="loading">
-                        <span ng-if="loading">
+                    <button type="submit" class="btn btn-primary" ng-disabled="loading.save">
+                        <span ng-if="loading.save">
                             <i class="fas fa-spinner fa-spin me-1"></i> Saving...
                         </span>
-                        <span ng-if="!loading">Save Product</span>
+                        <span ng-if="!loading.save">Save Product</span>
                     </button>
                 </div>
             </form>

@@ -489,107 +489,109 @@ body {
 /* Admin Sidebar */
 .admin-sidebar {
     background-color: #343a40;
-    min-height: 100vh;
-    padding-top: 20px;
+    min-height: calc(100vh - 56px);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .admin-sidebar .nav-link {
     color: rgba(255, 255, 255, 0.75);
-    padding: 10px 15px;
-    border-radius: 4px;
-    margin-bottom: 5px;
+    padding: 0.75rem 1.25rem;
+    border-radius: 0.25rem;
+    margin: 0.25rem 0;
 }
 
 .admin-sidebar .nav-link:hover {
-    color: white;
+    color: #fff;
     background-color: rgba(255, 255, 255, 0.1);
 }
 
 .admin-sidebar .nav-link.active {
-    color: white;
-    background-color: var(--primary-color);
+    color: #fff;
+    background-color: #007bff;
 }
 
 .admin-sidebar .nav-link i {
-    margin-right: 10px;
-    width: 20px;
+    margin-right: 0.5rem;
+    width: 1.25rem;
     text-align: center;
 }
 
 /* Admin Content */
 .admin-content {
-    padding: 20px;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
 }
 
 /* Stat Cards */
 .stat-card {
-    padding: 20px;
-    border-radius: 8px;
-    color: white;
-    height: 100%;
+    background-color: #fff;
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     position: relative;
     overflow: hidden;
 }
 
 .stat-card.primary {
-    background-color: #007bff;
+    border-left: 4px solid #007bff;
 }
 
 .stat-card.success {
-    background-color: #28a745;
+    border-left: 4px solid #28a745;
 }
 
 .stat-card.warning {
-    background-color: #ffc107;
-    color: #212529;
+    border-left: 4px solid #ffc107;
 }
 
 .stat-card.danger {
-    background-color: #dc3545;
+    border-left: 4px solid #dc3545;
 }
 
 .stat-title {
-    font-size: 0.9rem;
+    color: #6c757d;
+    font-size: 0.875rem;
     font-weight: 500;
-    margin-bottom: 5px;
-    opacity: 0.8;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
 }
 
 .stat-value {
-    font-size: 1.8rem;
+    color: #212529;
+    font-size: 1.75rem;
     font-weight: 700;
-    margin-bottom: 5px;
+    margin-bottom: 0.25rem;
 }
 
 .stat-text {
-    font-size: 0.8rem;
-    opacity: 0.8;
+    color: #6c757d;
+    font-size: 0.875rem;
 }
 
 .stat-icon {
     position: absolute;
-    right: 20px;
-    bottom: 20px;
-    font-size: 3rem;
+    top: 1rem;
+    right: 1rem;
+    font-size: 2rem;
     opacity: 0.2;
 }
 
 /* Admin Cards */
 .admin-card {
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
     overflow: hidden;
-    background-color: white;
 }
 
 .admin-card-header {
-    padding: 15px 20px;
-    background-color: var(--light-gray);
-    border-bottom: 1px solid #dee2e6;
+    background-color: #fff;
+    border-bottom: 1px solid #e9ecef;
+    padding: 1rem;
 }
 
 .admin-card-body {
-    padding: 20px;
+    padding: 1rem;
 }
 
 /* Chat Widget */
@@ -771,4 +773,38 @@ body {
 .social-icon:hover {
     background-color: var(--primary-color);
     color: white;
+}
+
+/* Admin Mode Indicator */
+.admin-mode-indicator {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+}
+
+.admin-mode-indicator i {
+    margin-right: 8px;
+}
+
+/* Admin Navigation Highlight */
+.navbar-nav .nav-item.admin-nav-item .nav-link {
+    color: #007bff;
+    font-weight: bold;
+}
+
+.navbar-nav .nav-item.admin-nav-item .nav-link:hover {
+    color: #0056b3;
+}
+
+/* Toast Notifications */
+.toast {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
 } 

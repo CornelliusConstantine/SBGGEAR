@@ -48,12 +48,7 @@
                             Reports
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#!/admin/chat">
-                            <i class="fas fa-comments"></i>
-                            Customer Chat
-                        </a>
-                    </li>
+
                     <li class="nav-item mt-3">
                         <a class="nav-link" href="#!/">
                             <i class="fas fa-external-link-alt"></i>
@@ -66,8 +61,21 @@
         
         <!-- Main Content -->
         <div class="col-md-9 col-lg-10 admin-content">
+            <!-- Admin Mode Indicator -->
+            <div class="alert alert-primary d-flex align-items-center mb-4" role="alert">
+                <i class="fas fa-user-shield fs-4 me-2"></i>
+                <div>
+                    <strong>Administrator Mode</strong> - You are logged in as an administrator with full access to the system.
+                </div>
+            </div>
+            
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h1 class="h2">Dashboard</h1>
+                <div>
+                    <h1 class="h2">Dashboard</h1>
+                    <div class="badge bg-primary">
+                        <i class="fas fa-user-shield me-1"></i> Administrator Mode
+                    </div>
+                </div>
                 <div>
                     <span class="text-muted me-2">Today:</span>
                     <strong>{{today | date:'mediumDate'}}</strong>

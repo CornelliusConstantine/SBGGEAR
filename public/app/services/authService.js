@@ -24,17 +24,26 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 currentUser = response.data;
                 $rootScope.isLoggedIn = true;
                 $rootScope.currentUser = currentUser;
+                $rootScope.isAdmin = currentUser && currentUser.role === 'admin';
+                
+                // Store user role in localStorage for UI customization
+                localStorage.setItem('userRole', currentUser.role || 'customer');
+                
                 deferred.resolve(currentUser);
             }).catch(function(error) {
                 // Token might be invalid or expired
                 localStorage.removeItem('token');
+                localStorage.removeItem('userRole');
                 $rootScope.isLoggedIn = false;
                 $rootScope.currentUser = null;
+                $rootScope.isAdmin = false;
                 deferred.reject('unauthorized');
             });
         } else {
+            localStorage.removeItem('userRole');
             $rootScope.isLoggedIn = false;
             $rootScope.currentUser = null;
+            $rootScope.isAdmin = false;
             deferred.reject('unauthorized');
         }
         
@@ -146,16 +155,20 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
             }).then(function() {
                 // Clear token and user data
                 localStorage.removeItem('token');
+                localStorage.removeItem('userRole');
                 currentUser = null;
                 $rootScope.isLoggedIn = false;
                 $rootScope.currentUser = null;
+                $rootScope.isAdmin = false;
                 deferred.resolve();
             }).catch(function(error) {
                 // Even if the server-side logout fails, we'll still clear the local data
                 localStorage.removeItem('token');
+                localStorage.removeItem('userRole');
                 currentUser = null;
                 $rootScope.isLoggedIn = false;
                 $rootScope.currentUser = null;
+                $rootScope.isAdmin = false;
                 deferred.resolve();
             });
         } else {
@@ -231,6 +244,11 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
     // Check if user is admin
     service.isAdmin = function() {
         return currentUser && currentUser.role === 'admin';
+    };
+    
+    // Check if user is authenticated
+    service.isAuthenticated = function() {
+        return !!localStorage.getItem('token');
     };
     
     return service;

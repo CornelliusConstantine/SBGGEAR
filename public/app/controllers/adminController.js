@@ -1,34 +1,152 @@
 'use strict';
 
-app.controller('AdminController', ['$scope', '$http', 'AuthService', 'ProductService', 'OrderService', function($scope, $http, AuthService, ProductService, OrderService) {
+app.controller('AdminController', ['$scope', '$http', '$filter', 'AuthService', 'ProductService', 'OrderService', function($scope, $http, $filter, AuthService, ProductService, OrderService) {
     // Initialize controller
     $scope.init = function() {
-        $scope.loading = {
-            stats: true,
-            recentOrders: true,
-            lowStock: true
-        };
-        
-        $scope.stats = {
-            totalSales: 0,
-            totalOrders: 0,
-            totalProducts: 0,
-            totalCustomers: 0
-        };
-        
-        $scope.recentOrders = [];
-        $scope.lowStockProducts = [];
-        
         // Check if user is admin
         if (!AuthService.isAdmin()) {
             window.location.href = '#!/';
             return;
         }
         
+        // Show admin mode indicator
+        $scope.showAdminModeIndicator();
+        
+        // Initialize data
+        $scope.today = new Date();
+        $scope.stats = {};
+        $scope.recentOrders = [];
+        $scope.lowStockProducts = [];
+        
+        // Loading states
+        $scope.loading = {
+            stats: true,
+            recentOrders: true,
+            lowStock: true
+        };
+        
+        // Toast notifications
+        $scope.toast = {
+            show: false,
+            message: '',
+            type: 'success'
+        };
+        
         // Load dashboard data
-        $scope.loadStats();
-        $scope.loadRecentOrders();
-        $scope.loadLowStockProducts();
+        $scope.loadDashboardData();
+    };
+    
+    // Show admin mode indicator on all admin pages
+    $scope.showAdminModeIndicator = function() {
+        // Remove existing indicator if any
+        var existingIndicator = document.getElementById('admin-mode-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+        
+        // Create new indicator
+        var indicator = document.createElement('div');
+        indicator.id = 'admin-mode-indicator';
+        indicator.className = 'admin-mode-indicator';
+        indicator.innerHTML = '<i class="fas fa-user-shield"></i> Admin Mode';
+        
+        // Add to body
+        document.body.appendChild(indicator);
+    };
+    
+    // Load dashboard data
+    $scope.loadDashboardData = function() {
+        // Simulate loading dashboard data
+        setTimeout(function() {
+            // Mock stats data
+            $scope.$apply(function() {
+                $scope.stats = {
+                    totalSales: 12500000,
+                    totalOrders: 45,
+                    totalProducts: 120,
+                    totalCustomers: 89
+                };
+                $scope.loading.stats = false;
+            });
+        }, 800);
+        
+        // Simulate loading recent orders
+        setTimeout(function() {
+            // Mock recent orders data
+            $scope.$apply(function() {
+                $scope.recentOrders = [
+                    {
+                        id: 1,
+                        order_number: 'ORD-2023-001',
+                        created_at: '2023-06-15T08:30:00',
+                        recipient_name: 'John Doe',
+                        total: 750000,
+                        status: 'delivered'
+                    },
+                    {
+                        id: 2,
+                        order_number: 'ORD-2023-002',
+                        created_at: '2023-06-16T10:15:00',
+                        recipient_name: 'Jane Smith',
+                        total: 1250000,
+                        status: 'processing'
+                    },
+                    {
+                        id: 3,
+                        order_number: 'ORD-2023-003',
+                        created_at: '2023-06-16T14:45:00',
+                        recipient_name: 'Robert Johnson',
+                        total: 500000,
+                        status: 'pending'
+                    },
+                    {
+                        id: 4,
+                        order_number: 'ORD-2023-004',
+                        created_at: '2023-06-17T09:20:00',
+                        recipient_name: 'Emily Williams',
+                        total: 1800000,
+                        status: 'shipped'
+                    },
+                    {
+                        id: 5,
+                        order_number: 'ORD-2023-005',
+                        created_at: '2023-06-17T16:10:00',
+                        recipient_name: 'Michael Brown',
+                        total: 950000,
+                        status: 'cancelled'
+                    }
+                ];
+                $scope.loading.recentOrders = false;
+            });
+        }, 1200);
+        
+        // Simulate loading low stock products
+        setTimeout(function() {
+            // Mock low stock products data
+            $scope.$apply(function() {
+                $scope.lowStockProducts = [
+                    {
+                        id: 1,
+                        name: 'Safety Helmet Type A',
+                        stock: 3,
+                        category: { name: 'Head Protection' }
+                    },
+                    {
+                        id: 2,
+                        name: 'Safety Goggles',
+                        stock: 5,
+                        category: { name: 'Eye Protection' }
+                    },
+                    {
+                        id: 3,
+                        name: 'Reflective Vest XL',
+                        stock: 2,
+                        category: { name: 'Visibility' }
+                    }
+                ];
+                $scope.loading.lowStock = false;
+            });
+        }, 1500);
     };
     
     // Load dashboard statistics
@@ -111,16 +229,36 @@ app.controller('AdminController', ['$scope', '$http', 'AuthService', 'ProductSer
     
     // Format date
     $scope.formatDate = function(dateString) {
-        if (!dateString) return '';
-        
-        var date = new Date(dateString);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        return $filter('date')(new Date(dateString), 'dd MMM yyyy');
     };
     
     // Format currency
-    $scope.formatCurrency = function(amount) {
-        return 'Rp' + amount.toLocaleString('id-ID');
+    $scope.formatCurrency = function(value) {
+        return 'Rp' + $filter('number')(value);
     };
+    
+    // Show toast notification
+    $scope.showToast = function(message, type) {
+        $scope.toast.message = message;
+        $scope.toast.type = type || 'success';
+        $scope.toast.show = true;
+        
+        // Auto hide after 3 seconds
+        setTimeout(function() {
+            $scope.$apply(function() {
+                $scope.toast.show = false;
+            });
+        }, 3000);
+    };
+    
+    // Clean up when controller is destroyed
+    $scope.$on('$destroy', function() {
+        // Remove admin mode indicator when leaving admin pages
+        var indicator = document.getElementById('admin-mode-indicator');
+        if (indicator) {
+            indicator.remove();
+        }
+    });
     
     // Initialize controller
     $scope.init();
@@ -327,22 +465,6 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
         $location.path('/admin/products');
     };
     
-    // Show toast message
-    $scope.showToast = function(message, type) {
-        $scope.toast = {
-            message: message,
-            type: type || 'success',
-            show: true
-        };
-        
-        // Hide toast after 3 seconds
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.toast.show = false;
-            });
-        }, 3000);
-    };
-    
     // Initialize controller
     $scope.init();
 }]);
@@ -438,14 +560,6 @@ app.controller('AdminOrderController', ['$scope', '$routeParams', '$location', '
         }
     };
     
-    // Format date
-    $scope.formatDate = function(dateString) {
-        if (!dateString) return '';
-        
-        var date = new Date(dateString);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    };
-    
     // View order details
     $scope.viewOrder = function(orderId) {
         $location.path('/admin/order/' + orderId);
@@ -454,22 +568,6 @@ app.controller('AdminOrderController', ['$scope', '$routeParams', '$location', '
     // Back to orders list
     $scope.backToOrders = function() {
         $location.path('/admin/orders');
-    };
-    
-    // Show toast message
-    $scope.showToast = function(message, type) {
-        $scope.toast = {
-            message: message,
-            type: type || 'success',
-            show: true
-        };
-        
-        // Hide toast after 3 seconds
-        setTimeout(function() {
-            $scope.$apply(function() {
-                $scope.toast.show = false;
-            });
-        }, 3000);
     };
     
     // Initialize controller

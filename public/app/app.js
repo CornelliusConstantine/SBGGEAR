@@ -98,15 +98,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             templateUrl: 'app/views/customer/category.html',
             controller: 'ProductController'
         })
-        .when('/chat', {
-            templateUrl: 'app/views/customer/chat.html',
-            controller: 'ChatController',
-            resolve: {
-                auth: ['AuthService', function(AuthService) {
-                    return AuthService.requireAuth();
-                }]
-            }
-        })
         
         // Admin routes
         .when('/admin', {
@@ -184,15 +175,6 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         .when('/admin/reports', {
             templateUrl: 'app/views/admin/reports.html',
             controller: 'AdminReportController',
-            resolve: {
-                auth: ['AuthService', function(AuthService) {
-                    return AuthService.requireAdmin();
-                }]
-            }
-        })
-        .when('/admin/chat', {
-            templateUrl: 'app/views/admin/chat.html',
-            controller: 'AdminChatController',
             resolve: {
                 auth: ['AuthService', function(AuthService) {
                     return AuthService.requireAdmin();

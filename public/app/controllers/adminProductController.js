@@ -51,6 +51,9 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                 is_featured: false,
                 specifications: {}
             };
+            
+            // Initialize with one empty specification row
+            $scope.addSpecification();
         }
         
         // If on product list page, load products
@@ -92,14 +95,23 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                         JSON.parse($scope.product.specifications) : $scope.product.specifications;
                     
                     $scope.product.specifications = specs;
+                    $scope.specKeys = [];
+                    $scope.specValues = [];
                     
                     // Extract keys and values for the form
                     Object.keys(specs).forEach(function(key) {
                         $scope.specKeys.push(key);
                         $scope.specValues.push(specs[key]);
                     });
+                    
+                    // If no specifications, add an empty row
+                    if ($scope.specKeys.length === 0) {
+                        $scope.addSpecification();
+                    }
                 } else {
                     $scope.product.specifications = {};
+                    // Add an empty specification row
+                    $scope.addSpecification();
                 }
             })
             .catch(function(error) {
@@ -113,12 +125,23 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
     
     // Load categories
     $scope.loadCategories = function() {
+        console.log('AdminProductController: Loading categories...');
+        
         ProductService.getCategories()
             .then(function(response) {
-                $scope.categories = response.data;
+                console.log('AdminProductController: Categories loaded:', response);
+                // Handle both old and new response formats
+                if (response.data && Array.isArray(response.data.data)) {
+                    $scope.categories = response.data.data;
+                } else if (response.data && Array.isArray(response.data)) {
+                    $scope.categories = response.data;
+                } else {
+                    $scope.categories = [];
+                }
+                console.log('AdminProductController: Categories in scope:', $scope.categories);
             })
             .catch(function(error) {
-                console.error('Error loading categories', error);
+                console.error('AdminProductController: Error loading categories', error);
             });
     };
     
@@ -128,6 +151,31 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
         $scope.error = null;
         $scope.success = null;
         
+        // Validate required fields
+        if (!$scope.product.name) {
+            $scope.error = 'Product name is required';
+            $scope.loading.save = false;
+            return;
+        }
+        
+        if (!$scope.product.description) {
+            $scope.error = 'Product description is required';
+            $scope.loading.save = false;
+            return;
+        }
+        
+        if (!$scope.product.price || $scope.product.price <= 0) {
+            $scope.error = 'Valid product price is required';
+            $scope.loading.save = false;
+            return;
+        }
+        
+        if (!$scope.product.category_id) {
+            $scope.error = 'Please select a category';
+            $scope.loading.save = false;
+            return;
+        }
+        
         // Process specifications
         var specifications = {};
         for (var i = 0; i < $scope.specKeys.length; i++) {
@@ -135,7 +183,6 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                 specifications[$scope.specKeys[i]] = $scope.specValues[i];
             }
         }
-        $scope.product.specifications = specifications;
         
         // Create FormData for file uploads
         var formData = new FormData();
@@ -143,7 +190,7 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
         // Append product data
         Object.keys($scope.product).forEach(function(key) {
             if (key === 'specifications') {
-                formData.append(key, JSON.stringify($scope.product[key]));
+                formData.append(key, JSON.stringify(specifications));
             } else {
                 formData.append(key, $scope.product[key]);
             }
@@ -173,12 +220,35 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                 
                 // Redirect to product list after a short delay
                 setTimeout(function() {
-                    $location.path('/admin/products');
+                    $scope.$apply(function() {
+                        $location.path('/admin/products');
+                    });
                 }, 1500);
             })
             .catch(function(error) {
                 console.error('Error saving product', error);
-                $scope.error = error.message || 'Failed to save product';
+                
+                // Handle specific error messages
+                if (error && error.message) {
+                    $scope.error = error.message;
+                } else if (error && error.errors) {
+                    // Format validation errors
+                    var errorMessages = [];
+                    for (var field in error.errors) {
+                        errorMessages.push(error.errors[field].join(', '));
+                    }
+                    $scope.error = errorMessages.join('. ');
+                } else {
+                    $scope.error = 'Failed to save product. Please try again.';
+                }
+                
+                // Scroll to error message
+                setTimeout(function() {
+                    var errorElement = document.querySelector('.alert-danger');
+                    if (errorElement) {
+                        errorElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }, 100);
             })
             .finally(function() {
                 $scope.loading.save = false;

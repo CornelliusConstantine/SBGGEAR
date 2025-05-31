@@ -1,0 +1,308 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Search Results: "{{searchQuery}}"</li>
+        </ol>
+    </div>
+</nav>
+
+<div class="container py-4">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Filters</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Categories -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Categories</h6>
+                        <div class="category-list">
+                            <div class="form-check mb-2" ng-repeat="category in categories">
+                                <input class="form-check-input" type="checkbox" id="category-{{category.id}}" 
+                                       ng-model="filters.selectedCategories[category.id]" 
+                                       ng-change="applyFilters()">
+                                <label class="form-check-label" for="category-{{category.id}}">
+                                    {{category.name}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Range -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Price Range</h6>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control" placeholder="Min" 
+                                           ng-model="filters.minPrice" ng-change="applyFilters()">
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text">Rp</span>
+                                    <input type="number" class="form-control" placeholder="Max" 
+                                           ng-model="filters.maxPrice" ng-change="applyFilters()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Brand Filter -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Brands</h6>
+                        <div class="brand-list">
+                            <div class="form-check mb-2" ng-repeat="brand in brands">
+                                <input class="form-check-input" type="checkbox" id="brand-{{$index}}" 
+                                       ng-model="filters.selectedBrands[brand]" 
+                                       ng-change="applyFilters()">
+                                <label class="form-check-label" for="brand-{{$index}}">
+                                    {{brand}}
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rating Filter -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Rating</h6>
+                        <div class="rating-list">
+                            <div class="form-check mb-2" ng-repeat="rating in [5,4,3,2,1]">
+                                <input class="form-check-input" type="checkbox" id="rating-{{rating}}" 
+                                       ng-model="filters.selectedRatings[rating]" 
+                                       ng-change="applyFilters()">
+                                <label class="form-check-label" for="rating-{{rating}}">
+                                    <i class="fas fa-star text-warning" ng-repeat="i in [1,2,3,4,5] | limitTo:rating"></i>
+                                    <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-rating)"></i>
+                                    <span class="ms-1">& Up</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Reset Filters -->
+                    <button class="btn btn-outline-secondary w-100" ng-click="resetFilters()">
+                        <i class="fas fa-undo me-2"></i>Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Search Results -->
+        <div class="col-lg-9">
+            <!-- Search Header -->
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
+                <h2 class="h4 mb-3 mb-md-0">
+                    Search Results for "{{searchQuery}}"
+                    <span class="badge bg-secondary ms-2">{{totalItems || 0}} items</span>
+                </h2>
+                
+                <!-- Sort Options -->
+                <div class="sort-options">
+                    <div class="input-group">
+                        <label class="input-group-text" for="sortSelect">Sort By</label>
+                        <select class="form-select" id="sortSelect" ng-model="filters.sort" ng-change="applyFilters()">
+                            <option value="relevance,desc">Most Relevant</option>
+                            <option value="created_at,desc">Newest</option>
+                            <option value="price,asc">Price: Low to High</option>
+                            <option value="price,desc">Price: High to Low</option>
+                            <option value="name,asc">Name: A to Z</option>
+                            <option value="name,desc">Name: Z to A</option>
+                            <option value="rating,desc">Highest Rated</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Loading Spinner -->
+            <div class="text-center py-5" ng-if="loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Searching products...</p>
+            </div>
+            
+            <!-- Products Grid -->
+            <div class="row g-3" ng-if="!loading && products.length > 0">
+                <div class="col-6 col-md-4 col-lg-4" ng-repeat="product in products">
+                    <div class="card h-100 product-card">
+                        <!-- Product Badge -->
+                        <div class="product-badge" ng-if="product.is_featured">
+                            <span class="badge bg-danger">Featured</span>
+                        </div>
+                        <div class="product-badge" ng-if="product.discount_percentage > 0">
+                            <span class="badge bg-success">{{product.discount_percentage}}% OFF</span>
+                        </div>
+                        
+                        <!-- Product Image -->
+                        <a href="#!/product/{{product.id}}" class="product-img-container">
+                            <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" 
+                                 class="card-img-top product-img" alt="{{product.name}}"
+                                 loading="lazy">
+                        </a>
+                        
+                        <div class="card-body d-flex flex-column">
+                            <!-- Product Category -->
+                            <small class="text-muted mb-1">{{product.category.name}}</small>
+                            
+                            <!-- Product Title -->
+                            <h5 class="card-title product-title">
+                                <a href="#!/product/{{product.id}}" class="text-decoration-none text-dark">{{product.name}}</a>
+                            </h5>
+                            
+                            <!-- Highlight matching text -->
+                            <p class="small text-muted mb-2" ng-if="product.highlight">
+                                <span ng-bind-html="product.highlight"></span>
+                            </p>
+                            
+                            <!-- Rating -->
+                            <div class="mb-2">
+                                <i class="fas fa-star text-warning" ng-repeat="i in [1,2,3,4,5] | limitTo:product.rating"></i>
+                                <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-product.rating)"></i>
+                                <small class="ms-1 text-muted">({{product.rating_count || 0}})</small>
+                            </div>
+                            
+                            <!-- Price -->
+                            <div class="mb-2">
+                                <span class="text-danger fw-bold h5 mb-0">Rp{{product.price | number}}</span>
+                                <span class="text-muted text-decoration-line-through ms-2" ng-if="product.original_price && product.original_price > product.price">
+                                    Rp{{product.original_price | number}}
+                                </span>
+                            </div>
+                            
+                            <!-- Stock Status -->
+                            <div class="mb-2">
+                                <span class="badge bg-success" ng-if="product.stock > 0">In Stock</span>
+                                <span class="badge bg-danger" ng-if="product.stock <= 0">Out of Stock</span>
+                            </div>
+                            
+                            <!-- Add to Cart Button -->
+                            <button class="btn btn-primary mt-auto w-100" ng-click="addToCart(product)" 
+                                    ng-disabled="addingToCart === product.id || product.stock <= 0">
+                                <i class="fas" ng-class="{'fa-spinner fa-spin': addingToCart === product.id, 'fa-cart-plus': addingToCart !== product.id}"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- No Results Found -->
+            <div class="alert alert-info py-5 text-center" ng-if="!loading && products.length === 0">
+                <i class="fas fa-search fa-3x mb-3"></i>
+                <h4>No Results Found</h4>
+                <p class="mb-3">We couldn't find any products matching "{{searchQuery}}".</p>
+                <p class="mb-0">Try adjusting your search term or browse our categories below.</p>
+                
+                <!-- Category Suggestions -->
+                <div class="category-suggestions mt-4">
+                    <h5>Browse Categories</h5>
+                    <div class="row mt-3">
+                        <div class="col-6 col-md-3 mb-3" ng-repeat="category in categories | limitTo:8">
+                            <a href="#!/category/{{category.slug}}" class="btn btn-outline-secondary w-100">
+                                {{category.name}}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <nav aria-label="Search results pagination" class="mt-4" ng-if="!loading && totalPages > 1">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" ng-class="{'disabled': currentPage === 1}">
+                        <a class="page-link" href="#" ng-click="goToPage(currentPage - 1)" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item" ng-class="{'active': currentPage === page}" ng-repeat="page in getPageArray()">
+                        <a class="page-link" href="#" ng-click="goToPage(page)">{{page}}</a>
+                    </li>
+                    <li class="page-item" ng-class="{'disabled': currentPage === totalPages}">
+                        <a class="page-link" href="#" ng-click="goToPage(currentPage + 1)" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-success text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div>
+
+<!-- Custom CSS for Search Results Page -->
+<style>
+    .product-card {
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .product-img-container {
+        height: 200px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .product-img {
+        object-fit: contain;
+        height: 100%;
+        width: 100%;
+        transition: transform 0.3s ease;
+    }
+    
+    .product-card:hover .product-img {
+        transform: scale(1.05);
+    }
+    
+    .product-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 2;
+    }
+    
+    .product-title {
+        height: 48px;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+    
+    /* Highlight matching text */
+    .highlight {
+        background-color: rgba(255, 255, 0, 0.3);
+        font-weight: bold;
+    }
+    
+    @media (max-width: 767.98px) {
+        .sort-options {
+            width: 100%;
+        }
+    }
+</style> 

@@ -73,7 +73,7 @@
                         <tr ng-repeat="product in products" ng-if="!loading.products">
                             <td>{{product.id}}</td>
                             <td>
-                                <img ng-src="{{product.image || 'assets/img/placeholder.png'}}" alt="{{product.name}}" class="img-thumbnail" style="height: 50px; width: 50px; object-fit: cover;">
+                                <img ng-src="{{product.thumbnail_url || 'assets/img/placeholder.png'}}" alt="{{product.name}}" class="img-thumbnail" style="height: 50px; width: 50px; object-fit: cover;">
                             </td>
                             <td>{{product.name}}</td>
                             <td>{{product.sku}}</td>

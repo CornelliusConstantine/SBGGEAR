@@ -6,16 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::where('is_active', true)
-            ->orderBy('name')
-            ->get();
-
-        return response()->json($categories);
+        Log::info('Fetching all categories');
+        $categories = Category::orderBy('name')->get();
+        Log::info('Categories found: ' . $categories->count());
+        
+        return response()->json([
+            'data' => $categories
+        ]);
     }
 
     public function show(Category $category)
@@ -25,47 +28,82 @@ class CategoryController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:categories'],
-            'description' => ['required', 'string'],
-            'icon' => ['nullable', 'string'],
-        ]);
+        try {
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'description' => ['required', 'string'],
+            ]);
 
-        $category = Category::create([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'icon' => $request->icon,
-            'is_active' => true,
-        ]);
+            // Generate a unique slug
+            $baseName = $request->name;
+            $slug = Str::slug($baseName);
+            
+            // If the slug already exists, add a random string to make it unique
+            if (Category::where('slug', $slug)->exists()) {
+                $slug = $slug . '-' . Str::random(5);
+            }
 
-        return response()->json([
-            'message' => 'Category created successfully',
-            'category' => $category,
-        ], 201);
+            $category = Category::create([
+                'name' => $baseName,
+                'slug' => $slug,
+                'description' => $request->description,
+                'is_active' => true,
+            ]);
+
+            return response()->json([
+                'message' => 'Category created successfully',
+                'category' => $category,
+            ], 201);
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Category creation failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'message' => 'Failed to create category',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function update(Request $request, Category $category)
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255', 'unique:categories,name,' . $category->id],
-            'description' => ['required', 'string'],
-            'icon' => ['nullable', 'string'],
-            'is_active' => ['required', 'boolean'],
-        ]);
+        try {
+            $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'description' => ['required', 'string'],
+                'is_active' => ['required', 'boolean'],
+            ]);
 
-        $category->update([
-            'name' => $request->name,
-            'slug' => Str::slug($request->name),
-            'description' => $request->description,
-            'icon' => $request->icon,
-            'is_active' => $request->is_active,
-        ]);
+            // Generate a slug from the name
+            $baseName = $request->name;
+            $slug = Str::slug($baseName);
+            
+            // If the name has changed and the new slug would conflict with an existing one
+            if ($slug !== $category->slug && Category::where('slug', $slug)->where('id', '!=', $category->id)->exists()) {
+                // Add a random string to make it unique
+                $slug = $slug . '-' . Str::random(5);
+            }
 
-        return response()->json([
-            'message' => 'Category updated successfully',
-            'category' => $category,
-        ]);
+            $category->update([
+                'name' => $baseName,
+                'slug' => $slug,
+                'description' => $request->description,
+                'is_active' => $request->is_active,
+            ]);
+
+            return response()->json([
+                'message' => 'Category updated successfully',
+                'category' => $category,
+            ]);
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Category update failed: ' . $e->getMessage());
+            
+            return response()->json([
+                'message' => 'Failed to update category',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function destroy(Category $category)

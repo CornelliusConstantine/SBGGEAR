@@ -1,0 +1,56 @@
+<!-- Secure Login Page -->
+<div class="container-fluid bg-dark min-vh-100 d-flex align-items-center">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-5">
+                <div class="card shadow border-0">
+                    <div class="card-body p-5">
+                        <div class="text-center mb-4">
+                            <h2 class="fw-bold">SBGEAR</h2>
+                            <h4 class="text-secondary">Secure Access</h4>
+                        </div>
+                        
+                        <div class="alert alert-danger" ng-if="error">
+                            {{error}}
+                        </div>
+                        
+                        <form ng-submit="adminLogin()">
+                            <div class="mb-4">
+                                <label for="admin-email" class="form-label fw-bold">Email</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="email" class="form-control form-control-lg" id="admin-email" ng-model="credentials.email" required placeholder="Enter email">
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="admin-password" class="form-label fw-bold">Password</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                                    <input type="password" class="form-control form-control-lg" id="admin-password" ng-model="credentials.password" required placeholder="Enter password">
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid gap-2 mt-5">
+                                <button type="submit" class="btn btn-dark btn-lg" ng-disabled="loading">
+                                    <span ng-if="loading">
+                                        <i class="fas fa-spinner fa-spin me-1"></i> Authenticating...
+                                    </span>
+                                    <span ng-if="!loading">
+                                        <i class="fas fa-sign-in-alt me-2"></i> Sign In
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <a href="#!/" class="text-decoration-none text-secondary">
+                                <i class="fas fa-home me-1"></i> Return to Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

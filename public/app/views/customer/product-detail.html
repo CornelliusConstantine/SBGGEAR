@@ -32,9 +32,9 @@
                 </div>
                 
                 <!-- Image Gallery -->
-                <div class="row" ng-if="product.gallery && product.gallery.length > 0">
-                    <div class="col-3 mb-3" ng-repeat="image in product.gallery">
-                        <img ng-src="{{image.url}}" alt="{{product.name}}" class="img-fluid rounded thumbnail">
+                <div class="row" ng-if="product.gallery_urls && product.gallery_urls.length > 0">
+                    <div class="col-3 mb-3" ng-repeat="image in product.gallery_urls">
+                        <img ng-src="{{image.thumbnail}}" alt="{{product.name}}" class="img-fluid rounded thumbnail">
                     </div>
                 </div>
             </div>

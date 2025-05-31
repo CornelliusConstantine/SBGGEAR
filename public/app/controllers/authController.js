@@ -51,7 +51,7 @@ app.controller('AuthController', ['$scope', '$location', '$timeout', '$routePara
         $scope.redirectPath = redirectPath ? redirectPath : '/';
     };
     
-    // Login user
+    // Login user (works for both regular users and admins)
     $scope.login = function() {
         $scope.loading = true;
         $scope.error = null;

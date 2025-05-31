@@ -1,11 +1,14 @@
 'use strict';
 
-app.controller('HeaderController', ['$scope', '$location', 'AuthService', 'ProductService', function($scope, $location, AuthService, ProductService) {
+app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthService', 'ProductService', 
+    function($scope, $rootScope, $location, AuthService, ProductService) {
     // Initialize search
     $scope.searchQuery = '';
     $scope.searchResults = [];
     $scope.showSearchResults = false;
     $scope.searchLoading = false;
+    $scope.isLoggedIn = $rootScope.isLoggedIn || false;
+    $scope.isAdmin = $rootScope.isAdmin || false;
     
     // Search products
     $scope.searchProducts = function() {
@@ -76,10 +79,17 @@ app.controller('HeaderController', ['$scope', '$location', 'AuthService', 'Produ
         AuthService.logout()
             .then(function() {
                 $location.path('/');
+                $scope.isLoggedIn = false;
+                $scope.isAdmin = false;
             })
             .catch(function(error) {
                 console.error('Error logging out', error);
             });
+    };
+    
+    // Go to admin dashboard
+    $scope.goToAdminDashboard = function() {
+        $location.path('/admin');
     };
     
     // Check if current route is active
@@ -93,4 +103,26 @@ app.controller('HeaderController', ['$scope', '$location', 'AuthService', 'Produ
             $scope.hideSearchResults(event);
         });
     });
+    
+    // Watch authentication state
+    $scope.$watch(function() {
+        return AuthService.isAuthenticated();
+    }, function(isAuthenticated) {
+        $scope.isLoggedIn = isAuthenticated;
+        $scope.isAdmin = AuthService.isAdmin();
+    });
+    
+    // Also watch rootScope.isLoggedIn for changes
+    $scope.$watch('$root.isLoggedIn', function(newValue) {
+        $scope.isLoggedIn = newValue;
+    });
+    
+    // Watch rootScope.isAdmin for changes
+    $scope.$watch('$root.isAdmin', function(newValue) {
+        $scope.isAdmin = newValue;
+    });
+    
+    // Initialize authentication state
+    $scope.isLoggedIn = AuthService.isAuthenticated();
+    $scope.isAdmin = AuthService.isAdmin();
 }]); 

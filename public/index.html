@@ -81,12 +81,20 @@
                         </a>
                         <div class="dropdown" ng-if="isLoggedIn">
                             <a class="dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle fs-5"></i>
+                                <i class="fas" ng-class="{'fa-user-circle': !isAdmin, 'fa-user-shield': isAdmin}" ng-style="{'color': isAdmin ? '#007bff' : '#212529'}"></i>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#!/profile">My Profile</a></li>
-                                <li><a class="dropdown-item" href="#!/orders">My Orders</a></li>
-                                <li><hr class="dropdown-divider"></li>
+                                <!-- Admin-specific menu items -->
+                                <li ng-if="isAdmin"><span class="dropdown-item-text text-primary"><i class="fas fa-user-shield me-2"></i>Admin Account</span></li>
+                                <li ng-if="isAdmin"><a class="dropdown-item" href="#!/admin">Admin Dashboard</a></li>
+                                <li ng-if="isAdmin"><hr class="dropdown-divider"></li>
+                                
+                                <!-- Regular user menu items -->
+                                <li ng-if="!isAdmin"><a class="dropdown-item" href="#!/profile">My Profile</a></li>
+                                <li ng-if="!isAdmin"><a class="dropdown-item" href="#!/orders">My Orders</a></li>
+                                <li ng-if="!isAdmin"><hr class="dropdown-divider"></li>
+                                
+                                <!-- Common menu items -->
                                 <li><a class="dropdown-item" href="#" ng-click="logout()">Logout</a></li>
                             </ul>
                         </div>
@@ -189,6 +197,7 @@
     <script src="app/controllers/adminController.js"></script>
     <script src="app/controllers/authController.js"></script>
     <script src="app/controllers/adminProductController.js"></script>
+    <script src="app/controllers/adminCategoryController.js"></script>
     
     <!-- Directives -->
     <script src="app/directives/productCard.js"></script>
