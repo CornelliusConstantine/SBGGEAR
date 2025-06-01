@@ -316,11 +316,14 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     // Load search results
     $scope.loadSearchResults = function(query) {
         $scope.loading = true;
-        $scope.searchQuery = query;
         
-        console.log('Loading search results for query:', query);
+        // Decode the query if it's URL-encoded
+        var decodedQuery = decodeURIComponent(query);
+        $scope.searchQuery = decodedQuery;
         
-        ProductService.searchProducts(query)
+        console.log('Loading search results for query:', decodedQuery);
+        
+        ProductService.searchProducts(decodedQuery)
             .then(function(response) {
                 console.log('Search results:', response);
                 
@@ -362,7 +365,9 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     $scope.search = function() {
         if (!$scope.searchQuery || $scope.searchQuery.trim() === '') return;
         
-        $location.path('/search/' + $scope.searchQuery);
+        // Make sure to properly encode the search query
+        var encodedQuery = encodeURIComponent($scope.searchQuery.trim());
+        $location.path('/search/' + encodedQuery);
     };
     
     // Get search suggestions as user types

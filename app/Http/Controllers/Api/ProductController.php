@@ -113,6 +113,8 @@ class ProductController extends Controller
     public function search(Request $request, $query = null)
     {
         try {
+            // Decode URL-encoded query
+            $query = urldecode($query);
             \Log::info('ProductController: Searching products with query: ' . $query);
             
             if (empty($query)) {
@@ -122,15 +124,23 @@ class ProductController extends Controller
                 ], 400);
             }
             
+            // Clean up the query
+            $searchTerm = trim($query);
+            
+            // Log the cleaned search term
+            \Log::info('ProductController: Cleaned search term: ' . $searchTerm);
+            
             $products = Product::with('category')
-                ->where('name', 'ilike', '%' . $query . '%')
-                ->orWhere('description', 'ilike', '%' . $query . '%')
-                ->orWhereHas('category', function ($q) use ($query) {
-                    $q->where('name', 'ilike', '%' . $query . '%');
+                ->where(function($q) use ($searchTerm) {
+                    $q->where('name', 'ilike', '%' . $searchTerm . '%')
+                      ->orWhere('description', 'ilike', '%' . $searchTerm . '%')
+                      ->orWhereHas('category', function ($subq) use ($searchTerm) {
+                          $subq->where('name', 'ilike', '%' . $searchTerm . '%');
+                      });
                 })
                 ->paginate($request->input('per_page', 12));
                 
-            \Log::info('ProductController: Found ' . $products->count() . ' products matching query: ' . $query);
+            \Log::info('ProductController: Found ' . $products->count() . ' products matching query: ' . $searchTerm);
             
             return response()->json([
                 'data' => $products->items(),
@@ -741,6 +751,8 @@ class ProductController extends Controller
     public function suggestions(Request $request, $query = null)
     {
         try {
+            // Decode URL-encoded query
+            $query = urldecode($query);
             \Log::info('ProductController: Getting suggestions for query: ' . $query);
             
             if (empty($query) || strlen($query) < 2) {
@@ -750,16 +762,22 @@ class ProductController extends Controller
                 ]);
             }
             
+            // Clean up the query
+            $searchTerm = trim($query);
+            
+            // Log the cleaned search term
+            \Log::info('ProductController: Cleaned search term for suggestions: ' . $searchTerm);
+            
             // First get products that start with the query (higher priority)
             $startsWithQuery = Product::select('id', 'name', 'slug', 'price', 'images')
-                ->where('name', 'ilike', $query . '%')
+                ->where('name', 'ilike', $searchTerm . '%')
                 ->limit(5)
                 ->get();
                 
             // If we have less than 5 results, get additional products that contain the query
             if ($startsWithQuery->count() < 5) {
                 $containsQuery = Product::select('id', 'name', 'slug', 'price', 'images')
-                    ->where('name', 'ilike', '%' . $query . '%')
+                    ->where('name', 'ilike', '%' . $searchTerm . '%')
                     ->whereNotIn('id', $startsWithQuery->pluck('id')->toArray())
                     ->limit(5 - $startsWithQuery->count())
                     ->get();
@@ -770,7 +788,7 @@ class ProductController extends Controller
                 $products = $startsWithQuery;
             }
                 
-            \Log::info('ProductController: Found ' . $products->count() . ' suggestions for query: ' . $query);
+            \Log::info('ProductController: Found ' . $products->count() . ' suggestions for query: ' . $searchTerm);
             
             // Process images for each product
             $products->each(function($product) {
