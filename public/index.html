@@ -25,6 +25,26 @@
         .hero-decoration {
             display: none !important;
         }
+        /* Search results dropdown styling */
+        .search-form {
+            position: relative;
+        }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .search-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -54,10 +74,10 @@
                             <a class="nav-link" href="#!/category/on-sale">On Sale</a>
                         </li>
                     </ul>
-                    <form class="d-flex mx-auto search-form">
+                    <form class="d-flex mx-auto search-form" ng-submit="submitSearch()">
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Search for products..." ng-model="searchQuery" ng-keyup="searchProducts()">
-                            <button class="btn btn-outline-secondary" type="button">
+                            <button class="btn btn-outline-secondary" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
@@ -65,7 +85,7 @@
                             <div class="list-group">
                                 <a href="#!/product/{{product.id}}" class="list-group-item list-group-item-action" ng-repeat="product in searchResults">
                                     <div class="d-flex align-items-center">
-                                        <img ng-src="{{product.image}}" class="search-thumbnail me-2">
+                                        <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" class="search-thumbnail me-2">
                                         <div>
                                             <h6 class="mb-0">{{product.name}}</h6>
                                             <small class="text-muted">Rp{{product.price | number}}</small>

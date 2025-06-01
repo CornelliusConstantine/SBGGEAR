@@ -110,21 +110,45 @@ class ProductController extends Controller
         }
     }
 
-    public function search(Request $request)
+    public function search(Request $request, $query = null)
     {
-        $request->validate([
-            'q' => ['required', 'string', 'min:2'],
-        ]);
-
-        $products = Product::with('category')
-            ->where('name', 'ilike', '%' . $request->q . '%')
-            ->orWhere('description', 'ilike', '%' . $request->q . '%')
-            ->orWhereHas('category', function ($query) use ($request) {
-                $query->where('name', 'ilike', '%' . $request->q . '%');
-            })
-            ->paginate($request->input('per_page', 12));
-
-        return response()->json($products);
+        try {
+            \Log::info('ProductController: Searching products with query: ' . $query);
+            
+            if (empty($query)) {
+                return response()->json([
+                    'message' => 'Search query is required',
+                    'success' => false
+                ], 400);
+            }
+            
+            $products = Product::with('category')
+                ->where('name', 'ilike', '%' . $query . '%')
+                ->orWhere('description', 'ilike', '%' . $query . '%')
+                ->orWhereHas('category', function ($q) use ($query) {
+                    $q->where('name', 'ilike', '%' . $query . '%');
+                })
+                ->paginate($request->input('per_page', 12));
+                
+            \Log::info('ProductController: Found ' . $products->count() . ' products matching query: ' . $query);
+            
+            return response()->json([
+                'data' => $products->items(),
+                'meta' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total()
+                ],
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('ProductController: Error searching products: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error searching products: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function store(Request $request)
@@ -709,6 +733,65 @@ class ProductController extends Controller
             
             return response()->json([
                 'message' => 'Error deleting reply: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    public function suggestions(Request $request, $query = null)
+    {
+        try {
+            \Log::info('ProductController: Getting suggestions for query: ' . $query);
+            
+            if (empty($query) || strlen($query) < 2) {
+                return response()->json([
+                    'data' => [],
+                    'success' => true
+                ]);
+            }
+            
+            // First get products that start with the query (higher priority)
+            $startsWithQuery = Product::select('id', 'name', 'slug', 'price', 'images')
+                ->where('name', 'ilike', $query . '%')
+                ->limit(5)
+                ->get();
+                
+            // If we have less than 5 results, get additional products that contain the query
+            if ($startsWithQuery->count() < 5) {
+                $containsQuery = Product::select('id', 'name', 'slug', 'price', 'images')
+                    ->where('name', 'ilike', '%' . $query . '%')
+                    ->whereNotIn('id', $startsWithQuery->pluck('id')->toArray())
+                    ->limit(5 - $startsWithQuery->count())
+                    ->get();
+                    
+                // Merge the results
+                $products = $startsWithQuery->concat($containsQuery);
+            } else {
+                $products = $startsWithQuery;
+            }
+                
+            \Log::info('ProductController: Found ' . $products->count() . ' suggestions for query: ' . $query);
+            
+            // Process images for each product
+            $products->each(function($product) {
+                if (is_string($product->images)) {
+                    $images = json_decode($product->images, true);
+                    if ($images && isset($images['main'])) {
+                        $product->image_url = '/storage/products/thumbnails/' . $images['main'];
+                    }
+                } else if (is_array($product->images) && isset($product->images['main'])) {
+                    $product->image_url = '/storage/products/thumbnails/' . $product->images['main'];
+                }
+            });
+            
+            return response()->json([
+                'data' => $products,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('ProductController: Error getting suggestions: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error getting suggestions: ' . $e->getMessage(),
                 'success' => false
             ], 500);
         }

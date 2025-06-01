@@ -20,11 +20,17 @@ app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthSe
         
         $scope.searchLoading = true;
         
-        ProductService.searchProducts($scope.searchQuery)
+        ProductService.getSearchSuggestions($scope.searchQuery)
             .then(function(response) {
-                $scope.searchResults = response.data.slice(0, 5); // Limit to 5 results for dropdown
-                $scope.processProductData($scope.searchResults);
-                $scope.showSearchResults = true;
+                if (response.data && Array.isArray(response.data)) {
+                    $scope.searchResults = response.data.slice(0, 5); // Limit to 5 results for dropdown
+                    $scope.processProductData($scope.searchResults);
+                    $scope.showSearchResults = true;
+                    console.log('Search results:', $scope.searchResults);
+                } else {
+                    console.error('Unexpected response format:', response);
+                    $scope.searchResults = [];
+                }
             })
             .catch(function(error) {
                 console.error('Error searching products', error);
@@ -45,7 +51,7 @@ app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthSe
                 try {
                     const images = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
                     if (images && images.main) {
-                        product.image_url = '/storage/products/' + images.main;
+                        product.image_url = '/storage/products/thumbnails/' + images.main;
                     }
                 } catch (e) {
                     console.error('Error parsing product images', e);
@@ -63,7 +69,7 @@ app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthSe
     $scope.submitSearch = function() {
         if ($scope.searchQuery && $scope.searchQuery.trim().length > 0) {
             $scope.showSearchResults = false;
-            $location.path('/search/' + encodeURIComponent($scope.searchQuery));
+            $location.path('/search/' + encodeURIComponent($scope.searchQuery.trim()));
         }
     };
     

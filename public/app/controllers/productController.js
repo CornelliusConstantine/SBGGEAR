@@ -10,7 +10,7 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         $scope.currentPage = 1;
         $scope.itemsPerPage = 12;
         $scope.totalPages = 0;
-        $scope.searchQuery = '';
+        $scope.searchQuery = $routeParams.query || '';
         $scope.searchSuggestions = [];
         $scope.productId = $routeParams.id;
         $scope.categorySlug = $routeParams.slug; // Get category slug from route params
@@ -53,9 +53,8 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             $scope.loadCategoryProducts($scope.categorySlug);
         }
         // Check if we're on a search results page
-        else if ($scope.filters.search) {
-            $scope.searchQuery = $scope.filters.search;
-            $scope.loadSearchResults($scope.filters.search);
+        else if ($scope.searchQuery) {
+            $scope.loadSearchResults($scope.searchQuery);
         }
         // Check if we're on a category page (using query parameter)
         else if ($scope.filters.category) {
@@ -319,19 +318,40 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         $scope.loading = true;
         $scope.searchQuery = query;
         
+        console.log('Loading search results for query:', query);
+        
         ProductService.searchProducts(query)
             .then(function(response) {
-                $scope.products = response.data;
+                console.log('Search results:', response);
+                
+                if (response.data && Array.isArray(response.data)) {
+                    $scope.products = response.data;
+                } else if (response.data && response.data.data) {
+                    $scope.products = response.data.data;
+                } else {
+                    $scope.products = [];
+                }
                 
                 // Process product data
                 $scope.processProductData($scope.products);
                 
-                $scope.totalItems = response.data.length;
-                $scope.totalPages = Math.ceil($scope.totalItems / $scope.itemsPerPage);
+                // Set pagination data
+                if (response.data && response.data.meta) {
+                    $scope.totalItems = response.data.meta.total;
+                    $scope.totalPages = response.data.meta.last_page;
+                    $scope.currentPage = response.data.meta.current_page;
+                } else {
+                    $scope.totalItems = $scope.products.length;
+                    $scope.totalPages = Math.ceil($scope.totalItems / $scope.itemsPerPage);
+                    $scope.currentPage = 1;
+                }
             })
             .catch(function(error) {
                 console.error('Error loading search results', error);
                 $scope.showToast('Error searching products', 'error');
+                $scope.products = [];
+                $scope.totalItems = 0;
+                $scope.totalPages = 0;
             })
             .finally(function() {
                 $scope.loading = false;

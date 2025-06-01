@@ -34,6 +34,7 @@ Route::get('/categories/{category}', [CategoryController::class, 'show']);
 Route::get('/products', [ProductController::class, 'index']);
 Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/products/search/{query}', [ProductController::class, 'search']);
+Route::get('/products/suggestions/{query}', [ProductController::class, 'suggestions']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
 
 // Protected routes
