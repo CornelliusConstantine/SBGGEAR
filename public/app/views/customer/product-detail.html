@@ -1,3 +1,89 @@
+<!-- Custom Styles for Product Detail Page -->
+<style>
+    /* Modern Tab Styling */
+    .nav-pills .nav-link {
+        border-radius: 10px;
+        transition: all 0.3s;
+        color: #555;
+        font-weight: 500;
+    }
+    
+    .nav-pills .nav-link.active {
+        background-color: #4e73df;
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.25);
+    }
+    
+    /* Card styling */
+    .comment-item.card {
+        border: none;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+    
+    .comment-item.card:hover {
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .comment-item .card-header {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.075);
+    }
+    
+    /* Reply styling */
+    .reply.card {
+        border: none;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, 0.03);
+    }
+    
+    /* Delete button styling */
+    .btn-danger {
+        background-color: #e74a3b;
+        border-color: #e74a3b;
+    }
+    
+    .btn-danger:hover {
+        background-color: #d52a1a;
+        border-color: #d52a1a;
+    }
+    
+    /* Description content */
+    .description-content {
+        line-height: 1.7;
+    }
+    
+    /* Forms */
+    textarea.form-control {
+        border-radius: 8px;
+    }
+    
+    /* Button effects */
+    .btn {
+        border-radius: 8px;
+        padding: 0.5rem 1.2rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-outline-primary:hover {
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.25);
+    }
+    
+    .btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+    
+    .btn-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2e59d9;
+        box-shadow: 0 4px 10px rgba(78, 115, 223, 0.25);
+    }
+    
+    /* Table styling */
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: rgba(78, 115, 223, 0.05);
+    }
+</style>
+
 <!-- Breadcrumb -->
 <nav aria-label="breadcrumb" class="bg-light py-2">
     <div class="container">
@@ -149,83 +235,158 @@
     <!-- Product Description and Reviews -->
     <div class="row mt-5">
         <div class="col-12">
-            <ul class="nav nav-tabs" id="productTabs" role="tablist">
+            <!-- Modern tabs with icons -->
+            <ul class="nav nav-pills nav-justified mb-4" id="productTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">Description</button>
+                    <button class="nav-link active px-4 py-3" id="description-tab" data-bs-toggle="tab" data-bs-target="#description" type="button" role="tab" aria-controls="description" aria-selected="true">
+                        <i class="fas fa-align-left me-2"></i> Description
+                    </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab" aria-controls="specifications" aria-selected="false">Specifications</button>
+                    <button class="nav-link px-4 py-3" id="specifications-tab" data-bs-toggle="tab" data-bs-target="#specifications" type="button" role="tab" aria-controls="specifications" aria-selected="false">
+                        <i class="fas fa-clipboard-list me-2"></i> Specifications
+                    </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="reviews-tab" data-bs-toggle="tab" data-bs-target="#reviews" type="button" role="tab" aria-controls="reviews" aria-selected="false">Reviews ({{product.rating_count || 0}})</button>
+                    <button class="nav-link px-4 py-3" id="comments-tab" data-bs-toggle="tab" data-bs-target="#comments" type="button" role="tab" aria-controls="comments" aria-selected="false">
+                        <i class="fas fa-comments me-2"></i> Questions ({{product.comments_count || 0}})
+                    </button>
                 </li>
             </ul>
             
-            <div class="tab-content p-4 border border-top-0 rounded-bottom" id="productTabsContent">
+            <div class="tab-content p-4 border rounded shadow-sm" id="productTabsContent">
                 <!-- Description Tab -->
                 <div class="tab-pane fade show active" id="description" role="tabpanel" aria-labelledby="description-tab">
-                    <div ng-bind-html="product.description"></div>
+                    <div class="description-content" ng-bind-html="product.description"></div>
                 </div>
                 
                 <!-- Specifications Tab -->
                 <div class="tab-pane fade" id="specifications" role="tabpanel" aria-labelledby="specifications-tab">
-                    <table class="table table-bordered" ng-if="product.specifications && !angular.equals({}, product.specifications)">
+                    <div class="specifications-content">
+                        <div class="table-responsive">
+                            <table class="table table-striped" ng-if="product.specifications && !angular.equals({}, product.specifications)">
                         <tbody>
                             <tr ng-repeat="(key, value) in product.specifications">
-                                <th width="30%">{{key}}</th>
+                                        <th class="bg-light" width="30%">{{key}}</th>
                                 <td>{{value}}</td>
                             </tr>
                         </tbody>
                     </table>
-                    <p ng-if="!product.specifications || angular.equals({}, product.specifications)">No specifications available.</p>
-                </div>
-                
-                <!-- Reviews Tab -->
-                <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
-                    <!-- Reviews List -->
-                    <div class="reviews-list" ng-if="product.reviews && product.reviews.length > 0">
-                        <div class="review-item border-bottom pb-4 mb-4" ng-repeat="review in product.reviews">
-                            <div class="d-flex align-items-center mb-2">
-                                <div class="rating me-2">
-                                    <i class="fas fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:review.rating"></i>
-                                    <i class="far fa-star" ng-repeat="i in [1,2,3,4,5] | limitTo:(5-review.rating)"></i>
-                                </div>
-                                <strong>{{review.user_name}}</strong>
-                                <span class="ms-auto text-muted">{{review.created_at | date:'mediumDate'}}</span>
-                            </div>
-                            <p>{{review.comment}}</p>
+                        </div>
+                        <div class="alert alert-info" ng-if="!product.specifications || angular.equals({}, product.specifications)">
+                            <i class="fas fa-info-circle me-2"></i> No specifications available for this product.
                         </div>
                     </div>
-                    
-                    <p ng-if="!product.reviews || product.reviews.length === 0">No reviews yet. Be the first to review this product!</p>
-                    
-                    <!-- Review Form -->
-                    <div class="review-form mt-4" ng-if="isLoggedIn">
-                        <h4>Write a Review</h4>
-                        <form ng-submit="submitReview()">
+                </div>
+                
+                <!-- Comments Q&A Tab -->
+                <div class="tab-pane fade" id="comments" role="tabpanel" aria-labelledby="comments-tab">
+                    <!-- Ask Question Form - Moved to top for better visibility -->
+                    <div class="comment-form mb-4 p-3 border rounded bg-light" ng-if="isLoggedIn">
+                        <h5 class="mb-3"><i class="fas fa-question-circle me-2"></i>Ask a Question</h5>
+                        <form ng-submit="submitComment()">
                             <div class="mb-3">
-                                <label class="form-label">Rating</label>
-                                <div class="rating-select">
-                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 1}" ng-click="newReview.rating = 1"></i>
-                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 2}" ng-click="newReview.rating = 2"></i>
-                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 3}" ng-click="newReview.rating = 3"></i>
-                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 4}" ng-click="newReview.rating = 4"></i>
-                                    <i class="fas fa-star" ng-class="{'text-warning': newReview.rating >= 5}" ng-click="newReview.rating = 5"></i>
+                                <textarea class="form-control" id="productQuestion" rows="3" ng-model="newComment.question" required placeholder="Ask something about this product..."></textarea>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button type="submit" class="btn btn-primary" ng-disabled="submittingComment">
+                                        <i class="fas" ng-class="{'fa-spinner fa-spin': submittingComment, 'fa-paper-plane': !submittingComment}"></i>
+                                        Submit Question
+                                    </button>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label for="reviewComment" class="form-label">Comment</label>
-                                <textarea class="form-control" id="reviewComment" rows="3" ng-model="newReview.comment" required></textarea>
-                            </div>
-                            <button type="submit" class="btn btn-primary" ng-disabled="submittingReview">
-                                <i class="fas" ng-class="{'fa-spinner fa-spin': submittingReview, 'fa-paper-plane': !submittingReview}"></i>
-                                Submit Review
-                            </button>
                         </form>
                     </div>
                     
-                    <div class="alert alert-info mt-4" ng-if="!isLoggedIn">
-                        <p class="mb-0">Please <a href="#!/login">login</a> to write a review.</p>
+                    <!-- Login message if not logged in -->
+                    <div class="alert alert-info mb-4" ng-if="!isLoggedIn">
+                        <i class="fas fa-info-circle me-2"></i>Please <a href="#!/login" class="alert-link">login</a> to ask questions about this product.
+                    </div>
+                    
+                    <!-- Comments List -->
+                    <div class="comments-list" ng-if="product.comments && product.comments.length > 0">
+                        <h5 class="mb-3"><i class="fas fa-comments me-2"></i>Questions & Answers</h5>
+                        
+                        <div class="comment-item card mb-4" ng-repeat="comment in product.comments">
+                            <div class="card-header bg-light d-flex justify-content-between align-items-center py-3">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle fa-lg me-2"></i>
+                                    <div>
+                                        <strong>{{comment.user_name}}</strong>
+                                        <div class="text-muted small">{{comment.created_at | date:'medium'}}</div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Delete Comment Button (admin only) -->
+                                <button class="btn btn-danger btn-sm" ng-if="isLoggedIn && isAdmin" ng-click="deleteComment(comment)" title="Delete Question">
+                                    <i class="fas fa-trash-alt me-1"></i> Delete
+                                </button>
+                            </div>
+                            
+                            <div class="card-body">
+                                <h6 class="mb-3"><i class="fas fa-question-circle text-primary me-2"></i>Question:</h6>
+                                <p class="mb-4">{{comment.question}}</p>
+                                
+                                <!-- Replies -->
+                                <div class="comment-replies" ng-if="comment.replies && comment.replies.length > 0">
+                                    <h6 class="mb-3 border-top pt-3"><i class="fas fa-reply text-success me-2"></i>Answers:</h6>
+                                    
+                                    <div class="reply card bg-light mb-3" ng-repeat="reply in comment.replies">
+                                        <div class="card-header d-flex justify-content-between align-items-center py-2">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas" ng-class="{'fa-user-shield text-primary': reply.is_admin, 'fa-user text-secondary': !reply.is_admin}"></i>
+                                                <strong class="ms-2" ng-class="{'text-primary': reply.is_admin}">
+                                                    {{reply.user_name}}
+                                                    <span ng-if="reply.is_admin" class="badge bg-primary ms-1">Admin</span>
+                                                </strong>
+                                                <span class="text-muted ms-2 small">{{reply.created_at | date:'medium'}}</span>
+                                            </div>
+                                            
+                                            <!-- Delete Reply Button (admin only) -->
+                                            <button class="btn btn-danger btn-sm" ng-if="isLoggedIn && isAdmin" ng-click="deleteReply(comment.id, reply.id)" title="Delete this reply">
+                                                <i class="fas fa-trash-alt me-1"></i> Delete
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="card-body py-2">
+                                            <p class="mb-0">{{reply.reply}}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Reply Form -->
+                                <div class="mt-3" ng-if="isLoggedIn && !comment.showReplyForm">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button class="btn btn-outline-primary" ng-click="comment.showReplyForm = true">
+                                            <i class="fas fa-reply me-1"></i> Answer This Question
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 bg-light p-3 rounded" ng-if="isLoggedIn && comment.showReplyForm">
+                                    <form ng-submit="replyToComment(comment)">
+                                        <div class="form-group mb-3">
+                                            <label class="form-label">Your Answer:</label>
+                                            <textarea class="form-control" rows="3" ng-model="comment.reply" placeholder="Type your answer here..."></textarea>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary" ng-disabled="!comment.reply || submittingReply === comment.id">
+                                                <i class="fas" ng-class="{'fa-spinner fa-spin': submittingReply === comment.id, 'fa-paper-plane': submittingReply !== comment.id}"></i>
+                                                Submit Answer
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary" ng-click="comment.showReplyForm = false">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info" ng-if="!product.comments || product.comments.length === 0">
+                        <i class="fas fa-info-circle me-2"></i> No questions about this product yet. Be the first to ask!
                     </div>
                 </div>
             </div>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Authentication Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            overflow: auto;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Authentication Test</h1>
+        
+        <div>
+            <h3>Admin Credentials</h3>
+            <p>Use these credentials to log in:</p>
+            <ul>
+                <li><strong>Email:</strong> admin@sbggear.com</li>
+                <li><strong>Password:</strong> password (default)</li>
+            </ul>
+        </div>
+        
+        <div>
+            <h3>Current Storage Values</h3>
+            <div id="storage-info"></div>
+        </div>
+        
+        <div>
+            <h3>Actions</h3>
+            <button onclick="setAdminRole()">Set Admin Role</button>
+            <button onclick="clearStorage()">Clear Storage</button>
+            <button onclick="goToProductPage()">Go to Product Page</button>
+            <button onclick="goToLoginPage()">Go to Login Page</button>
+        </div>
+        
+        <div>
+            <h3>Manual Token</h3>
+            <textarea id="token" rows="3" style="width: 100%;" placeholder="Paste token here"></textarea>
+            <button onclick="setManualToken()">Set Token</button>
+        </div>
+    </div>
+    
+    <script>
+        // Update storage info display
+        function updateStorageInfo() {
+            const storageInfo = document.getElementById('storage-info');
+            const token = localStorage.getItem('token');
+            const userRole = localStorage.getItem('userRole');
+            
+            let html = '<pre>';
+            html += 'token: ' + (token ? token.substring(0, 20) + '...' : 'null') + '\n';
+            html += 'userRole: ' + (userRole || 'null') + '\n';
+            html += '</pre>';
+            
+            if (token && userRole === 'admin') {
+                html += '<p class="success">✓ You have admin credentials set</p>';
+            } else {
+                html += '<p class="error">✗ Admin credentials not properly set</p>';
+            }
+            
+            storageInfo.innerHTML = html;
+        }
+        
+        // Set admin role
+        function setAdminRole() {
+            localStorage.setItem('userRole', 'admin');
+            updateStorageInfo();
+            alert('Admin role set! Refresh the page to apply changes.');
+        }
+        
+        // Clear storage
+        function clearStorage() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userRole');
+            updateStorageInfo();
+            alert('Storage cleared!');
+        }
+        
+        // Go to product page
+        function goToProductPage() {
+            window.location.href = '/#!/product/1';
+        }
+        
+        // Go to login page
+        function goToLoginPage() {
+            window.location.href = '/#!/login';
+        }
+        
+        // Set manual token
+        function setManualToken() {
+            const token = document.getElementById('token').value.trim();
+            if (token) {
+                localStorage.setItem('token', token);
+                localStorage.setItem('userRole', 'admin');
+                updateStorageInfo();
+                alert('Token and admin role set! Refresh the page to apply changes.');
+            } else {
+                alert('Please enter a token!');
+            }
+        }
+        
+        // Initialize
+        updateStorageInfo();
+    </script>
+</body>
+</html> 

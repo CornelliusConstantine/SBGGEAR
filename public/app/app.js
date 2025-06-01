@@ -185,10 +185,12 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
     $locationProvider.hashPrefix('!');
 }]);
 
-// Run block for application initialization
-app.run(['$rootScope', 'AuthService', 'CartService', function($rootScope, AuthService, CartService) {
-    // Check authentication status when app starts
-    AuthService.checkAuth();
+// Run block to check authentication status on app start
+app.run(['$rootScope', '$location', 'AuthService', 'CartService', function($rootScope, $location, AuthService, CartService) {
+    // Check authentication on app start
+    AuthService.checkAuth().catch(function() {
+        // Handle unauthenticated state if needed
+    });
     
     // Initialize cart
     CartService.init();

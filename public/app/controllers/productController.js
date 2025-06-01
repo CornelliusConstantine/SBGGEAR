@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('ProductController', ['$scope', '$routeParams', '$location', 'ProductService', 'CartService', function($scope, $routeParams, $location, ProductService, CartService) {
+app.controller('ProductController', ['$scope', '$routeParams', '$location', 'ProductService', 'CartService', '$rootScope', function($scope, $routeParams, $location, ProductService, CartService, $rootScope) {
     // Initialize controller
     $scope.init = function() {
         $scope.loading = true;
@@ -33,18 +33,35 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             selectedRatings: {}
         };
         
+        // Initialize product ID from route params
+        $scope.productId = $routeParams.id;
+        
+        // Initialize new comment form
+        $scope.newComment = {
+            question: ''
+        };
+        
+        // Check if user is logged in
+        $scope.isLoggedIn = !!localStorage.getItem('token');
+        
+        // Get admin status from $rootScope
+        $scope.isAdmin = $rootScope.isAdmin === true;
+        console.log('INIT: User login status:', $scope.isLoggedIn);
+        console.log('INIT: Admin status from $rootScope:', $rootScope.isAdmin);
+        console.log('INIT: Admin status in controller:', $scope.isAdmin);
+        
         // Check if we're on a product detail page
-        if ($routeParams.id) {
-            $scope.loadProductDetail($routeParams.id);
+        if ($scope.productId) {
+            $scope.loadProductDetail($scope.productId);
         } 
         // Check if we're on a search results page
-        else if ($routeParams.query) {
-            $scope.searchQuery = $routeParams.query;
-            $scope.loadSearchResults($routeParams.query);
+        else if ($scope.filters.search) {
+            $scope.searchQuery = $scope.filters.search;
+            $scope.loadSearchResults($scope.filters.search);
         }
         // Check if we're on a category page
-        else if ($routeParams.slug) {
-            $scope.loadCategoryProducts($routeParams.slug);
+        else if ($scope.filters.category) {
+            $scope.loadCategoryProducts($scope.filters.category);
         }
         // Otherwise, load all products
         else {
@@ -152,6 +169,12 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     $scope.loadProductDetail = function(id) {
         $scope.loading = true;
         
+        // Debug user role - use $rootScope values instead of trying to parse token
+        $scope.isAdmin = $rootScope.isAdmin === true;
+        console.log('User login status:', $scope.isLoggedIn);
+        console.log('Is admin from $rootScope:', $rootScope.isAdmin);
+        console.log('Is admin in controller:', $scope.isAdmin);
+        
         ProductService.getProduct(id)
             .then(function(response) {
                 // Handle different response formats
@@ -226,6 +249,44 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             
             if (!product.hasOwnProperty('rating_count')) {
                 product.rating_count = 0;
+            }
+            
+            // Convert reviews to comments if needed for backward compatibility
+            if (product.hasOwnProperty('reviews') && !product.hasOwnProperty('comments')) {
+                product.comments = product.reviews.map(function(review) {
+                    return {
+                        user_name: review.user_name,
+                        question: review.comment,
+                        created_at: review.created_at,
+                        admin_reply: null,
+                        replied_at: null
+                    };
+                });
+            }
+            
+            // Ensure comment user_id is an integer for proper comparison
+            if (product.comments && Array.isArray(product.comments)) {
+                product.comments.forEach(function(comment) {
+                    if (comment.user_id) {
+                        comment.user_id = parseInt(comment.user_id);
+                    }
+                    
+                    // Also convert user_id in replies to integers
+                    if (comment.replies && Array.isArray(comment.replies)) {
+                        comment.replies.forEach(function(reply) {
+                            if (reply.user_id) {
+                                reply.user_id = parseInt(reply.user_id);
+                            }
+                        });
+                    }
+                });
+            }
+            
+            // Set comments_count
+            if (!product.hasOwnProperty('comments_count') && product.comments) {
+                product.comments_count = product.comments.length;
+            } else if (!product.hasOwnProperty('comments_count')) {
+                product.comments_count = 0;
             }
             
             if (!product.hasOwnProperty('short_description')) {
@@ -449,34 +510,131 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         $scope.loadProducts(page);
     };
     
-    // Submit review for product
-    $scope.submitReview = function() {
-        if (!$scope.newReview || !$scope.newReview.rating || !$scope.newReview.comment) {
-            $scope.showToast('Please provide both rating and comment', 'error');
+    // Submit comment for product
+    $scope.submitComment = function() {
+        // Check if user is logged in
+        if (!localStorage.getItem('token')) {
+            $scope.showToast('Please login to submit a question', 'error');
             return;
         }
         
-        $scope.submittingReview = true;
+        if (!$scope.newComment || !$scope.newComment.question) {
+            $scope.showToast('Please provide a question', 'error');
+            return;
+        }
         
-        ProductService.submitReview($scope.product.id, $scope.newReview)
+        $scope.submittingComment = true;
+        
+        ProductService.submitComment($scope.product.id, $scope.newComment)
             .then(function(response) {
-                $scope.showToast('Review submitted successfully');
+                $scope.showToast('Question submitted successfully');
                 
-                // Refresh product details to show the new review
+                // Refresh product details to show the new comment
                 $scope.loadProductDetail($scope.product.id);
                 
-                // Reset review form
-                $scope.newReview = {
-                    rating: 5,
-                    comment: ''
+                // Reset comment form
+                $scope.newComment = {
+                    question: ''
                 };
             })
             .catch(function(error) {
-                console.error('Error submitting review', error);
-                $scope.showToast('Error submitting review', 'error');
+                console.error('Error submitting question', error);
+                if (error && error.status === 401) {
+                    $scope.showToast('You must be logged in to submit questions. Please log in and try again.', 'error');
+                    localStorage.removeItem('token'); // Clear invalid token
+                    $scope.isLoggedIn = false;
+                } else {
+                    $scope.showToast('Error submitting question. Please try again.', 'error');
+                }
             })
             .finally(function() {
-                $scope.submittingReview = false;
+                $scope.submittingComment = false;
+            });
+    };
+    
+    // Reply to a comment
+    $scope.replyToComment = function(comment) {
+        // Check if user is logged in
+        if (!localStorage.getItem('token')) {
+            $scope.showToast('Please login to reply to this question', 'error');
+            return;
+        }
+        
+        if (!comment.reply) {
+            $scope.showToast('Please provide a reply', 'error');
+            return;
+        }
+        
+        $scope.submittingReply = comment.id;
+        
+        var replyData = {
+            reply: comment.reply
+        };
+        
+        ProductService.replyToComment($scope.product.id, comment.id, replyData)
+            .then(function(response) {
+                $scope.showToast('Reply submitted successfully');
+                
+                // Clear the reply text
+                comment.reply = '';
+                comment.showReplyForm = false;
+                
+                // Refresh product details to show the new reply
+                $scope.loadProductDetail($scope.product.id);
+            })
+            .catch(function(error) {
+                console.error('Error submitting reply', error);
+                var errorMsg = 'Error submitting reply. ';
+                
+                if (error && error.status === 401) {
+                    errorMsg += 'You must be logged in. Please log in and try again.';
+                    localStorage.removeItem('token'); // Clear invalid token
+                    $scope.isLoggedIn = false;
+                } else if (error && error.message) {
+                    errorMsg += error.message;
+                } else {
+                    errorMsg += 'Please try again.';
+                }
+                
+                $scope.showToast(errorMsg, 'error');
+            })
+            .finally(function() {
+                $scope.submittingReply = null;
+            });
+    };
+    
+    // Delete a comment 
+    $scope.deleteComment = function(comment) {
+        if (!confirm('Are you sure you want to delete this comment? This action cannot be undone.')) {
+            return;
+        }
+        
+        // Check if user is logged in and is admin
+        if (!$scope.isLoggedIn) {
+            $scope.showToast('You must be logged in to delete comments', 'error');
+            return;
+        }
+        
+        // Only allow admins to delete comments
+        if (!$scope.isAdmin) {
+            $scope.showToast('Only administrators can delete comments', 'error');
+            return;
+        }
+        
+        // Debug info for troubleshooting
+        console.log('Deleting comment:', comment);
+        console.log('Is admin:', $scope.isAdmin);
+        
+        ProductService.deleteComment($scope.product.id, comment.id)
+            .then(function(response) {
+                $scope.showToast('Comment deleted successfully');
+                
+                // Refresh product details
+                $scope.loadProductDetail($scope.product.id);
+            })
+            .catch(function(error) {
+                console.error('Error deleting comment', error);
+                $scope.showToast(error.message || 'Error deleting comment', 'error');
             });
     };
     
@@ -520,6 +678,41 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         setTimeout(function() {
             $scope.$apply();
         }, 50);
+    };
+    
+    // Delete a specific reply
+    $scope.deleteReply = function(commentId, replyId) {
+        if (!confirm('Are you sure you want to delete this reply?')) {
+            return;
+        }
+        
+        // Check if user is logged in and is admin
+        if (!$scope.isLoggedIn) {
+            $scope.showToast('You must be logged in to delete replies', 'error');
+            return;
+        }
+        
+        // Only allow admins to delete replies
+        if (!$scope.isAdmin) {
+            $scope.showToast('Only administrators can delete replies', 'error');
+            return;
+        }
+        
+        // Debug info for troubleshooting
+        console.log('Deleting reply - Comment ID:', commentId, 'Reply ID:', replyId);
+        console.log('Is admin:', $scope.isAdmin);
+        
+        ProductService.deleteReply($scope.product.id, commentId, replyId)
+            .then(function(response) {
+                $scope.showToast('Reply deleted successfully');
+                
+                // Refresh product details
+                $scope.loadProductDetail($scope.product.id);
+            })
+            .catch(function(error) {
+                console.error('Error deleting reply:', error);
+                $scope.showToast(error.message || 'Error deleting reply', 'error');
+            });
     };
     
     // Initialize controller

@@ -52,7 +52,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         try {
-            $product->load('category');
+            $product->load(['category', 'comments']);
             
             // Ensure images are properly formatted
             if (is_string($product->images)) {
@@ -528,6 +528,153 @@ class ProductController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error loading featured products: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    // Store a new comment/question for a product
+    public function storeComment(Request $request, Product $product)
+    {
+        $request->validate([
+            'question' => 'required|string|min:1',
+        ]);
+        
+        try {
+            $comment = $product->comments()->create([
+                'user_id' => $request->user()->id,
+                'question' => $request->question,
+            ]);
+            
+            return response()->json([
+                'message' => 'Question submitted successfully',
+                'data' => $comment->load('replies'),
+                'success' => true
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error submitting question: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+    
+    // Store a reply to a product comment (available to all users)
+    public function replyToComment(Request $request, Product $product, $commentId)
+    {
+        $request->validate([
+            'reply' => 'required|string|min:1',
+        ]);
+        
+        try {
+            \Log::info('Replying to comment', [
+                'product_id' => $product->id,
+                'comment_id' => $commentId,
+                'user_id' => $request->user()->id,
+                'is_admin' => $request->user()->isAdmin(),
+                'reply' => $request->reply
+            ]);
+            
+            $comment = $product->comments()->findOrFail($commentId);
+            
+            $reply = $comment->replies()->create([
+                'user_id' => $request->user()->id,
+                'reply' => $request->reply,
+                'is_admin' => $request->user()->isAdmin(),
+            ]);
+            
+            \Log::info('Reply created successfully', [
+                'reply_id' => $reply->id
+            ]);
+            
+            return response()->json([
+                'message' => 'Reply submitted successfully',
+                'data' => $reply,
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error submitting reply: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'Error submitting reply: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+    
+    // Admin: Delete a comment (completely)
+    public function deleteComment(Request $request, Product $product, $commentId)
+    {
+        // Check if the user is an admin
+        if (!$request->user()->isAdmin()) {
+            return response()->json([
+                'message' => 'Unauthorized. Only administrators can delete comments.',
+                'success' => false
+            ], 403);
+        }
+
+        try {
+            $comment = $product->comments()->findOrFail($commentId);
+            $comment->delete();
+            
+            return response()->json([
+                'message' => 'Comment deleted successfully',
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error deleting comment: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
+    }
+
+    // Delete a specific reply
+    public function deleteReply(Request $request, Product $product, $commentId, $replyId)
+    {
+        try {
+            \Log::info('Deleting reply', [
+                'product_id' => $product->id,
+                'comment_id' => $commentId,
+                'reply_id' => $replyId,
+                'user_id' => $request->user()->id,
+                'is_admin' => $request->user()->isAdmin()
+            ]);
+            
+            // Check if the user is an admin
+            if (!$request->user()->isAdmin()) {
+                \Log::warning('Unauthorized delete reply attempt', [
+                    'user_id' => $request->user()->id,
+                    'is_admin' => $request->user()->isAdmin()
+                ]);
+                
+                return response()->json([
+                    'message' => 'Unauthorized. Only administrators can delete replies.',
+                    'success' => false
+                ], 403);
+            }
+            
+            $comment = $product->comments()->findOrFail($commentId);
+            $reply = $comment->replies()->findOrFail($replyId);
+            $reply->delete();
+            
+            \Log::info('Reply deleted successfully');
+            
+            return response()->json([
+                'message' => 'Reply deleted successfully',
+                'success' => true
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error deleting reply: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'message' => 'Error deleting reply: ' . $e->getMessage(),
                 'success' => false
             ], 500);
         }

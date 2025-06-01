@@ -24,13 +24,24 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 currentUser = response.data;
                 $rootScope.isLoggedIn = true;
                 $rootScope.currentUser = currentUser;
-                $rootScope.isAdmin = currentUser && currentUser.role === 'admin';
+                
+                // Ensure role is set properly
+                var userRole = currentUser.role || 'customer';
+                $rootScope.isAdmin = userRole === 'admin';
                 
                 // Store user role in localStorage for UI customization
-                localStorage.setItem('userRole', currentUser.role || 'customer');
+                localStorage.setItem('userRole', userRole);
+                
+                console.log('AuthService: User authenticated', {
+                    userId: currentUser.id,
+                    role: userRole,
+                    isAdmin: $rootScope.isAdmin
+                });
                 
                 deferred.resolve(currentUser);
             }).catch(function(error) {
+                console.error('AuthService: Authentication error', error);
+                
                 // Token might be invalid or expired
                 localStorage.removeItem('token');
                 localStorage.removeItem('userRole');
@@ -40,6 +51,7 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 deferred.reject('unauthorized');
             });
         } else {
+            console.log('AuthService: No token found');
             localStorage.removeItem('userRole');
             $rootScope.isLoggedIn = false;
             $rootScope.currentUser = null;

@@ -83,16 +83,13 @@ class Product extends Model
      */
     public function getGalleryUrlsAttribute()
     {
-        if (empty($this->images) || !is_array($this->images) || !isset($this->images['gallery'])) {
+        if (empty($this->images) || !is_array($this->images) || !isset($this->images['gallery']) || !is_array($this->images['gallery'])) {
             return [];
         }
         
-        $urls = [];
-        foreach ($this->images['gallery'] as $image) {
-            $urls[] = asset('storage/products/original/' . $image);
-        }
-        
-        return $urls;
+        return array_map(function($image) {
+            return asset('storage/products/original/' . $image);
+        }, $this->images['gallery']);
     }
 
     /**
@@ -114,6 +111,11 @@ class Product extends Model
         }
         
         return $value;
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(ProductComment::class);
     }
 
     /**

@@ -371,5 +371,212 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         return deferred.promise;
     };
     
+    // Submit a product comment
+    service.submitComment = function(productId, commentData) {
+        var deferred = $q.defer();
+        var token = localStorage.getItem('token');
+        
+        if (!token) {
+            deferred.reject({
+                message: 'Authentication required',
+                status: 401
+            });
+            return deferred.promise;
+        }
+        
+        $http.post(API_URL + '/products/' + productId + '/comments', commentData, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(function(response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function(error) {
+                console.error('Error submitting comment:', error);
+                if (error.status === 401) {
+                    // Authentication error
+                    deferred.reject({
+                        message: 'Authentication required',
+                        status: 401
+                    });
+                } else if (error.data && error.data.message) {
+                    // Server error message
+                    deferred.reject({
+                        message: error.data.message,
+                        status: error.status
+                    });
+                } else {
+                    // Generic error
+                    deferred.reject({
+                        message: 'Failed to submit comment. Please try again.',
+                        status: error.status || 500
+                    });
+                }
+            });
+        
+        return deferred.promise;
+    };
+    
+    // Reply to a product comment (available to all users)
+    service.replyToComment = function(productId, commentId, replyData) {
+        var deferred = $q.defer();
+        var token = localStorage.getItem('token');
+        
+        if (!token) {
+            deferred.reject({
+                message: 'Authentication required',
+                status: 401
+            });
+            return deferred.promise;
+        }
+        
+        $http.post(API_URL + '/products/' + productId + '/comments/' + commentId + '/reply', replyData, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(function(response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function(error) {
+                if (error.status === 401) {
+                    // Authentication error
+                    deferred.reject({
+                        message: 'Authentication required',
+                        status: 401
+                    });
+                } else if (error.data && error.data.message) {
+                    // Server error message
+                    deferred.reject({
+                        message: error.data.message,
+                        status: error.status
+                    });
+                } else {
+                    // Generic error
+                    deferred.reject({
+                        message: 'Failed to submit reply. Please try again.',
+                        status: error.status || 500
+                    });
+                }
+            });
+        
+        return deferred.promise;
+    };
+    
+    // Delete a specific reply
+    service.deleteReply = function(productId, commentId, replyId) {
+        var deferred = $q.defer();
+        var token = localStorage.getItem('token');
+        
+        if (!token) {
+            deferred.reject({
+                message: 'Authentication required',
+                status: 401
+            });
+            return deferred.promise;
+        }
+        
+        $http.delete(API_URL + '/admin/products/' + productId + '/comments/' + commentId + '/replies/' + replyId, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(function(response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function(error) {
+                if (error.status === 401) {
+                    // Authentication error
+                    deferred.reject({
+                        message: 'Authentication required',
+                        status: 401
+                    });
+                } else if (error.status === 403) {
+                    // Unauthorized
+                    deferred.reject({
+                        message: 'Unauthorized. Only administrators can delete replies.',
+                        status: 403
+                    });
+                } else if (error.data && error.data.message) {
+                    // Server error message
+                    deferred.reject({
+                        message: error.data.message,
+                        status: error.status
+                    });
+                } else {
+                    // Generic error
+                    deferred.reject({
+                        message: 'Failed to delete reply. Please try again.',
+                        status: error.status || 500
+                    });
+                }
+            });
+        
+        return deferred.promise;
+    };
+    
+    // Delete a comment (admin only)
+    service.deleteComment = function(productId, commentId) {
+        var deferred = $q.defer();
+        var token = localStorage.getItem('token');
+        
+        if (!token) {
+            deferred.reject({
+                message: 'Authentication required',
+                status: 401
+            });
+            return deferred.promise;
+        }
+        
+        // Debug info
+        console.log('Deleting comment:', commentId, 'for product:', productId);
+        
+        // Use the admin endpoint for deleting comments
+        $http.delete(API_URL + '/admin/products/' + productId + '/comments/' + commentId, {
+            headers: {
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(function(response) {
+                deferred.resolve(response.data);
+            })
+            .catch(function(error) {
+                if (error.status === 401) {
+                    // Authentication error
+                    deferred.reject({
+                        message: 'Authentication required',
+                        status: 401
+                    });
+                } else if (error.status === 403) {
+                    // Unauthorized
+                    deferred.reject({
+                        message: 'Unauthorized. Only administrators can delete comments.',
+                        status: 403
+                    });
+                } else if (error.data && error.data.message) {
+                    // Server error message
+                    deferred.reject({
+                        message: error.data.message,
+                        status: error.status
+                    });
+                } else {
+                    // Generic error
+                    deferred.reject({
+                        message: 'Failed to delete comment. Please try again.',
+                        status: error.status || 500
+                    });
+                }
+            });
+        
+        return deferred.promise;
+    };
+    
+    // Deprecated: Use deleteReply instead
+    service.deleteCommentReply = function(productId, commentId, replyId) {
+        console.warn('ProductService.deleteCommentReply is deprecated. Use ProductService.deleteReply instead.');
+        return service.deleteReply(productId, commentId, replyId);
+    };
+    
     return service;
 }]); 

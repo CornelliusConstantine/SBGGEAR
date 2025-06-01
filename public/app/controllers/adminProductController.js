@@ -104,6 +104,32 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                 
                 $scope.product = response.data;
                 
+                // Convert reviews to comments for backwards compatibility if needed
+                if ($scope.product.reviews && !$scope.product.comments) {
+                    $scope.product.comments = $scope.product.reviews.map(function(review) {
+                        return {
+                            id: review.id,
+                            user_name: review.user_name,
+                            user_id: review.user_id,
+                            question: review.comment,
+                            created_at: review.created_at,
+                            admin_reply: null,
+                            replied_at: null
+                        };
+                    });
+                }
+                
+                // Ensure comments array exists
+                if (!$scope.product.comments) {
+                    $scope.product.comments = [];
+                }
+                
+                // Initialize reply editing fields
+                $scope.product.comments.forEach(function(comment) {
+                    comment.newReply = comment.admin_reply || '';
+                    comment.showEditReply = false;
+                });
+                
                 // Set up specifications for editing
                 if ($scope.product.specifications) {
                     try {
@@ -179,7 +205,8 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
                     category_id: '',
                     specifications: {},
                     is_active: true,
-                    is_featured: false
+                    is_featured: false,
+                    comments: []
                 };
                 $scope.specKeys = [];
                 $scope.specValues = [];
@@ -401,6 +428,96 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
     // Remove additional image
     $scope.removeAdditionalImage = function(index) {
         $scope.product.additional_images.splice(index, 1);
+    };
+    
+    // Reply to a product comment
+    $scope.replyToComment = function(comment) {
+        if (!comment.newReply) {
+            return;
+        }
+        
+        comment.replying = true;
+        
+        var replyData = {
+            reply: comment.newReply
+        };
+        
+        ProductService.replyToComment($scope.product.id, comment.id, replyData)
+            .then(function(response) {
+                // Add the new reply to the replies array
+                if (!comment.replies) {
+                    comment.replies = [];
+                }
+                comment.replies.push(response.data.data);
+                
+                // Clear the reply form
+                comment.newReply = '';
+                
+                $scope.success = 'Reply submitted successfully';
+            })
+            .catch(function(error) {
+                console.error('Error replying to comment:', error);
+                $scope.error = error.message || 'Failed to submit reply. Please try again.';
+            })
+            .finally(function() {
+                comment.replying = false;
+            });
+    };
+    
+    // Delete a reply
+    $scope.deleteReply = function(commentId, replyId) {
+        if (!confirm('Are you sure you want to delete this reply?')) {
+            return;
+        }
+        
+        ProductService.deleteReply($scope.product.id, commentId, replyId)
+            .then(function(response) {
+                // Find the comment and remove the reply
+                var comment = $scope.product.comments.find(function(c) {
+                    return c.id === commentId;
+                });
+                
+                if (comment && comment.replies) {
+                    var replyIndex = comment.replies.findIndex(function(r) {
+                        return r.id === replyId;
+                    });
+                    
+                    if (replyIndex !== -1) {
+                        comment.replies.splice(replyIndex, 1);
+                    }
+                }
+                
+                $scope.success = 'Reply deleted successfully';
+            })
+            .catch(function(error) {
+                console.error('Error deleting reply:', error);
+                $scope.error = error.message || 'Failed to delete reply. Please try again.';
+            });
+    };
+    
+    // Delete an entire comment
+    $scope.deleteComment = function(comment) {
+        if (!confirm('Are you sure you want to delete this comment completely? This action cannot be undone.')) {
+            return;
+        }
+        
+        ProductService.deleteComment($scope.product.id, comment.id)
+            .then(function(response) {
+                // Remove the comment from the list
+                var index = $scope.product.comments.findIndex(function(c) {
+                    return c.id === comment.id;
+                });
+                
+                if (index !== -1) {
+                    $scope.product.comments.splice(index, 1);
+                }
+                
+                $scope.success = 'Comment deleted successfully';
+            })
+            .catch(function(error) {
+                console.error('Error deleting comment:', error);
+                $scope.error = error.message || 'Failed to delete comment. Please try again.';
+            });
     };
     
     // Initialize controller

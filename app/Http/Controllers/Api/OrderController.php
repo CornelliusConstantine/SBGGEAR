@@ -15,10 +15,13 @@ class OrderController extends Controller
 {
     public function __construct()
     {
+        // Uncomment this when Midtrans is properly set up
+        /*
         Config::$serverKey = config('midtrans.server_key');
         Config::$isProduction = config('midtrans.is_production');
         Config::$isSanitized = config('midtrans.is_sanitized');
         Config::$is3ds = config('midtrans.is_3ds');
+        */
     }
 
     public function index(Request $request)

@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\StockController;
+use App\Http\Controllers\Api\Admin\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +59,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Product operations that require authentication
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);
     
+    // Product comments
+    Route::post('/products/{product}/comments', [ProductController::class, 'storeComment']);
+    Route::post('/products/{product}/comments/{commentId}/reply', [ProductController::class, 'replyToComment']);
+
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
         // Dashboard
@@ -75,6 +80,10 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/products/{product}', [ProductController::class, 'update']);
         Route::delete('/products/{product}', [ProductController::class, 'destroy']);
         
+        // Product comments management (admin only)
+        Route::delete('/products/{product}/comments/{commentId}/replies/{replyId}', [ProductController::class, 'deleteReply']);
+        Route::delete('/products/{product}/comments/{commentId}', [ProductController::class, 'deleteComment']);
+        
         // Stock management
         Route::get('/stock', [StockController::class, 'index']);
         Route::post('/stock/{product}/add', [StockController::class, 'addStock']);
@@ -84,5 +93,8 @@ Route::middleware('auth:sanctum')->group(function () {
         // Order management
         Route::get('/orders', [OrderController::class, 'adminIndex']);
         Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+        
+        // Admin management
+        Route::post('/flush-accounts', [AdminController::class, 'flushAdminAccounts']);
     });
 });

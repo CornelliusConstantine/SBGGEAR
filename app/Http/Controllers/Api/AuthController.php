@@ -22,7 +22,11 @@ class AuthController extends Controller
             'city' => ['required', 'string'],
             'province' => ['required', 'string'],
             'postal_code' => ['required', 'string'],
+            'role' => ['sometimes', 'string', 'in:admin,customer'],
         ]);
+
+        // Set default role to customer if not provided
+        $role = $request->role ?? 'customer';
 
         $user = User::create([
             'name' => $request->name,
@@ -33,7 +37,7 @@ class AuthController extends Controller
             'city' => $request->city,
             'province' => $request->province,
             'postal_code' => $request->postal_code,
-            'role' => 'customer',
+            'role' => $role,
         ]);
 
         $token = $user->createToken('auth_token')->plainTextToken;
