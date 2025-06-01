@@ -106,11 +106,13 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
         var selectedCategories = [];
         for (var catId in $scope.filters.selectedCategories) {
             if ($scope.filters.selectedCategories[catId]) {
-                selectedCategories.push(catId);
+                // Make sure we're using the numeric ID
+                selectedCategories.push(parseInt(catId, 10));
             }
         }
         if (selectedCategories.length > 0) {
             params.categories = selectedCategories.join(',');
+            console.log('ProductController: Selected category IDs:', selectedCategories, 'params.categories:', params.categories);
         }
         
         // Rating filters
@@ -145,6 +147,16 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     // Apply filters and reload products
     $scope.applyFilters = function() {
         $scope.currentPage = 1;
+        
+        // Debug selected categories
+        var selectedCats = [];
+        for (var catId in $scope.filters.selectedCategories) {
+            if ($scope.filters.selectedCategories[catId]) {
+                selectedCats.push({id: parseInt(catId, 10), checked: $scope.filters.selectedCategories[catId]});
+            }
+        }
+        console.log('ProductController: Selected categories before loading products:', selectedCats);
+        
         $scope.loadProducts(1);
     };
     
@@ -464,6 +476,12 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             .then(function(response) {
                 console.log('ProductController: Categories loaded:', response);
                 $scope.categories = response.data;
+                
+                // Log category IDs for debugging
+                var categoryIds = $scope.categories.map(function(cat) { 
+                    return { id: cat.id, name: cat.name }; 
+                });
+                console.log('Available category IDs:', categoryIds);
             })
             .catch(function(error) {
                 console.error('ProductController: Error loading categories', error);

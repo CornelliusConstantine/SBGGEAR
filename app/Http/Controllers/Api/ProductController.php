@@ -22,6 +22,18 @@ class ProductController extends Controller
                         $q->where('slug', $request->category);
                     });
                 })
+                ->when($request->filled('categories'), function ($query) use ($request) {
+                    \Log::info('ProductController: Filtering by multiple category IDs: ' . $request->categories);
+                    $categoryIds = explode(',', $request->categories);
+                    \Log::info('ProductController: Parsed category IDs: ' . implode(', ', $categoryIds));
+                    
+                    // Convert string IDs to integers to ensure proper comparison
+                    $categoryIds = array_map('intval', $categoryIds);
+                    
+                    $query->whereHas('category', function ($q) use ($categoryIds) {
+                        $q->whereIn('id', $categoryIds);
+                    });
+                })
                 ->when($request->filled('min_price'), function ($query) use ($request) {
                     $query->where('price', '>=', $request->min_price);
                 })
