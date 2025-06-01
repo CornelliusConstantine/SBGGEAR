@@ -1,65 +1,63 @@
 'use strict';
 
-app.controller('ProductController', ['$scope', '$routeParams', '$location', 'ProductService', 'CartService', '$rootScope', function($scope, $routeParams, $location, ProductService, CartService, $rootScope) {
+app.controller('ProductController', ['$scope', '$routeParams', '$location', 'ProductService', 'CartService', '$rootScope', 'CategoryService', function($scope, $routeParams, $location, ProductService, CartService, $rootScope, CategoryService) {
     // Initialize controller
     $scope.init = function() {
         $scope.loading = true;
         $scope.products = [];
         $scope.categories = [];
-        $scope.product = null;
-        $scope.quantity = 1;
+        $scope.totalItems = 0;
         $scope.currentPage = 1;
-        $scope.totalPages = 1;
         $scope.itemsPerPage = 12;
+        $scope.totalPages = 0;
         $scope.searchQuery = '';
         $scope.searchSuggestions = [];
-        $scope.selectedImageIndex = null;
-        
-        // Toast notification
+        $scope.productId = $routeParams.id;
+        $scope.categorySlug = $routeParams.slug; // Get category slug from route params
+        $scope.quantity = 1;
         $scope.toast = {
             show: false,
             message: '',
             type: 'success'
         };
         
-        // Filter options
+        // Initialize filters
         $scope.filters = {
-            category: $routeParams.slug || null,
-            search: $routeParams.query || null,
-            minPrice: null,
-            maxPrice: null,
-            sort: 'created_at,desc',
+            sort: 'created_at',
+            direction: 'desc',
+            minPrice: '',
+            maxPrice: '',
+            rating: '',
             selectedCategories: {},
-            selectedRatings: {}
+            category: $location.search().category || null
         };
         
-        // Initialize product ID from route params
-        $scope.productId = $routeParams.id;
-        
-        // Initialize new comment form
-        $scope.newComment = {
-            question: ''
-        };
-        
-        // Check if user is logged in
-        $scope.isLoggedIn = !!localStorage.getItem('token');
-        
-        // Get admin status from $rootScope
-        $scope.isAdmin = $rootScope.isAdmin === true;
-        console.log('INIT: User login status:', $scope.isLoggedIn);
-        console.log('INIT: Admin status from $rootScope:', $rootScope.isAdmin);
-        console.log('INIT: Admin status in controller:', $scope.isAdmin);
+        // Get filters from URL query params
+        var queryParams = $location.search();
+        if (queryParams.sort) {
+            var sortParts = queryParams.sort.split(',');
+            $scope.filters.sort = sortParts[0] || 'created_at';
+            $scope.filters.direction = sortParts[1] || 'desc';
+        }
+        if (queryParams.min_price) $scope.filters.minPrice = queryParams.min_price;
+        if (queryParams.max_price) $scope.filters.maxPrice = queryParams.max_price;
+        if (queryParams.rating) $scope.filters.rating = queryParams.rating;
+        if (queryParams.search) $scope.searchQuery = queryParams.search;
         
         // Check if we're on a product detail page
         if ($scope.productId) {
             $scope.loadProductDetail($scope.productId);
         } 
+        // Check if we're on a category page
+        else if ($scope.categorySlug) {
+            $scope.loadCategoryProducts($scope.categorySlug);
+        }
         // Check if we're on a search results page
         else if ($scope.filters.search) {
             $scope.searchQuery = $scope.filters.search;
             $scope.loadSearchResults($scope.filters.search);
         }
-        // Check if we're on a category page
+        // Check if we're on a category page (using query parameter)
         else if ($scope.filters.category) {
             $scope.loadCategoryProducts($scope.filters.category);
         }
@@ -379,24 +377,42 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     // Load products by category
     $scope.loadCategoryProducts = function(slug) {
         $scope.loading = true;
+        console.log('Loading products for category slug:', slug);
         
         // First load category details
-        ProductService.getCategory(slug)
-            .then(function(response) {
-                $scope.category = response.data;
+        CategoryService.getCategory(slug)
+            .then(function(categoryData) {
+                console.log('Category details loaded:', categoryData);
+                $scope.category = categoryData;
+                
+                // Prepare filter parameters
+                var params = {
+                    page: $scope.currentPage,
+                    limit: $scope.itemsPerPage
+                };
+                
+                // Add sort parameters separately
+                if ($scope.filters.sort) {
+                    params.sort = $scope.filters.sort;
+                }
+                if ($scope.filters.direction) {
+                    params.direction = $scope.filters.direction;
+                }
+                
+                // Add price filters if set
+                if ($scope.filters.minPrice) {
+                    params.min_price = $scope.filters.minPrice;
+                }
+                if ($scope.filters.maxPrice) {
+                    params.max_price = $scope.filters.maxPrice;
+                }
                 
                 // Then load products in that category
-                return ProductService.getProductsByCategory(slug, {
-                    page: $scope.currentPage,
-                    limit: $scope.itemsPerPage,
-                    sort: $scope.filters.sort,
-                    direction: $scope.filters.direction,
-                    min_price: $scope.filters.minPrice,
-                    max_price: $scope.filters.maxPrice
-                });
+                return ProductService.getProductsByCategory(slug, params);
             })
             .then(function(response) {
-                $scope.products = response.data;
+                console.log('Category products loaded:', response);
+                $scope.products = response.data || [];
                 
                 // Process product data
                 $scope.processProductData($scope.products);
@@ -406,8 +422,11 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                 $scope.currentPage = response.meta ? response.meta.current_page : 1;
             })
             .catch(function(error) {
-                console.error('Error loading category products', error);
-                $scope.showToast('Error loading category products', 'error');
+                console.error('Error loading category products for slug:', slug, error);
+                $scope.showToast(error.message || 'Error loading category products', 'error');
+                $scope.products = [];
+                $scope.totalItems = 0;
+                $scope.totalPages = 0;
             })
             .finally(function() {
                 $scope.loading = false;
@@ -416,12 +435,13 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     
     // Load categories
     $scope.loadCategories = function() {
-        ProductService.getCategories()
+        CategoryService.getCategories()
             .then(function(response) {
+                console.log('ProductController: Categories loaded:', response);
                 $scope.categories = response.data;
             })
             .catch(function(error) {
-                console.error('Error loading categories', error);
+                console.error('ProductController: Error loading categories', error);
             });
     };
     

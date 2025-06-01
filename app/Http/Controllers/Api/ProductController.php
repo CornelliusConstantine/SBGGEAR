@@ -12,41 +12,75 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with('category')
-            ->when($request->filled('category'), function ($query) use ($request) {
-                $query->whereHas('category', function ($q) use ($request) {
-                    $q->where('slug', $request->category);
+        try {
+            \Log::info('ProductController: Fetching products with filters: ' . json_encode($request->all()));
+            
+            $query = Product::with('category')
+                ->when($request->filled('category'), function ($query) use ($request) {
+                    \Log::info('ProductController: Filtering by category slug: ' . $request->category);
+                    $query->whereHas('category', function ($q) use ($request) {
+                        $q->where('slug', $request->category);
+                    });
+                })
+                ->when($request->filled('min_price'), function ($query) use ($request) {
+                    $query->where('price', '>=', $request->min_price);
+                })
+                ->when($request->filled('max_price'), function ($query) use ($request) {
+                    $query->where('price', '<=', $request->max_price);
+                })
+                ->when($request->filled('featured'), function ($query) use ($request) {
+                    $featured = filter_var($request->featured, FILTER_VALIDATE_BOOLEAN);
+                    $query->where('is_featured', $featured);
                 });
-            })
-            ->when($request->filled('price_min'), function ($query) use ($request) {
-                $query->where('price', '>=', $request->price_min);
-            })
-            ->when($request->filled('price_max'), function ($query) use ($request) {
-                $query->where('price', '<=', $request->price_max);
-            })
-            ->when($request->filled('featured'), function ($query) use ($request) {
-                $featured = filter_var($request->featured, FILTER_VALIDATE_BOOLEAN);
-                $query->where('is_featured', $featured);
-            })
-            ->when($request->filled('sort'), function ($query) use ($request) {
-                switch ($request->sort) {
-                    case 'price_asc':
-                        $query->orderBy('price', 'asc');
-                        break;
-                    case 'price_desc':
-                        $query->orderBy('price', 'desc');
-                        break;
-                    case 'newest':
+                
+            // Handle sorting properly
+            if ($request->filled('sort')) {
+                $sortField = $request->sort;
+                $sortDirection = $request->filled('direction') ? $request->direction : 'asc';
+                
+                // Handle special sort cases
+                if ($sortField === 'price_asc') {
+                    $query->orderBy('price', 'asc');
+                } else if ($sortField === 'price_desc') {
+                    $query->orderBy('price', 'desc');
+                } else if ($sortField === 'newest') {
+                    $query->orderBy('created_at', 'desc');
+                } else {
+                    // Make sure the sort field is a valid column
+                    $validColumns = ['id', 'name', 'price', 'stock', 'created_at', 'updated_at'];
+                    if (in_array($sortField, $validColumns)) {
+                        $query->orderBy($sortField, $sortDirection);
+                    } else {
+                        // Default sorting
                         $query->orderBy('created_at', 'desc');
-                        break;
-                    default:
-                        $query->orderBy('name', 'asc');
+                    }
                 }
-            });
+            } else {
+                // Default sorting
+                $query->orderBy('created_at', 'desc');
+            }
 
-        $products = $query->paginate($request->input('per_page', 12));
+            $perPage = $request->input('limit', 12);
+            $products = $query->paginate($perPage);
+            
+            \Log::info('ProductController: Found ' . $products->count() . ' products');
 
-        return response()->json($products);
+            return response()->json([
+                'data' => $products->items(),
+                'meta' => [
+                    'current_page' => $products->currentPage(),
+                    'last_page' => $products->lastPage(),
+                    'per_page' => $products->perPage(),
+                    'total' => $products->total()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('ProductController: Error fetching products: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching products: ' . $e->getMessage(),
+                'success' => false
+            ], 500);
+        }
     }
 
     public function show(Product $product)

@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('MainController', ['$scope', 'ProductService', 'CartService', function($scope, ProductService, CartService) {
+app.controller('MainController', ['$scope', 'ProductService', 'CartService', '$location', 'CategoryService', function($scope, ProductService, CartService, $location, CategoryService) {
     // Initialize controller
     $scope.init = function() {
         $scope.loading = {
@@ -14,6 +14,13 @@ app.controller('MainController', ['$scope', 'ProductService', 'CartService', fun
         $scope.newArrivals = [];
         $scope.bestSellers = [];
         $scope.categories = [];
+        
+        // Initialize toast
+        $scope.toast = {
+            show: false,
+            message: '',
+            type: 'success'
+        };
         
         // Load featured products
         ProductService.getProducts({ featured: true, limit: 4 })
@@ -55,15 +62,38 @@ app.controller('MainController', ['$scope', 'ProductService', 'CartService', fun
             });
         
         // Load categories
-        ProductService.getCategories()
+        CategoryService.getCategories()
             .then(function(response) {
+                console.log('MainController: Categories loaded:', response);
                 $scope.categories = response.data;
             })
             .catch(function(error) {
-                console.error('Error loading categories', error);
+                console.error('MainController: Error loading categories', error);
             })
             .finally(function() {
                 $scope.loading.categories = false;
+            });
+    };
+    
+    // Navigate to category page
+    $scope.goToCategory = function(slug) {
+        if (!slug) {
+            console.error('No category slug provided');
+            return;
+        }
+        
+        console.log('Navigating to category:', slug);
+        
+        // First check if the category exists
+        CategoryService.getCategory(slug)
+            .then(function(categoryData) {
+                // Category exists, navigate to it
+                $location.path('/category/' + slug);
+            })
+            .catch(function(error) {
+                console.error('Error checking category before navigation:', error);
+                // Show error toast
+                $scope.showToast(error.message || 'Category not found', 'error');
             });
     };
     
@@ -124,15 +154,15 @@ app.controller('MainController', ['$scope', 'ProductService', 'CartService', fun
             });
     };
     
-    // Show toast message
+    // Show toast notification
     $scope.showToast = function(message, type) {
         $scope.toast = {
+            show: true,
             message: message,
-            type: type || 'success',
-            show: true
+            type: type || 'success'
         };
         
-        // Hide toast after 3 seconds
+        // Auto-hide toast after 3 seconds
         setTimeout(function() {
             $scope.$apply(function() {
                 $scope.toast.show = false;

@@ -21,9 +21,30 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function show(Category $category)
+    public function show($slug)
     {
-        return response()->json($category);
+        try {
+            Log::info('Fetching category with slug: ' . $slug);
+            $category = Category::where('slug', $slug)->first();
+            
+            if (!$category) {
+                Log::warning('Category not found with slug: ' . $slug);
+                return response()->json([
+                    'message' => 'Category not found'
+                ], 404);
+            }
+            
+            Log::info('Category found: ' . $category->name);
+            return response()->json([
+                'data' => $category
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error fetching category: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Error fetching category',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)

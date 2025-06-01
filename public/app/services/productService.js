@@ -93,15 +93,58 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
     // Get products by category
     service.getProductsByCategory = function(categorySlug, filters) {
         var deferred = $q.defer();
-        var params = filters || {};
+        var params = {};
+        
+        // Copy filters to params
+        if (filters) {
+            for (var key in filters) {
+                if (filters.hasOwnProperty(key)) {
+                    params[key] = filters[key];
+                }
+            }
+        }
+        
+        // Add category parameter
         params.category = categorySlug;
         
+        // Make sure sort and direction are separate parameters
+        if (params.sort && params.sort.indexOf(',') > -1) {
+            var sortParts = params.sort.split(',');
+            params.sort = sortParts[0];
+            params.direction = sortParts[1];
+        }
+        
+        console.log('ProductService: Getting products by category slug:', categorySlug, 'with params:', params);
         $http.get(API_URL + '/products', { params: params })
             .then(function(response) {
-                deferred.resolve(response.data);
+                console.log('ProductService: Products by category response:', response);
+                if (response.data && response.data.data) {
+                    // New API format with data wrapper
+                    deferred.resolve({
+                        data: response.data.data,
+                        meta: response.data.meta
+                    });
+                } else if (response.data) {
+                    // Old API format or fallback
+                    deferred.resolve({
+                        data: response.data,
+                        meta: null
+                    });
+                } else {
+                    // No data
+                    deferred.resolve({
+                        data: [],
+                        meta: null
+                    });
+                }
             })
             .catch(function(error) {
-                deferred.reject(error.data);
+                console.error('ProductService: Error getting products by category:', error);
+                if (error.status === 404) {
+                    deferred.reject({ message: 'Category not found' });
+                } else {
+                    deferred.reject(error.data || { message: 'Failed to load products for this category' });
+                }
             });
         
         return deferred.promise;
@@ -137,12 +180,23 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
     service.getCategory = function(slug) {
         var deferred = $q.defer();
         
+        console.log('ProductService: Getting category by slug:', slug);
         $http.get(API_URL + '/categories/' + slug)
             .then(function(response) {
-                deferred.resolve(response.data);
+                console.log('ProductService: Category response:', response);
+                if (response.data && response.data.data) {
+                    // New API format with data wrapper
+                    deferred.resolve({
+                        data: response.data.data
+                    });
+                } else {
+                    // Old API format or fallback
+                    deferred.resolve(response);
+                }
             })
             .catch(function(error) {
-                deferred.reject(error.data);
+                console.error('ProductService: Error getting category by slug:', slug, error);
+                deferred.reject(error.data || { message: 'Category not found' });
             });
         
         return deferred.promise;
