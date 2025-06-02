@@ -7,27 +7,42 @@ use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CartController extends Controller
 {
-    public function show(Request $request)
+    /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
     {
-        $cart = $request->user()->cart;
-
-        if (!$cart) {
-            $cart = Cart::create([
-                'user_id' => $request->user()->id,
-                'total_amount' => 0,
-            ]);
+        $this->middleware('auth:sanctum');
+    }
+    
+    public function index(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in to continue.',
+            ], 401);
         }
-
+        
+        $cart = $this->getUserCart($request->user());
         $cart->load('items.product');
 
         return response()->json($cart);
     }
 
-    public function addItem(Request $request)
+    public function store(Request $request)
     {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in to continue.',
+            ], 401);
+        }
+        
         $request->validate([
             'product_id' => ['required', 'exists:products,id'],
             'quantity' => ['required', 'integer', 'min:1'],
@@ -41,15 +56,7 @@ class CartController extends Controller
             ], 422);
         }
 
-        $cart = $request->user()->cart;
-
-        if (!$cart) {
-            $cart = Cart::create([
-                'user_id' => $request->user()->id,
-                'total_amount' => 0,
-            ]);
-        }
-
+        $cart = $this->getUserCart($request->user());
         $cartItem = $cart->items()->where('product_id', $product->id)->first();
 
         if ($cartItem) {
@@ -85,9 +92,9 @@ class CartController extends Controller
         ]);
     }
 
-    public function updateItem(Request $request, CartItem $cartItem)
+    public function update(Request $request, CartItem $cartItem)
     {
-        if ($cartItem->cart->user_id !== $request->user()->id) {
+        if (!Auth::check() || $cartItem->cart->user_id !== $request->user()->id) {
             return response()->json([
                 'message' => 'Unauthorized',
             ], 403);
@@ -121,9 +128,9 @@ class CartController extends Controller
         ]);
     }
 
-    public function removeItem(Request $request, CartItem $cartItem)
+    public function destroy(Request $request, CartItem $cartItem)
     {
-        if ($cartItem->cart->user_id !== $request->user()->id) {
+        if (!Auth::check() || $cartItem->cart->user_id !== $request->user()->id) {
             return response()->json([
                 'message' => 'Unauthorized',
             ], 403);
@@ -143,5 +150,58 @@ class CartController extends Controller
             'message' => 'Item removed from cart successfully',
             'cart' => $cart,
         ]);
+    }
+
+    /**
+     * Clear all items from the user's cart
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function clear(Request $request)
+    {
+        if (!Auth::check()) {
+            return response()->json([
+                'message' => 'Unauthorized. Please log in to continue.',
+            ], 401);
+        }
+        
+        $cart = $this->getUserCart($request->user());
+        
+        // Delete all cart items
+        $cart->items()->delete();
+        
+        // Update cart total
+        $cart->update([
+            'total_amount' => 0,
+        ]);
+        
+        $cart->load('items.product');
+        
+        return response()->json([
+            'message' => 'Cart cleared successfully',
+            'cart' => $cart,
+        ]);
+    }
+
+    /**
+     * Get or create a cart for the user
+     */
+    private function getUserCart($user)
+    {
+        if (!$user) {
+            return null;
+        }
+        
+        $cart = $user->cart;
+
+        if (!$cart) {
+            $cart = Cart::create([
+                'user_id' => $user->id,
+                'total_amount' => 0,
+            ]);
+        }
+
+        return $cart;
     }
 } 

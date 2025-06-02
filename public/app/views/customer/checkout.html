@@ -9,12 +9,145 @@
     </div>
 </nav>
 
+<!-- Custom Styles for Checkout Page -->
+<style>
+    /* Black and white color scheme */
+    .btn-primary {
+        background-color: #000;
+        border-color: #000;
+    }
+    .btn-primary:hover {
+        background-color: #333;
+        border-color: #333;
+    }
+    .btn-outline-primary {
+        color: #000;
+        border-color: #000;
+    }
+    .btn-outline-primary:hover {
+        background-color: #000;
+        color: #fff;
+    }
+    .text-primary {
+        color: #000 !important;
+    }
+    .bg-primary {
+        background-color: #000 !important;
+    }
+    
+    /* Checkout steps */
+    .checkout-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+    
+    .checkout-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        flex: 1;
+    }
+    
+    .checkout-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 1.5rem;
+        right: 0;
+        width: calc(100% - 3rem);
+        height: 2px;
+        background-color: #e0e0e0;
+        transform: translateX(50%);
+        z-index: 0;
+    }
+    
+    .checkout-step.active:not(:last-child)::after,
+    .checkout-step.completed:not(:last-child)::after {
+        background-color: #000;
+    }
+    
+    .checkout-step-number {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background-color: #f5f5f5;
+        border: 2px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+        z-index: 1;
+        transition: all 0.3s;
+    }
+    
+    .checkout-step.active .checkout-step-number {
+        background-color: #000;
+        border-color: #000;
+        color: #fff;
+    }
+    
+    .checkout-step.completed .checkout-step-number {
+        background-color: #000;
+        border-color: #000;
+        color: #fff;
+    }
+    
+    .checkout-step-text {
+        font-size: 0.9rem;
+        color: #666;
+    }
+    
+    .checkout-step.active .checkout-step-text,
+    .checkout-step.completed .checkout-step-text {
+        color: #000;
+        font-weight: 600;
+    }
+    
+    /* Card styling */
+    .card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+    }
+    
+    .card-header {
+        background-color: #000;
+        color: #fff;
+        font-weight: 600;
+    }
+    
+    /* Cart item styling */
+    .cart-item {
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .cart-item:last-child {
+        border-bottom: none;
+    }
+    
+    .cart-item-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    /* Secure checkout text */
+    .secure-checkout {
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+</style>
+
 <div class="container py-5">
     <h1 class="mb-4">Checkout</h1>
     
     <!-- Loading Spinner -->
     <div class="text-center py-5" ng-if="loading.cart">
-        <div class="spinner-border text-primary" role="status">
+        <div class="spinner-border" style="color: #000;" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
         <p class="mt-2">Loading checkout information...</p>
@@ -34,7 +167,7 @@
         <div class="col-lg-8">
             <!-- Step 1: Shipping Information -->
             <div class="card mb-4" ng-if="currentStep === 1">
-                <div class="card-header bg-light">
+                <div class="card-header">
                     <h5 class="mb-0">Shipping Information</h5>
                 </div>
                 <div class="card-body">
@@ -87,13 +220,13 @@
             
             <!-- Step 2: Payment Method -->
             <div class="card mb-4" ng-if="currentStep === 2">
-                <div class="card-header bg-light">
+                <div class="card-header">
                     <h5 class="mb-0">Payment Method</h5>
                 </div>
                 <div class="card-body">
                     <!-- Loading Spinner -->
                     <div class="text-center py-3" ng-if="loading.order">
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border" style="color: #000;" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p class="mt-2">Creating your order...</p>
@@ -137,13 +270,13 @@
             
             <!-- Step 3: Confirmation -->
             <div class="card mb-4" ng-if="currentStep === 3">
-                <div class="card-header bg-light">
+                <div class="card-header">
                     <h5 class="mb-0">Order Confirmation</h5>
                 </div>
                 <div class="card-body">
                     <!-- Loading Spinner -->
                     <div class="text-center py-3" ng-if="loading.payment">
-                        <div class="spinner-border text-primary" role="status">
+                        <div class="spinner-border" style="color: #000;" role="status">
                             <span class="visually-hidden">Loading...</span>
                         </div>
                         <p class="mt-2">Processing payment...</p>
@@ -191,13 +324,13 @@
         
         <!-- Right Column (Order Summary) -->
         <div class="col-lg-4">
-            <div class="card mb-4">
-                <div class="card-header bg-light">
+            <div class="card mb-4" style="border-radius: 0;">
+                <div class="card-header" style="padding: 0.75rem 1.25rem;">
                     <h5 class="mb-0">Order Summary</h5>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     <!-- Cart Items -->
-                    <div class="cart-items mb-3">
+                    <div class="cart-items px-4 py-3">
                         <div class="cart-item d-flex align-items-center mb-3" ng-repeat="item in cart.items">
                             <img ng-src="{{item.product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{item.product.name}}" class="cart-item-image me-3">
                             <div class="flex-grow-1">
@@ -210,33 +343,51 @@
                         </div>
                     </div>
                     
-                    <hr>
+                    <hr class="my-0">
                     
                     <!-- Order Total -->
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Subtotal:</span>
-                        <span>Rp{{cart.total | number}}</span>
+                    <div class="px-4 py-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal ({{cart.items.length}} items):</span>
+                            <span>Rp{{cart.total | number}}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping:</span>
+                            <span>Rp0</span>
+                        </div>
                     </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Shipping:</span>
-                        <span>Rp0</span>
+                    <hr class="my-0">
+                    <div class="px-4 py-3">
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong>Total:</strong>
+                            <strong>Rp{{cart.total | number}}</strong>
+                        </div>
+                        
+                        <!-- Navigation Buttons -->
+                        <div ng-if="currentStep < 3">
+                            <button class="btn btn-primary w-100 py-2" ng-click="nextStep()" ng-disabled="loading.order || loading.payment" style="border-radius: 0;">
+                                <i class="fas fa-lock me-2"></i>
+                                <span ng-if="currentStep === 1">Continue to Payment</span>
+                                <span ng-if="currentStep === 2">Place Order</span>
+                            </button>
+                            <div class="text-center mt-3">
+                                <button class="btn btn-link" ng-click="prevStep()" ng-if="currentStep > 1" ng-disabled="loading.order || loading.payment">
+                                    <i class="fas fa-arrow-left me-1"></i> Back
+                                </button>
+                            </div>
+                        </div>
                     </div>
-                    <hr>
-                    <div class="d-flex justify-content-between mb-3">
-                        <strong>Total:</strong>
-                        <strong class="text-primary">Rp{{cart.total | number}}</strong>
+                </div>
+            </div>
+            
+            <!-- Secure Payment -->
+            <div class="card bg-light border-0 mb-4" ng-if="currentStep < 3" style="border-radius: 0;">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-shield-alt me-2 text-primary"></i>
+                        <span class="fw-bold">Secure Checkout</span>
                     </div>
-                    
-                    <!-- Navigation Buttons -->
-                    <div ng-if="currentStep < 3">
-                        <button class="btn btn-primary w-100" ng-click="nextStep()" ng-disabled="loading.order || loading.payment">
-                            <span ng-if="currentStep === 1">Continue to Payment</span>
-                            <span ng-if="currentStep === 2">Place Order</span>
-                        </button>
-                        <button class="btn btn-link w-100 mt-2" ng-click="prevStep()" ng-if="currentStep > 1" ng-disabled="loading.order || loading.payment">
-                            Back
-                        </button>
-                    </div>
+                    <p class="text-muted small mb-0">Your payment information is processed securely. We do not store credit card details nor have access to your credit card information.</p>
                 </div>
             </div>
         </div>
@@ -246,7 +397,7 @@
 <!-- Toast Notification -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
     <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="toast-header" ng-class="{'bg-success text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+        <div class="toast-header" ng-class="{'bg-dark text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
             <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
             <button type="button" class="btn-close" ng-click="toast.show = false"></button>
         </div>

@@ -188,12 +188,15 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 // Run block to check authentication status on app start
 app.run(['$rootScope', '$location', 'AuthService', 'CartService', function($rootScope, $location, AuthService, CartService) {
     // Check authentication on app start
-    AuthService.checkAuth().catch(function() {
-        // Handle unauthenticated state if needed
-    });
-    
-    // Initialize cart
-    CartService.init();
+    AuthService.checkAuth()
+        .then(function(user) {
+            // User is authenticated, initialize cart
+            CartService.init();
+        })
+        .catch(function() {
+            // User is not authenticated, reset cart
+            CartService.resetCart();
+        });
     
     // Handle route change errors (e.g., unauthorized access)
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {

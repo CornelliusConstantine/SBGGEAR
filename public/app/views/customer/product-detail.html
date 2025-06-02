@@ -97,7 +97,7 @@
 </nav>
 
 <!-- Loading Spinner -->
-<div class="container py-5" ng-if="loading">
+<div class="container py-5" ng-if="loading.product">
     <div class="text-center py-5">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -107,7 +107,7 @@
 </div>
 
 <!-- Product Detail -->
-<div class="container py-5" ng-if="!loading && product">
+<div class="container py-5" ng-if="!loading.product && product">
     <div class="row">
         <!-- Product Images -->
         <div class="col-md-6 mb-4">
@@ -193,19 +193,19 @@
             
             <!-- Add to Cart -->
             <div class="d-flex align-items-center mb-4">
-                <div class="quantity-control me-3">
-                    <button class="quantity-btn" ng-click="changeQuantity(-1)">
+                <div class="quantity-control me-3" ng-if="product.stock > 0">
+                    <button class="quantity-btn" ng-click="changeQuantity(-1)" ng-disabled="quantity <= 1">
                         <i class="fas fa-minus"></i>
                     </button>
                     <input type="text" class="quantity-input" ng-model="quantity" readonly>
-                    <button class="quantity-btn" ng-click="changeQuantity(1)">
+                    <button class="quantity-btn" ng-click="changeQuantity(1)" ng-disabled="quantity >= product.stock">
                         <i class="fas fa-plus"></i>
                     </button>
                 </div>
                 
                 <button class="btn btn-primary px-4" ng-click="addToCart(product, quantity)" ng-disabled="addingToCart === product.id || product.stock <= 0">
                     <i class="fas" ng-class="{'fa-spinner fa-spin': addingToCart === product.id, 'fa-cart-plus': addingToCart !== product.id}"></i>
-                    Add to Cart
+                    {{product.stock > 0 ? 'Add to Cart' : 'Out of Stock'}}
                 </button>
             </div>
             
@@ -430,7 +430,7 @@
 </div>
 
 <!-- Product Not Found -->
-<div class="container py-5" ng-if="!loading && !product">
+<div class="container py-5" ng-if="!loading.product && !product">
     <div class="text-center py-5">
         <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
         <h3>Product Not Found</h3>

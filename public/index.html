@@ -96,7 +96,7 @@
                         </div>
                     </form>
                     <div class="d-flex align-items-center">
-                        <a href="#!/cart" class="position-relative me-3">
+                        <a href="#!/cart" class="position-relative me-3" ng-if="isLoggedIn">
                             <i class="fas fa-shopping-cart fs-5"></i>
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" ng-if="cartItemCount > 0">
                                 {{cartItemCount}}

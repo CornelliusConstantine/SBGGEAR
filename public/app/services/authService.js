@@ -1,6 +1,6 @@
 'use strict';
 
-app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $rootScope) {
+app.service('AuthService', ['$http', '$q', '$rootScope', 'CartService', function($http, $q, $rootScope, CartService) {
     var service = {};
     var API_URL = '/api';
     
@@ -11,16 +11,21 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
     service.checkAuth = function() {
         var deferred = $q.defer();
         
+        console.log('DEBUG: AuthService.checkAuth called');
+        
         // Check if we have a token in localStorage
         var token = localStorage.getItem('token');
+        console.log('DEBUG: Token exists:', !!token);
         
         if (token) {
+            console.log('DEBUG: Making API request to check auth');
             // Get user data with the token
             $http.get(API_URL + '/user', {
                 headers: {
                     'Authorization': 'Bearer ' + token
                 }
             }).then(function(response) {
+                console.log('DEBUG: Auth check successful, user data:', response.data);
                 currentUser = response.data;
                 $rootScope.isLoggedIn = true;
                 $rootScope.currentUser = currentUser;
@@ -40,7 +45,7 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 
                 deferred.resolve(currentUser);
             }).catch(function(error) {
-                console.error('AuthService: Authentication error', error);
+                console.error('DEBUG: Auth check failed:', error);
                 
                 // Token might be invalid or expired
                 localStorage.removeItem('token');
@@ -51,7 +56,7 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 deferred.reject('unauthorized');
             });
         } else {
-            console.log('AuthService: No token found');
+            console.log('DEBUG: No token found, user not authenticated');
             localStorage.removeItem('userRole');
             $rootScope.isLoggedIn = false;
             $rootScope.currentUser = null;
@@ -172,6 +177,10 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 $rootScope.isLoggedIn = false;
                 $rootScope.currentUser = null;
                 $rootScope.isAdmin = false;
+                
+                // Reset cart
+                CartService.resetCart();
+                
                 deferred.resolve();
             }).catch(function(error) {
                 // Even if the server-side logout fails, we'll still clear the local data
@@ -181,9 +190,15 @@ app.service('AuthService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 $rootScope.isLoggedIn = false;
                 $rootScope.currentUser = null;
                 $rootScope.isAdmin = false;
+                
+                // Reset cart
+                CartService.resetCart();
+                
                 deferred.resolve();
             });
         } else {
+            // Clear any local cart data even if not logged in
+            CartService.resetCart();
             deferred.resolve();
         }
         

@@ -430,7 +430,13 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
+        console.log('DEBUG: ProductService.submitComment called');
+        console.log('DEBUG: Product ID:', productId);
+        console.log('DEBUG: Comment data:', commentData);
+        console.log('DEBUG: Token exists:', !!token);
+        
         if (!token) {
+            console.log('DEBUG: No token found, rejecting');
             deferred.reject({
                 message: 'Authentication required',
                 status: 401
@@ -438,16 +444,19 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
             return deferred.promise;
         }
         
+        console.log('DEBUG: Making API request to:', API_URL + '/products/' + productId + '/comments');
+        
         $http.post(API_URL + '/products/' + productId + '/comments', commentData, {
             headers: {
                 'Authorization': 'Bearer ' + token
             }
         })
             .then(function(response) {
+                console.log('DEBUG: API request successful:', response);
                 deferred.resolve(response.data);
             })
             .catch(function(error) {
-                console.error('Error submitting comment:', error);
+                console.error('DEBUG: Error submitting comment to API:', error);
                 if (error.status === 401) {
                     // Authentication error
                     deferred.reject({

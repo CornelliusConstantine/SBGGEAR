@@ -8,8 +8,18 @@
                 <div class="card-header">{{ __('Login') }}</div>
 
                 <div class="card-body">
+                    @if(session('error'))
+                        <div class="alert alert-danger mb-3">
+                            {{ session('error') }}
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
+                        
+                        @if(isset($redirect) && $redirect)
+                            <input type="hidden" name="redirect" value="{{ $redirect }}">
+                        @endif
 
                         <div class="row mb-3">
                             <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>

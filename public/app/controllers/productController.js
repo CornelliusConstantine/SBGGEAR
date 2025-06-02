@@ -3,7 +3,18 @@
 app.controller('ProductController', ['$scope', '$routeParams', '$location', 'ProductService', 'CartService', '$rootScope', 'CategoryService', function($scope, $routeParams, $location, ProductService, CartService, $rootScope, CategoryService) {
     // Initialize controller
     $scope.init = function() {
-        $scope.loading = true;
+        // Debug authentication status
+        console.log('DEBUG: Checking authentication status');
+        console.log('DEBUG: Token exists:', !!localStorage.getItem('token'));
+        console.log('DEBUG: isLoggedIn:', $rootScope.isLoggedIn);
+        console.log('DEBUG: currentUser:', $rootScope.currentUser);
+        
+        // Initialize scope variables
+        $scope.loading = {
+            product: false,
+            related: false,
+            comments: false
+        };
         $scope.products = [];
         $scope.categories = [];
         $scope.totalItems = 0;
@@ -176,7 +187,14 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     
     // Load product detail
     $scope.loadProductDetail = function(id) {
-        $scope.loading = true;
+        $scope.loading.product = true;
+        $scope.error = null;
+        
+        // Initialize the comment form
+        $scope.newComment = {
+            question: ''
+        };
+        console.log('DEBUG: Initialized newComment object:', $scope.newComment);
         
         // Debug user role - use $rootScope values instead of trying to parse token
         $scope.isAdmin = $rootScope.isAdmin === true;
@@ -236,7 +254,7 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                 $scope.showToast('Error loading product details. Please try again later.', 'error');
             })
             .finally(function() {
-                $scope.loading = false;
+                $scope.loading.product = false;
             });
     };
     
@@ -490,10 +508,32 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     
     // Add product to cart
     $scope.addToCart = function(product, quantity) {
+        // Check if user is logged in
+        if (!localStorage.getItem('token')) {
+            $scope.showToast('Please login to add items to cart', 'error');
+            window.location.href = '#!/login';
+            return;
+        }
+        
+        // Validate quantity
+        var qty = quantity || $scope.quantity || 1;
+        
+        // Check if product is in stock
+        if (!product.stock || product.stock <= 0) {
+            $scope.showToast('Sorry, this product is out of stock', 'error');
+            return;
+        }
+        
+        // Check if quantity is valid
+        if (qty > product.stock) {
+            $scope.showToast('Sorry, only ' + product.stock + ' items available', 'error');
+            return;
+        }
+        
         $scope.addingToCart = product.id;
         
-        CartService.addToCart(product, quantity || $scope.quantity || 1)
-            .then(function() {
+        CartService.addToCart(product, qty)
+            .then(function(response) {
                 // Show success message
                 $scope.showToast('Product added to cart');
                 
@@ -504,7 +544,19 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
             })
             .catch(function(error) {
                 console.error('Error adding product to cart', error);
-                $scope.showToast('Error adding product to cart', 'error');
+                
+                // Handle different error types
+                if (error && error.message) {
+                    $scope.showToast(error.message, 'error');
+                } else if (error && error.status === 401) {
+                    $scope.showToast('Please login to add items to cart', 'error');
+                    localStorage.removeItem('token'); // Clear invalid token
+                    window.location.href = '#!/login';
+                } else if (error && error.status === 422) {
+                    $scope.showToast('Insufficient stock available', 'error');
+                } else {
+                    $scope.showToast('Error adding product to cart', 'error');
+                }
             })
             .finally(function() {
                 $scope.addingToCart = null;
@@ -575,21 +627,30 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
     
     // Submit comment for product
     $scope.submitComment = function() {
+        // Debug logging for comment submission
+        console.log('DEBUG: Starting comment submission');
+        console.log('DEBUG: Token exists:', !!localStorage.getItem('token'));
+        console.log('DEBUG: Comment data:', $scope.newComment);
+        
         // Check if user is logged in
         if (!localStorage.getItem('token')) {
             $scope.showToast('Please login to submit a question', 'error');
+            console.log('DEBUG: User not logged in, aborting submission');
             return;
         }
         
         if (!$scope.newComment || !$scope.newComment.question) {
             $scope.showToast('Please provide a question', 'error');
+            console.log('DEBUG: Empty question, aborting submission');
             return;
         }
         
         $scope.submittingComment = true;
+        console.log('DEBUG: Submitting comment to API');
         
         ProductService.submitComment($scope.product.id, $scope.newComment)
             .then(function(response) {
+                console.log('DEBUG: Comment submission successful', response);
                 $scope.showToast('Question submitted successfully');
                 
                 // Refresh product details to show the new comment
@@ -601,7 +662,7 @@ app.controller('ProductController', ['$scope', '$routeParams', '$location', 'Pro
                 };
             })
             .catch(function(error) {
-                console.error('Error submitting question', error);
+                console.error('DEBUG: Error submitting question', error);
                 if (error && error.status === 401) {
                     $scope.showToast('You must be logged in to submit questions. Please log in and try again.', 'error');
                     localStorage.removeItem('token'); // Clear invalid token

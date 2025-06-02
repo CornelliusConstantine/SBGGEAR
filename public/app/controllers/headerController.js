@@ -1,7 +1,7 @@
 'use strict';
 
-app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthService', 'ProductService', 
-    function($scope, $rootScope, $location, AuthService, ProductService) {
+app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthService', 'ProductService', 'CartService',
+    function($scope, $rootScope, $location, AuthService, ProductService, CartService) {
     // Initialize search
     $scope.searchQuery = '';
     $scope.searchResults = [];
@@ -9,6 +9,12 @@ app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthSe
     $scope.searchLoading = false;
     $scope.isLoggedIn = $rootScope.isLoggedIn || false;
     $scope.isAdmin = $rootScope.isAdmin || false;
+    $scope.cartItemCount = $rootScope.cartItemCount || 0;
+    
+    // Watch for changes in the cart count
+    $scope.$watch('$root.cartItemCount', function(newValue) {
+        $scope.cartItemCount = newValue || 0;
+    });
     
     // Search products
     $scope.searchProducts = function() {
@@ -87,6 +93,7 @@ app.controller('HeaderController', ['$scope', '$rootScope', '$location', 'AuthSe
                 $location.path('/');
                 $scope.isLoggedIn = false;
                 $scope.isAdmin = false;
+                $rootScope.cartItemCount = 0; // Reset cart count
             })
             .catch(function(error) {
                 console.error('Error logging out', error);
