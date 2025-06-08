@@ -32,6 +32,11 @@ class CartController extends Controller
         $cart = $this->getUserCart($request->user());
         $cart->load('items.product');
 
+        // Check stock availability for each item
+        foreach ($cart->items as $item) {
+            $item->stock_status = $this->checkStockStatus($item);
+        }
+
         return response()->json($cart);
     }
 
@@ -86,6 +91,11 @@ class CartController extends Controller
 
         $cart->load('items.product');
 
+        // Check stock availability for each item
+        foreach ($cart->items as $item) {
+            $item->stock_status = $this->checkStockStatus($item);
+        }
+
         return response()->json([
             'message' => 'Item added to cart successfully',
             'cart' => $cart,
@@ -107,6 +117,7 @@ class CartController extends Controller
         if ($cartItem->product->stock < $request->quantity) {
             return response()->json([
                 'message' => 'Insufficient stock available',
+                'available_stock' => $cartItem->product->stock
             ], 422);
         }
 
@@ -121,6 +132,11 @@ class CartController extends Controller
         ]);
 
         $cartItem->cart->load('items.product');
+
+        // Check stock availability for each item
+        foreach ($cartItem->cart->items as $item) {
+            $item->stock_status = $this->checkStockStatus($item);
+        }
 
         return response()->json([
             'message' => 'Cart item updated successfully',
@@ -145,6 +161,11 @@ class CartController extends Controller
         ]);
 
         $cart->load('items.product');
+
+        // Check stock availability for each item
+        foreach ($cart->items as $item) {
+            $item->stock_status = $this->checkStockStatus($item);
+        }
 
         return response()->json([
             'message' => 'Item removed from cart successfully',
@@ -182,6 +203,32 @@ class CartController extends Controller
             'message' => 'Cart cleared successfully',
             'cart' => $cart,
         ]);
+    }
+
+    /**
+     * Check stock availability for a cart item
+     * 
+     * @param CartItem $cartItem
+     * @return array
+     */
+    private function checkStockStatus($cartItem)
+    {
+        $product = $cartItem->product;
+        $status = [
+            'available' => true,
+            'message' => '',
+            'available_stock' => $product->stock
+        ];
+
+        if ($product->stock <= 0) {
+            $status['available'] = false;
+            $status['message'] = 'This product is out of stock';
+        } elseif ($product->stock < $cartItem->quantity) {
+            $status['available'] = false;
+            $status['message'] = "Only {$product->stock} items available";
+        }
+
+        return $status;
     }
 
     /**

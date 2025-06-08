@@ -19,6 +19,9 @@
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
     
+    <!-- Cart Script -->
+    <script src="{{ asset('js/cart.js') }}" defer></script>
+    
     <style>
         :root {
             --bs-primary: #0069d9;
@@ -84,6 +87,18 @@
             background-color: var(--bs-primary);
             color: white;
         }
+        #cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            transition: all 0.3s ease;
+        }
+        .cart-link {
+            position: relative;
+        }
+        .cart-icon {
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -139,8 +154,8 @@
                             @endif
                         @else
                             <li class="nav-item">
-                                <a class="nav-link" href="{{ route('cart') }}">
-                                    <i class="bi bi-cart"></i>
+                                <a class="nav-link cart-link" href="{{ route('cart') }}">
+                                    <i class="bi bi-cart cart-icon"></i>
                                     <span class="badge bg-primary rounded-pill" id="cart-count">0</span>
                                 </a>
                             </li>
@@ -242,11 +257,23 @@
     
     @auth
     <script>
-        // Update cart count in navbar
+        // Update cart count in navbar when page loads
         document.addEventListener('DOMContentLoaded', function() {
-            fetchCartCount();
+            if (typeof cart !== 'undefined') {
+                cart.getCart().then(cartData => {
+                    if (cartData) {
+                        cart.updateCartCount(cartData);
+                    }
+                }).catch(error => {
+                    console.error('Error fetching cart count:', error);
+                });
+            } else {
+                // Fallback if cart.js hasn't loaded yet
+                fetchCartCount();
+            }
         });
         
+        // Legacy function for backward compatibility
         function fetchCartCount() {
             fetch('/api/cart', {
                 headers: {

@@ -90,6 +90,9 @@
                     <a href="{{ route('checkout') }}" id="checkout-btn" class="btn btn-primary w-100 py-3">
                         Proceed to Checkout
                     </a>
+                    <div id="stock-warning" class="alert alert-warning mt-3 d-none">
+                        <small><i class="bi bi-exclamation-triangle me-2"></i>Some items in your cart have stock issues. Please review before checkout.</small>
+                    </div>
                 </div>
             </div>
             
@@ -116,6 +119,9 @@
                 <div>
                     <h6 class="cart-item-name mb-1"></h6>
                     <small class="text-muted cart-item-sku d-block"></small>
+                    <div class="stock-warning text-danger small mt-1 d-none">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i><span class="stock-message"></span>
+                    </div>
                 </div>
             </div>
         </td>
@@ -197,41 +203,56 @@
     
     @auth
     function loadCart() {
-        fetch('/api/cart', {
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    // Handle unauthorized - user not logged in
-                    showEmptyCart();
-                    return Promise.reject('Please log in to view your cart');
+        // Use the cart.js library if available
+        if (typeof cart !== 'undefined') {
+            cart.getCart()
+                .then(data => {
+                    if (data) {
+                        renderCart(data);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading cart:', error);
+                });
+        } else {
+            // Fallback to direct fetch
+            fetch('/api/cart', {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
-                return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
-            }
-            return response.json();
-        })
-        .then(data => {
-            renderCart(data);
-            // Update cart count in the navbar
-            if (typeof fetchCartCount === 'function') {
-                fetchCartCount();
-            }
-        })
-        .catch(error => {
-            console.error('Error loading cart:', error);
-        });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Handle unauthorized - user not logged in
+                        showEmptyCart();
+                        return Promise.reject('Please log in to view your cart');
+                    }
+                    return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderCart(data);
+                // Update cart count in the navbar
+                if (typeof fetchCartCount === 'function') {
+                    fetchCartCount();
+                }
+            })
+            .catch(error => {
+                console.error('Error loading cart:', error);
+            });
+        }
     }
     
     function showEmptyCart() {
         const container = document.getElementById('cart-items-container');
         const emptyMessage = document.getElementById('empty-cart-message');
         const checkoutBtn = document.getElementById('checkout-btn');
+        const stockWarning = document.getElementById('stock-warning');
         
         // Clear existing items
         container.innerHTML = '';
@@ -239,6 +260,7 @@
         emptyMessage.classList.remove('d-none');
         container.appendChild(emptyMessage);
         checkoutBtn.classList.add('disabled');
+        stockWarning.classList.add('d-none');
         document.getElementById('cart-subtotal').textContent = '$0.00';
         document.getElementById('cart-total').textContent = '$0.00';
     }
@@ -248,6 +270,7 @@
         const template = document.getElementById('cart-item-template');
         const emptyMessage = document.getElementById('empty-cart-message');
         const checkoutBtn = document.getElementById('checkout-btn');
+        const stockWarning = document.getElementById('stock-warning');
         
         // Clear existing items
         container.innerHTML = '';
@@ -256,12 +279,16 @@
             emptyMessage.classList.remove('d-none');
             container.appendChild(emptyMessage);
             checkoutBtn.classList.add('disabled');
+            stockWarning.classList.add('d-none');
             document.getElementById('cart-subtotal').textContent = '$0.00';
             document.getElementById('cart-total').textContent = '$0.00';
             return;
         }
         
         checkoutBtn.classList.remove('disabled');
+        
+        // Track if there are any stock issues
+        let hasStockIssues = false;
         
         // Add each item
         cart.items.forEach(item => {
@@ -274,10 +301,14 @@
             
             // Set image with fallback
             const imgElement = row.querySelector('.cart-item-image');
-            if (item.product.images) {
+            if (item.product.image_url) {
+                imgElement.src = item.product.image_url;
+            } else if (item.product.images) {
                 try {
-                    const images = JSON.parse(item.product.images);
-                    imgElement.src = images[0] || '/images/no-image.jpg';
+                    const images = typeof item.product.images === 'string' ? 
+                        JSON.parse(item.product.images) : item.product.images;
+                    imgElement.src = (images.main ? `/storage/products/original/${images.main}` : 
+                        (Array.isArray(images) && images.length > 0 ? images[0] : '/images/no-image.jpg'));
                 } catch (e) {
                     imgElement.src = '/images/no-image.jpg';
                 }
@@ -289,8 +320,31 @@
             row.querySelector('.quantity-input').value = item.quantity;
             row.querySelector('.cart-item-subtotal').textContent = `$${parseFloat(item.subtotal).toFixed(2)}`;
             
+            // Check stock status
+            if (item.stock_status && !item.stock_status.available) {
+                hasStockIssues = true;
+                const stockWarningElement = row.querySelector('.stock-warning');
+                stockWarningElement.classList.remove('d-none');
+                stockWarningElement.querySelector('.stock-message').textContent = item.stock_status.message;
+                
+                // Disable quantity increase if stock is insufficient
+                if (item.stock_status.available_stock <= item.quantity) {
+                    row.querySelector('.quantity-increase').disabled = true;
+                }
+                
+                // Update quantity input max attribute
+                row.querySelector('.quantity-input').max = item.stock_status.available_stock;
+            }
+            
             container.appendChild(row);
         });
+        
+        // Show stock warning if needed
+        if (hasStockIssues) {
+            stockWarning.classList.remove('d-none');
+        } else {
+            stockWarning.classList.add('d-none');
+        }
         
         // Update total
         document.getElementById('cart-subtotal').textContent = `$${parseFloat(cart.total_amount).toFixed(2)}`;
@@ -298,60 +352,100 @@
     }
     
     function updateCartItemQuantity(itemId, quantity) {
-        fetch(`/api/cart/${itemId}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify({ quantity })
-        })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '{{ route("login") }}';
-                    return Promise.reject('Please log in to update your cart');
+        // Use the cart.js library if available
+        if (typeof cart !== 'undefined') {
+            cart.updateItem(itemId, quantity)
+                .then(data => {
+                    if (data) {
+                        renderCart(data.cart);
+                        cart.showNotification('success', 'Cart updated successfully');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating cart item:', error);
+                    cart.showNotification('error', error.message || 'An error occurred while updating your cart');
+                    // Reload cart to reset any invalid quantities
+                    loadCart();
+                });
+        } else {
+            // Fallback to direct fetch
+            fetch(`/api/cart/${itemId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify({ quantity })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '{{ route("login") }}';
+                        return Promise.reject('Please log in to update your cart');
+                    }
+                    return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
                 }
-                return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
-            }
-            return response.json();
-        })
-        .then(data => {
-            renderCart(data.cart);
-        })
-        .catch(error => {
-            console.error('Error updating cart item:', error);
-        });
+                return response.json();
+            })
+            .then(data => {
+                renderCart(data.cart);
+            })
+            .catch(error => {
+                console.error('Error updating cart item:', error);
+                // If there's a specific error message, show it
+                if (typeof error === 'string') {
+                    alert(error);
+                }
+                // Reload cart to reset any invalid quantities
+                loadCart();
+            });
+        }
     }
     
     function removeCartItem(itemId) {
-        fetch(`/api/cart/${itemId}`, {
-            method: 'DELETE',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-        })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '{{ route("login") }}';
-                    return Promise.reject('Please log in to remove items from your cart');
+        // Use the cart.js library if available
+        if (typeof cart !== 'undefined') {
+            cart.removeItem(itemId)
+                .then(data => {
+                    if (data) {
+                        renderCart(data.cart);
+                        cart.showNotification('success', 'Item removed from cart');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error removing cart item:', error);
+                    cart.showNotification('error', error.message || 'An error occurred while removing the item');
+                });
+        } else {
+            // Fallback to direct fetch
+            fetch(`/api/cart/${itemId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }
-                return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
-            }
-            return response.json();
-        })
-        .then(data => {
-            renderCart(data.cart);
-        })
-        .catch(error => {
-            console.error('Error removing cart item:', error);
-        });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '{{ route("login") }}';
+                        return Promise.reject('Please log in to remove items from your cart');
+                    }
+                    return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
+                }
+                return response.json();
+            })
+            .then(data => {
+                renderCart(data.cart);
+            })
+            .catch(error => {
+                console.error('Error removing cart item:', error);
+            });
+        }
     }
     @endauth
 </script>

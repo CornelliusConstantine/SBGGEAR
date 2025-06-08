@@ -104,10 +104,11 @@
                         </button>
                     </div>
                     
-                    <button type="submit" class="btn btn-primary py-2 px-4" {{ $product->stock <= 0 ? 'disabled' : '' }}>
+                    <button type="submit" class="btn btn-primary py-2 px-4" {{ $product->stock <= 0 ? 'disabled' : '' }} id="add-to-cart-button">
                         <i class="bi bi-cart-plus me-2"></i>Add to Cart
                     </button>
                 </form>
+                <div id="cart-feedback" class="mt-3"></div>
                 @else
                 <div class="alert alert-info">
                     <p class="mb-2">Please login to add this item to your cart</p>
@@ -202,6 +203,8 @@
             
             // Add to cart form
             const addToCartForm = document.getElementById('add-to-cart-form');
+            const addToCartButton = document.getElementById('add-to-cart-button');
+            const cartFeedback = document.getElementById('cart-feedback');
             
             if (addToCartForm) {
                 addToCartForm.addEventListener('submit', function(e) {
@@ -210,51 +213,127 @@
                     const quantity = parseInt(quantityInput.value);
                     
                     if (isNaN(quantity) || quantity < 1 || quantity > maxQuantity) {
-                        alert('Please enter a valid quantity');
+                        showCartFeedback('error', 'Please enter a valid quantity');
                         return;
                     }
                     
-                    fetch('/api/cart', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify({
-                            product_id: {{ $product->id }},
-                            quantity: quantity
+                    // Change button state to loading
+                    const originalButtonText = addToCartButton.innerHTML;
+                    addToCartButton.disabled = true;
+                    addToCartButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Adding...';
+                    
+                    // Use the cart.js library if available, otherwise fallback to direct fetch
+                    if (typeof cart !== 'undefined') {
+                        cart.addItem({{ $product->id }}, quantity)
+                            .then(data => {
+                                // Show success message
+                                showCartFeedback('success', 'Product added to cart successfully');
+                                
+                                // Reset quantity to 1
+                                quantityInput.value = 1;
+                                
+                                // Reset button state
+                                addToCartButton.disabled = false;
+                                addToCartButton.innerHTML = originalButtonText;
+                                
+                                // Show toast notification
+                                if (typeof cart.showNotification === 'function') {
+                                    cart.showNotification('success', 'Product added to cart successfully');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error adding to cart:', error);
+                                
+                                // Reset button state
+                                addToCartButton.disabled = false;
+                                addToCartButton.innerHTML = originalButtonText;
+                                
+                                showCartFeedback('error', error.message || 'An error occurred while adding the product to your cart');
+                            });
+                    } else {
+                        // Fallback to direct fetch if cart.js is not loaded
+                        fetch('/api/cart', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({
+                                product_id: {{ $product->id }},
+                                quantity: quantity
+                            })
                         })
-                    })
-                    .then(response => {
-                        if (!response.ok) {
-                            if (response.status === 401) {
-                                // User not logged in, redirect to login
-                                window.location.href = '{{ route("login") }}?redirect={{ url()->current() }}';
-                                return Promise.reject('Please log in to add items to your cart');
+                        .then(response => {
+                            if (!response.ok) {
+                                if (response.status === 401) {
+                                    // User not logged in, redirect to login
+                                    window.location.href = '{{ route("login") }}?redirect={{ url()->current() }}';
+                                    return Promise.reject('Please log in to add items to your cart');
+                                }
+                                return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
                             }
-                            return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        // Show success message
-                        alert('Product added to cart successfully');
-                        
-                        // Update cart count in navbar if the function exists
-                        if (typeof fetchCartCount === 'function') {
-                            fetchCartCount();
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error adding to cart:', error);
-                        if (error !== 'Please log in to add items to your cart') {
-                            alert(error || 'An error occurred while adding the product to your cart');
-                        }
-                    });
+                            return response.json();
+                        })
+                        .then(data => {
+                            // Show success message
+                            showCartFeedback('success', 'Product added to cart successfully');
+                            
+                            // Reset quantity to 1
+                            quantityInput.value = 1;
+                            
+                            // Update cart count in navbar if the function exists
+                            if (typeof fetchCartCount === 'function') {
+                                fetchCartCount();
+                            }
+                            
+                            // Reset button state
+                            addToCartButton.disabled = false;
+                            addToCartButton.innerHTML = originalButtonText;
+                        })
+                        .catch(error => {
+                            console.error('Error adding to cart:', error);
+                            
+                            // Reset button state
+                            addToCartButton.disabled = false;
+                            addToCartButton.innerHTML = originalButtonText;
+                            
+                            if (error !== 'Please log in to add items to your cart') {
+                                showCartFeedback('error', error || 'An error occurred while adding the product to your cart');
+                            }
+                        });
+                    }
                 });
             }
+        }
+        
+        function showCartFeedback(type, message) {
+            const cartFeedback = document.getElementById('cart-feedback');
+            if (!cartFeedback) return;
+            
+            // Clear previous feedback
+            cartFeedback.innerHTML = '';
+            
+            // Create alert element
+            const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+            const icon = type === 'success' ? 'bi-check-circle' : 'bi-exclamation-triangle';
+            
+            cartFeedback.innerHTML = `
+                <div class="alert ${alertClass} alert-dismissible fade show" role="alert">
+                    <i class="bi ${icon} me-2"></i>${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            // Auto-dismiss after 5 seconds
+            setTimeout(() => {
+                const alert = cartFeedback.querySelector('.alert');
+                if (alert) {
+                    const bsAlert = new bootstrap.Alert(alert);
+                    bsAlert.close();
+                }
+            }, 5000);
         }
     });
 </script>
