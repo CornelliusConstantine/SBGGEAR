@@ -1,7 +1,34 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+.checkout-steps .step-circle {
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+}
+.checkout-steps .step.active .step-circle {
+    background-color: var(--bs-primary) !important;
+    color: white !important;
+    border: none !important;
+}
+.checkout-steps .step.active .step-label {
+    color: var(--bs-primary) !important;
+    font-weight: 600;
+}
+.shipping-options .list-group-item:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+.shipping-options .list-group-item.active {
+    background-color: var(--bs-primary);
+    border-color: var(--bs-primary);
+}
+</style>
+@endsection
+
 @section('content')
-<div class="container py-5">
+<div class="container py-5" ng-app="shippingApp" ng-controller="ShippingController" ng-init="init({{ $cart->total_amount ?? 0 }}, {{ $cartWeight ?? 250 }})">
     <div class="row mb-4">
         <div class="col-12">
             <nav aria-label="breadcrumb">
@@ -12,6 +39,31 @@
                 </ol>
             </nav>
             <h1 class="mb-4">Checkout</h1>
+        </div>
+    </div>
+    
+    <!-- Checkout Progress -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="position-relative checkout-steps">
+                <div class="progress" style="height: 1px;">
+                    <div class="progress-bar" role="progressbar" style="width: 50%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <div class="position-absolute w-100 top-0 d-flex justify-content-between" style="transform: translateY(-50%);">
+                    <div class="step active">
+                        <div class="step-circle d-flex align-items-center justify-content-center rounded-circle bg-primary text-white">1</div>
+                        <div class="step-label mt-2 text-center">Shipping</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle d-flex align-items-center justify-content-center rounded-circle bg-light text-muted border">2</div>
+                        <div class="step-label mt-2 text-center text-muted">Payment</div>
+                    </div>
+                    <div class="step">
+                        <div class="step-circle d-flex align-items-center justify-content-center rounded-circle bg-light text-muted border">3</div>
+                        <div class="step-label mt-2 text-center text-muted">Confirmation</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -44,14 +96,24 @@
                         
                         <div class="row mb-3">
                             <div class="col-md-4 mb-3 mb-md-0">
-                                <label for="shipping_city" class="form-label">City</label>
-                                <input type="text" class="form-control" id="shipping_city" name="shipping_city" required>
-                                <div class="invalid-feedback" id="shipping_city_error"></div>
+                                <label for="province" class="form-label">Province</label>
+                                <select class="form-select" id="province" name="province" ng-model="selectedProvince" required>
+                                    <option value="">Select Province</option>
+                                    <option ng-repeat="province in provinces" value="@{{ province.province_id }}">@{{ province.province }}</option>
+                                </select>
+                                <div class="invalid-feedback" id="province_error"></div>
+                                <div class="text-danger small" ng-if="errors.provinces">@{{ errors.provinces }}</div>
+                                <div class="text-muted small" ng-if="loading.provinces">Loading provinces...</div>
                             </div>
                             <div class="col-md-4 mb-3 mb-md-0">
-                                <label for="shipping_province" class="form-label">Province</label>
-                                <input type="text" class="form-control" id="shipping_province" name="shipping_province" required>
-                                <div class="invalid-feedback" id="shipping_province_error"></div>
+                                <label for="city" class="form-label">City</label>
+                                <select class="form-select" id="city" name="city" ng-model="selectedCity" required ng-disabled="!selectedProvince || loading.cities">
+                                    <option value="">Select City</option>
+                                    <option ng-repeat="city in cities" value="@{{ city.city_id }}">@{{ city.type }} @{{ city.city_name }}</option>
+                                </select>
+                                <div class="invalid-feedback" id="city_error"></div>
+                                <div class="text-danger small" ng-if="errors.cities">@{{ errors.cities }}</div>
+                                <div class="text-muted small" ng-if="loading.cities">Loading cities...</div>
                             </div>
                             <div class="col-md-4">
                                 <label for="shipping_postal_code" class="form-label">Postal Code</label>
@@ -64,6 +126,10 @@
                             <label for="notes" class="form-label">Order Notes (Optional)</label>
                             <textarea class="form-control" id="notes" name="notes" rows="2" placeholder="Special notes for delivery or product"></textarea>
                         </div>
+                        
+                        <!-- Hidden input for shipping cost -->
+                        <input type="hidden" id="shipping-cost" name="shipping_cost" value="0">
+                        <input type="hidden" id="shipping-service" name="shipping_service" value="">
                     </form>
                 </div>
             </div>
@@ -73,50 +139,50 @@
                     <h5 class="mb-0">Shipping Method</h5>
                 </div>
                 <div class="card-body p-4">
-                    <div class="form-check mb-3 py-2 border-bottom">
-                        <input class="form-check-input" type="radio" name="shipping_method" id="shipping_regular" value="regular" checked>
-                        <label class="form-check-label d-flex justify-content-between align-items-center w-100" for="shipping_regular">
-                            <div>
-                                <span class="d-block fw-medium">Regular Shipping</span>
-                                <small class="text-muted">3-5 business days</small>
+                    <div class="mb-4">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3 mb-md-0">
+                                <label for="courier" class="form-label">Courier</label>
+                                <select class="form-select" id="courier" name="courier" ng-model="selectedCourier" ng-disabled="!selectedCity">
+                                    <option value="">Select Courier</option>
+                                    <option ng-repeat="courier in couriers" value="@{{ courier.id }}">@{{ courier.name }}</option>
+                                </select>
+                                <div class="text-danger small" ng-if="errors.shipping">@{{ errors.shipping }}</div>
                             </div>
-                            <span class="fw-medium">$5.00</span>
-                        </label>
-                    </div>
-                    <div class="form-check mb-3 py-2 border-bottom">
-                        <input class="form-check-input" type="radio" name="shipping_method" id="shipping_express" value="express">
-                        <label class="form-check-label d-flex justify-content-between align-items-center w-100" for="shipping_express">
-                            <div>
-                                <span class="d-block fw-medium">Express Shipping</span>
-                                <small class="text-muted">1-2 business days</small>
+                            <div class="col-md-6">
+                                <label for="weight" class="form-label">Weight</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="weight" name="weight" ng-model="weight" readonly>
+                                    <span class="input-group-text">gram</span>
+                                </div>
+                                <small class="text-muted">Weight is calculated at 250g per item</small>
                             </div>
-                            <span class="fw-medium">$15.00</span>
-                        </label>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-3" ng-if="selectedCourier && selectedCity">
+                            <button type="button" class="btn btn-outline-primary" id="calculate-shipping" ng-click="calculateShipping()" ng-disabled="loading.shipping">
+                                <span ng-if="!loading.shipping"><i class="bi bi-calculator me-2"></i>Calculate Shipping Fee</span>
+                                <span ng-if="loading.shipping"><i class="spinner-border spinner-border-sm me-2"></i>Calculating...</span>
+                            </button>
+                            <span class="text-muted small">Shipping cost will be added to your total</span>
+                        </div>
                     </div>
-                    <div class="form-check py-2">
-                        <input class="form-check-input" type="radio" name="shipping_method" id="shipping_same_day" value="same_day">
-                        <label class="form-check-label d-flex justify-content-between align-items-center w-100" for="shipping_same_day">
-                            <div>
-                                <span class="d-block fw-medium">Same Day Delivery</span>
-                                <small class="text-muted">Selected areas only</small>
-                            </div>
-                            <span class="fw-medium">$25.00</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0">Payment Method</h5>
-                </div>
-                <div class="card-body p-4">
-                    <p class="text-muted mb-3">Payment will be processed after order confirmation.</p>
                     
-                    <div class="d-flex gap-3 mb-3">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visa/visa-original.svg" alt="Visa" height="30">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mastercard/mastercard-original.svg" alt="Mastercard" height="30">
-                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/paypal/paypal-original.svg" alt="PayPal" height="30">
+                    <div class="shipping-options" ng-if="shippingOptions.length > 0">
+                        <h6 class="mb-3">Available Shipping Options:</h6>
+                        <div class="list-group">
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-center p-3" 
+                                 ng-repeat="option in shippingOptions"
+                                 ng-class="{'active': selectedShipping && selectedShipping.service === option.service}"
+                                 ng-click="selectShippingOption(option, option.cost[0])">
+                                <div>
+                                    <h6 class="mb-1">@{{ option.service }}</h6>
+                                    <p class="mb-1 small">@{{ option.description }}</p>
+                                    <small>Estimated delivery: @{{ option.cost[0].etd }} day(s)</small>
+                                </div>
+                                <div class="fw-bold">@{{ formatCurrency(option.cost[0].value) }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,24 +206,24 @@
                     
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal:</span>
-                        <span id="subtotal">$0.00</span>
+                        <span id="subtotal-amount">@{{ formatCurrency(subtotal) }}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Shipping:</span>
-                        <span id="shipping-cost">$5.00</span>
+                        <span id="shipping-cost-display">@{{ formatCurrency(shippingCost) }}</span>
                     </div>
                     <hr>
                     <div class="d-flex justify-content-between mb-4">
                         <span class="fw-bold">Total:</span>
-                        <span id="total-amount" class="fw-bold">$0.00</span>
+                        <span id="total-amount" class="fw-bold">@{{ formatCurrency(total) }}</span>
                     </div>
                     
-                    <button type="button" id="place-order-btn" class="btn btn-primary w-100 py-3">
-                        Place Order
+                    <button type="button" id="continue-btn" class="btn btn-primary w-100 py-3" disabled title="Please select a shipping option first">
+                        <i class="bi bi-lock me-2"></i>Continue to Payment
                     </button>
                     
                     <p class="text-muted small text-center mt-3 mb-0">
-                        By placing your order, you agree to our 
+                        By continuing, you agree to our 
                         <a href="#">Terms of Service</a> and 
                         <a href="#">Privacy Policy</a>
                     </p>
@@ -174,7 +240,7 @@
         <div class="flex-grow-1">
             <h6 class="mb-0 fs-7 item-name text-truncate"></h6>
             <small class="text-muted">
-                <span class="item-quantity"></span> × <span class="item-price"></span>
+                <span class="item-quantity quantity"></span> × <span class="item-price"></span>
             </small>
         </div>
         <div class="ms-auto item-subtotal fw-medium"></div>
@@ -184,6 +250,11 @@
 @endsection
 
 @section('scripts')
+<!-- AngularJS -->
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+<!-- Shipping Script -->
+<script src="{{ asset('js/shipping.js') }}"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         @auth
@@ -213,8 +284,6 @@
             document.getElementById('shipping_name').value = user.name || '';
             document.getElementById('shipping_phone').value = user.phone || '';
             document.getElementById('shipping_address').value = user.address || '';
-            document.getElementById('shipping_city').value = user.city || '';
-            document.getElementById('shipping_province').value = user.province || '';
             document.getElementById('shipping_postal_code').value = user.postal_code || '';
         })
         .catch(error => {
@@ -223,14 +292,77 @@
             }
         });
         
-        // Handle shipping method changes
-        const shippingMethods = document.querySelectorAll('input[name="shipping_method"]');
-        shippingMethods.forEach(method => {
-            method.addEventListener('change', updateTotal);
+        // Handle continue button
+        document.getElementById('continue-btn').addEventListener('click', function() {
+            // Validate form
+            const form = document.getElementById('checkout-form');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            // Get shipping cost from Angular scope
+            const shippingCost = document.getElementById('shipping-cost').value;
+            const shippingService = document.getElementById('shipping-service').value;
+            if (!shippingCost || shippingCost === '0' || !shippingService) {
+                alert('Please select a shipping option before continuing');
+                return;
+            }
+            
+            // Disable button and show loading
+            const continueBtn = document.getElementById('continue-btn');
+            const originalBtnText = continueBtn.innerHTML;
+            continueBtn.disabled = true;
+            continueBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
+            
+            // Save shipping details to session
+            const shippingDetails = {
+                shipping_name: document.getElementById('shipping_name').value,
+                shipping_phone: document.getElementById('shipping_phone').value,
+                shipping_address: document.getElementById('shipping_address').value,
+                shipping_city: document.getElementById('city').options[document.getElementById('city').selectedIndex].text,
+                shipping_province: document.getElementById('province').options[document.getElementById('province').selectedIndex].text,
+                shipping_postal_code: document.getElementById('shipping_postal_code').value,
+                shipping_cost: shippingCost,
+                shipping_service: shippingService,
+                notes: document.getElementById('notes').value
+            };
+            
+            fetch('/api/shipping/save-details', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                },
+                body: JSON.stringify(shippingDetails)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '{{ route("login") }}?redirect={{ url()->current() }}';
+                        return Promise.reject('Unauthorized');
+                    }
+                    return response.json().then(data => Promise.reject(data.message || 'An error occurred'));
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Proceed to payment page
+                window.location.href = '{{ route("checkout.payment") }}';
+            })
+            .catch(error => {
+                if (error !== 'Unauthorized') {
+                    console.error('Error saving shipping details:', error);
+                    alert('An error occurred while saving shipping details. Please try again.');
+                }
+                
+                // Re-enable button
+                continueBtn.disabled = false;
+                continueBtn.innerHTML = originalBtnText;
+            });
         });
-        
-        // Handle place order button
-        document.getElementById('place-order-btn').addEventListener('click', placeOrder);
         @else
         // Redirect to login if not authenticated
         window.location.href = '{{ route("login") }}?redirect={{ url()->current() }}';
@@ -260,7 +392,6 @@
         })
         .then(cart => {
             renderCartSummary(cart);
-            updateTotal();
         })
         .catch(error => {
             if (error !== 'Unauthorized') {
@@ -273,7 +404,7 @@
         const container = document.getElementById('cart-items-summary');
         const template = document.getElementById('cart-item-summary-template');
         const emptyMessage = document.getElementById('empty-cart-message');
-        const placeOrderBtn = document.getElementById('place-order-btn');
+        const continueBtn = document.getElementById('continue-btn');
         
         // Clear existing items
         container.innerHTML = '';
@@ -281,128 +412,43 @@
         if (!cart.items || cart.items.length === 0) {
             emptyMessage.classList.remove('d-none');
             container.appendChild(emptyMessage);
-            placeOrderBtn.disabled = true;
-            document.getElementById('subtotal').textContent = '$0.00';
+            continueBtn.disabled = true;
             return;
         }
-        
-        placeOrderBtn.disabled = false;
         
         // Add each item
         cart.items.forEach(item => {
-            const clone = template.content.cloneNode(true);
-            
-            clone.querySelector('.item-name').textContent = item.product.name;
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'd-flex align-items-center mb-3 cart-summary-item';
             
             // Set image with fallback
-            const imgElement = clone.querySelector('img');
-            if (item.product.images) {
+            let imageUrl = '/images/no-image.jpg';
+            if (item.product.image_url) {
+                imageUrl = item.product.image_url;
+            } else if (item.product.images) {
                 try {
-                    const images = JSON.parse(item.product.images);
-                    imgElement.src = images[0] || '/images/no-image.jpg';
+                    const images = typeof item.product.images === 'string' ? 
+                        JSON.parse(item.product.images) : item.product.images;
+                    imageUrl = (images.main ? `/storage/products/original/${images.main}` : 
+                        (Array.isArray(images) && images.length > 0 ? images[0] : '/images/no-image.jpg'));
                 } catch (e) {
-                    imgElement.src = '/images/no-image.jpg';
+                    console.error('Error parsing images:', e);
                 }
-            } else {
-                imgElement.src = '/images/no-image.jpg';
             }
             
-            clone.querySelector('.item-quantity').textContent = item.quantity;
-            clone.querySelector('.item-price').textContent = `$${parseFloat(item.price).toFixed(2)}`;
-            clone.querySelector('.item-subtotal').textContent = `$${parseFloat(item.subtotal).toFixed(2)}`;
+            itemDiv.innerHTML = `
+                <img src="${imageUrl}" alt="${item.product.name}" class="img-thumbnail me-2" style="width: 50px; height: 50px; object-fit: cover;">
+                <div class="flex-grow-1">
+                    <h6 class="mb-0 fs-7 item-name text-truncate">${item.product.name}</h6>
+                    <small class="text-muted">
+                        <span class="item-quantity quantity">${item.quantity}</span> × 
+                        <span class="item-price">Rp${parseFloat(item.price).toLocaleString('id-ID')}</span>
+                    </small>
+                </div>
+                <div class="ms-auto item-subtotal fw-medium">Rp${parseFloat(item.subtotal).toLocaleString('id-ID')}</div>
+            `;
             
-            container.appendChild(clone);
-        });
-        
-        // Update subtotal
-        document.getElementById('subtotal').textContent = `$${parseFloat(cart.total_amount).toFixed(2)}`;
-        
-        // Save cart total in a data attribute for calculations
-        container.dataset.subtotal = cart.total_amount;
-    }
-    
-    function updateTotal() {
-        const subtotal = parseFloat(document.getElementById('cart-items-summary').dataset.subtotal) || 0;
-        let shippingCost = 5; // Default shipping cost
-        
-        // Get selected shipping method
-        const selectedShipping = document.querySelector('input[name="shipping_method"]:checked').value;
-        
-        if (selectedShipping === 'express') {
-            shippingCost = 15;
-        } else if (selectedShipping === 'same_day') {
-            shippingCost = 25;
-        }
-        
-        document.getElementById('shipping-cost').textContent = `$${shippingCost.toFixed(2)}`;
-        
-        const total = subtotal + shippingCost;
-        document.getElementById('total-amount').textContent = `$${total.toFixed(2)}`;
-    }
-    
-    function placeOrder() {
-        // Validate form
-        const form = document.getElementById('checkout-form');
-        if (!form.checkValidity()) {
-            form.classList.add('was-validated');
-            return;
-        }
-        
-        // Get form data
-        const formData = {
-            shipping_name: document.getElementById('shipping_name').value,
-            shipping_phone: document.getElementById('shipping_phone').value,
-            shipping_address: document.getElementById('shipping_address').value,
-            shipping_city: document.getElementById('shipping_city').value,
-            shipping_province: document.getElementById('shipping_province').value,
-            shipping_postal_code: document.getElementById('shipping_postal_code').value,
-            shipping_method: document.querySelector('input[name="shipping_method"]:checked').value,
-            shipping_cost: parseFloat(document.getElementById('shipping-cost').textContent.replace('$', '')),
-            notes: document.getElementById('notes').value
-        };
-        
-        // Disable place order button
-        const placeOrderBtn = document.getElementById('place-order-btn');
-        const originalBtnText = placeOrderBtn.textContent;
-        placeOrderBtn.disabled = true;
-        placeOrderBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Processing...';
-        
-        // Create order via API
-        fetch('/api/orders', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                'Authorization': `Bearer ${localStorage.getItem('token')}`
-            },
-            body: JSON.stringify(formData)
-        })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '{{ route("login") }}?redirect={{ url()->current() }}';
-                    return Promise.reject('Please log in to place an order');
-                }
-                return response.json().then(data => {
-                    throw new Error(data.message || 'An error occurred while processing your order.');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            // Redirect to order confirmation page
-            window.location.href = `/orders/${data.order.id}/confirmation`;
-        })
-        .catch(error => {
-            if (error !== 'Please log in to place an order') {
-                console.error('Error placing order:', error);
-                alert(error.message || 'An error occurred while processing your order. Please try again.');
-            }
-            
-            // Re-enable place order button
-            placeOrderBtn.disabled = false;
-            placeOrderBtn.textContent = originalBtnText;
+            container.appendChild(itemDiv);
         });
     }
     @endauth

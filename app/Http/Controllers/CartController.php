@@ -50,7 +50,12 @@ class CartController extends Controller
             return redirect()->route('cart')->with('error', 'Your cart is empty');
         }
         
-        return view('checkout', compact('cart'));
+        // Calculate total weight (250g per item)
+        $cartWeight = $cart->items->sum(function ($item) {
+            return $item->quantity * 250; // 250g per item
+        });
+        
+        return view('checkout', compact('cart', 'cartWeight'));
     }
     
     /**
