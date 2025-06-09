@@ -229,36 +229,49 @@ app.service('AuthService', ['$http', '$q', '$rootScope', 'CartService', function
         return deferred.promise;
     };
     
-    // Check if user is authenticated (for route resolves)
+    // Check if user is authenticated
+    service.isAuthenticated = function() {
+        return !!localStorage.getItem('token');
+    };
+    
+    // Require authentication for routes
     service.requireAuth = function() {
         var deferred = $q.defer();
         
-        service.checkAuth()
-            .then(function(user) {
-                deferred.resolve(user);
-            })
-            .catch(function() {
-                deferred.reject('unauthorized');
-            });
+        if (service.isAuthenticated()) {
+            service.checkAuth()
+                .then(function() {
+                    deferred.resolve();
+                })
+                .catch(function() {
+                    deferred.reject('unauthorized');
+                });
+        } else {
+            deferred.reject('unauthorized');
+        }
         
         return deferred.promise;
     };
     
-    // Check if user is admin (for route resolves)
+    // Require admin role for routes
     service.requireAdmin = function() {
         var deferred = $q.defer();
         
-        service.checkAuth()
-            .then(function(user) {
-                if (user && user.role === 'admin') {
-                    deferred.resolve(user);
-                } else {
-                    deferred.reject('forbidden');
-                }
-            })
-            .catch(function() {
-                deferred.reject('unauthorized');
-            });
+        if (service.isAuthenticated()) {
+            service.checkAuth()
+                .then(function(user) {
+                    if (user.role === 'admin') {
+                        deferred.resolve();
+                    } else {
+                        deferred.reject('forbidden');
+                    }
+                })
+                .catch(function() {
+                    deferred.reject('unauthorized');
+                });
+        } else {
+            deferred.reject('unauthorized');
+        }
         
         return deferred.promise;
     };
@@ -271,11 +284,6 @@ app.service('AuthService', ['$http', '$q', '$rootScope', 'CartService', function
     // Check if user is admin
     service.isAdmin = function() {
         return currentUser && currentUser.role === 'admin';
-    };
-    
-    // Check if user is authenticated
-    service.isAuthenticated = function() {
-        return !!localStorage.getItem('token');
     };
     
     return service;

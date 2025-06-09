@@ -22,6 +22,9 @@
     <!-- Cart Script -->
     <script src="{{ asset('js/cart.js') }}" defer></script>
     
+    <!-- Checkout Script -->
+    <script src="{{ asset('js/checkout.js') }}" defer></script>
+    
     <style>
         :root {
             --bs-primary: #0069d9;
@@ -198,55 +201,54 @@
                 <div class="row">
                     <div class="col-lg-3 mb-4 mb-lg-0">
                         <h5 class="fw-bold mb-4">SBGEAR</h5>
-                        <p class="text-muted mb-4">We offer affordable, comfortable for safety gear.</p>
-                        <div class="social-links">
+                        <p class="mb-4">Your one-stop shop for the best gear and accessories.</p>
+                        <div class="d-flex">
                             <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
-                            <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
                             <a href="#" class="social-icon"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
+                            <a href="#" class="social-icon"><i class="bi bi-youtube"></i></a>
                         </div>
                     </div>
-                    
                     <div class="col-lg-3 mb-4 mb-lg-0">
-                        <h5 class="fw-bold mb-4">COMPANY</h5>
+                        <h6 class="fw-bold mb-3">Shop</h6>
                         <ul class="list-unstyled">
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">About</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Features</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Works</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Career</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">All Products</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">New Arrivals</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Best Sellers</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">On Sale</a></li>
                         </ul>
                     </div>
-                    
                     <div class="col-lg-3 mb-4 mb-lg-0">
-                        <h5 class="fw-bold mb-4">HELP</h5>
+                        <h6 class="fw-bold mb-3">Customer Service</h6>
                         <ul class="list-unstyled">
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Customer Support</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Delivery Details</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Terms & Conditions</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Privacy Policy</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Contact Us</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">FAQs</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Shipping & Returns</a></li>
+                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Track Order</a></li>
                         </ul>
                     </div>
-                    
                     <div class="col-lg-3">
-                        <h5 class="fw-bold mb-4">FAQ</h5>
-                        <ul class="list-unstyled">
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Account</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Manage Deliveries</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Orders</a></li>
-                            <li class="mb-2"><a href="#" class="text-decoration-none text-muted">Payments</a></li>
-                        </ul>
+                        <h6 class="fw-bold mb-3">Newsletter</h6>
+                        <p class="text-muted mb-3">Subscribe to receive updates, access to exclusive deals, and more.</p>
+                        <form action="#" method="POST">
+                            <div class="input-group mb-3">
+                                <input type="email" class="form-control" placeholder="Enter your email" aria-label="Email" aria-describedby="button-addon2">
+                                <button class="btn btn-primary" type="submit" id="button-addon2">Subscribe</button>
+                            </div>
+                        </form>
                     </div>
                 </div>
-                
                 <hr>
-                
                 <div class="row">
-                    <div class="col-12 text-center">
-                        <p class="text-muted mb-4">© 2023-2024 SBGEAR All Rights Reserved.</p>
-                        <div class="payment-methods">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visa/visa-original.svg" alt="Visa" height="30" class="me-3">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/paypal/paypal-original.svg" alt="PayPal" height="30" class="me-3">
-                            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/apple/apple-original.svg" alt="Apple Pay" height="30">
-                        </div>
+                    <div class="col-md-6 text-center text-md-start">
+                        <p class="text-muted mb-0">&copy; 2023 SBGEAR. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-center text-md-end">
+                        <p class="text-muted mb-0">
+                            <a href="#" class="text-decoration-none text-muted me-3">Privacy Policy</a>
+                            <a href="#" class="text-decoration-none text-muted me-3">Terms of Service</a>
+                            <a href="#" class="text-decoration-none text-muted">Cookie Policy</a>
+                        </p>
                     </div>
                 </div>
             </div>

@@ -297,7 +297,7 @@
                         <div style="padding: 1rem 1.25rem;">
                             <div class="d-flex justify-content-between mb-2">
                                 <span>Subtotal ({{cart.items.length}} items):</span>
-                                <span>Rp</span>
+                                <span>Rp{{cart.total_amount | number}}</span>
                             </div>
                             <div class="d-flex justify-content-between">
                                 <span>Shipping:</span>
@@ -308,13 +308,13 @@
                         <div style="padding: 1rem 1.25rem;">
                             <div class="d-flex justify-content-between mb-3">
                                 <strong>Total:</strong>
-                                <strong>Rp</strong>
+                                <strong>Rp{{cart.total_amount | number}}</strong>
                             </div>
                             <!-- Checkout Button -->
                             <div class="mt-4">
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i> Checkout feature is currently under maintenance.
-                                </div>
+                                <a href="/checkout" class="btn btn-primary w-100 py-2">
+                                    Proceed to Checkout <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
                             </div>
 
                             <!-- Secure Checkout -->

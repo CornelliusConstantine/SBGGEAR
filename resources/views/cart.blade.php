@@ -76,7 +76,7 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between mb-3">
                         <span>Subtotal</span>
-                        <span id="cart-subtotal" class="fw-medium">$0.00</span>
+                        <span id="cart-subtotal" class="fw-medium">Rp0</span>
                     </div>
                     <div class="d-flex justify-content-between mb-3">
                         <span>Shipping</span>
@@ -85,11 +85,11 @@
                     <hr>
                     <div class="d-flex justify-content-between mb-4">
                         <span class="fw-bold">Total</span>
-                        <span id="cart-total" class="fw-bold">$0.00</span>
+                        <span id="cart-total" class="fw-bold">Rp0</span>
                     </div>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i> Checkout feature is currently under maintenance.
-                    </div>
+                    <a href="{{ route('checkout.shipping') }}" class="btn btn-primary w-100 py-2">
+                        Proceed to Checkout <i class="bi bi-arrow-right ms-2"></i>
+                    </a>
                 </div>
             </div>
             
@@ -254,8 +254,8 @@
         
         emptyMessage.classList.remove('d-none');
         container.appendChild(emptyMessage);
-        document.getElementById('cart-subtotal').textContent = '$0.00';
-        document.getElementById('cart-total').textContent = '$0.00';
+        document.getElementById('cart-subtotal').textContent = 'Rp0';
+        document.getElementById('cart-total').textContent = 'Rp0';
     }
     
     function renderCart(cart) {
@@ -269,8 +269,8 @@
         if (!cart.items || cart.items.length === 0) {
             emptyMessage.classList.remove('d-none');
             container.appendChild(emptyMessage);
-            document.getElementById('cart-subtotal').textContent = '$0.00';
-            document.getElementById('cart-total').textContent = '$0.00';
+            document.getElementById('cart-subtotal').textContent = 'Rp0';
+            document.getElementById('cart-total').textContent = 'Rp0';
             return;
         }
         
@@ -300,16 +300,16 @@
                 imgElement.src = '/images/no-image.jpg';
             }
             
-            row.querySelector('.cart-item-price').textContent = `$${parseFloat(item.price).toFixed(2)}`;
+            row.querySelector('.cart-item-price').textContent = `Rp${parseFloat(item.price).toLocaleString('id-ID')}`;
             row.querySelector('.quantity-input').value = item.quantity;
-            row.querySelector('.cart-item-subtotal').textContent = `$${parseFloat(item.subtotal).toFixed(2)}`;
+            row.querySelector('.cart-item-subtotal').textContent = `Rp${parseFloat(item.subtotal).toLocaleString('id-ID')}`;
             
             container.appendChild(row);
         });
         
         // Update total
-        document.getElementById('cart-subtotal').textContent = `$${parseFloat(cart.total_amount).toFixed(2)}`;
-        document.getElementById('cart-total').textContent = `$${parseFloat(cart.total_amount).toFixed(2)}`;
+        document.getElementById('cart-subtotal').textContent = `Rp${parseFloat(cart.total_amount).toLocaleString('id-ID')}`;
+        document.getElementById('cart-total').textContent = `Rp${parseFloat(cart.total_amount).toLocaleString('id-ID')}`;
     }
     
     function updateCartItemQuantity(itemId, quantity) {

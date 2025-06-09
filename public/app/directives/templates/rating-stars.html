@@ -1,0 +1,8 @@
+<div class="rating-stars">
+    <span ng-repeat="star in getStars()" 
+          ng-class="star.class" 
+          ng-click="setRating(star.value)" 
+          class="star-symbol"
+          style="cursor: {{readonly ? 'default' : 'pointer'}};">
+    </span>
+</div> 

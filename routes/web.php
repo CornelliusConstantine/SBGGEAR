@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\CheckoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,10 +22,15 @@ use App\Http\Controllers\HomeController;
 // API routes should be defined in api.php
 // The frontend is handled by AngularJS
 
-// For SPA, we don't need Laravel to handle the root route
-// Route::get('/', function () {
-//     return view('welcome');
-// });
+// SPA route - Angular will handle routing on the frontend
+Route::get('/', function () {
+    return view('spa');
+});
+
+// SPA fallback route - All routes not matched by Laravel will be handled by Angular
+Route::get('/{any}', function () {
+    return view('spa');
+})->where('any', '.*')->where('any', '^(?!api).*$');
 
 Auth::routes();
 
@@ -42,6 +48,15 @@ Route::middleware('auth')->group(function () {
     // Cart routes
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
     
+    // Checkout routes
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
+    Route::get('/checkout/shipping', [CheckoutController::class, 'shipping'])->name('checkout.shipping');
+    Route::post('/checkout/shipping', [CheckoutController::class, 'processShipping'])->name('checkout.shipping.process');
+    Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
+    Route::post('/checkout/payment', [CheckoutController::class, 'processPayment'])->name('checkout.payment.process');
+    Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
+    Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calculateShipping'])->name('checkout.calculate-shipping');
+    
     // Order routes
     Route::get('/orders', [OrderController::class, 'userOrders'])->name('orders.index');
     Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
@@ -52,3 +67,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/account/edit', [HomeController::class, 'editAccount'])->name('account.edit');
     Route::put('/account', [HomeController::class, 'updateAccount'])->name('account.update');
 });
+
+// Midtrans webhook
+Route::post('/payment/webhook', [CheckoutController::class, 'webhook'])->name('payment.webhook');

@@ -14,6 +14,9 @@ class Kernel extends ConsoleKernel
     {
         // Run the fix-slugs command daily
         $schedule->command('products:fix-slugs')->daily();
+        
+        // Cancel abandoned orders every hour
+        $schedule->command('orders:cancel-abandoned')->hourly();
     }
 
     /**
@@ -28,5 +31,6 @@ class Kernel extends ConsoleKernel
 
     protected $commands = [
         Commands\FixDuplicateSlugs::class,
+        Commands\CancelAbandonedOrders::class,
     ];
 }

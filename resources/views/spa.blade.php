@@ -1,55 +1,6 @@
-<!DOCTYPE html>
-<html lang="en" ng-app="sbgGearApp">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SBGEAR - Safety Equipment Store</title>
-    <!-- Base URL for HTML5 mode - Using relative path -->
-    <base href="/">
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="assets/css/style.css">
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="assets/img/favicon.png">
-    <style>
-        /* Fix for duplicated navbar */
-        header:not(#main-header) {
-            display: none !important;
-        }
-        /* Make sure stars are black, not green */
-        .star-symbol {
-            color: #000 !important;
-        }
-        /* Remove hero-decoration (green stars) */
-        .hero-decoration {
-            display: none !important;
-        }
-        /* Search results dropdown styling */
-        .search-form {
-            position: relative;
-        }
-        .search-results {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            max-height: 400px;
-            overflow-y: auto;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .search-thumbnail {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-    </style>
-</head>
-<body>
+@extends('layouts.spa')
+
+@section('content')
     <!-- Header -->
     <header id="main-header" ng-controller="HeaderController">
         <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
@@ -71,9 +22,6 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="/products">Products</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/category/on-sale">On Sale</a>
                         </li>
                     </ul>
                     <form class="d-flex mx-auto search-form" ng-submit="submitSearch()">
@@ -183,54 +131,6 @@
                     <p class="small text-muted mb-0">© 2023-2024 SBGEAR All Rights Reserved.</p>
                 </div>
             </div>
-            <div class="row mt-3">
-                <div class="col-12 text-center">
-                    <img src="assets/img/payment_logo/visa-logo.png" alt="Visa" height="30" class="mx-5">
-                    <img src="assets/img/payment_logo/paypal-logo.png" alt="PayPal" height="30" class="mx-5">
-                    <img src="assets/img/payment_logo/ovo-logo.png" alt="OVO" height="30" class="mx-5">
-                </div>
-            </div>
         </div>
     </footer>
-
-    <!-- Bootstrap JS with Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- AngularJS -->
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-animate.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-sanitize.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/2.5.6/ui-bootstrap-tpls.min.js"></script>
-    
-    <!-- App Module -->
-    <script src="app/app.js"></script>
-    
-    <!-- Services -->
-    <script src="app/services/authService.js"></script>
-    <script src="app/services/productService.js"></script>
-    <script src="app/services/cartService.js"></script>
-    <script src="app/services/orderService.js"></script>
-    <script src="app/services/paymentService.js"></script>
-    <script src="app/services/categoryService.js"></script>
-    <script src="app/services/locationService.js"></script>
-    
-    <!-- Controllers -->
-    <script src="app/controllers/headerController.js"></script>
-    <script src="app/controllers/mainController.js"></script>
-    <script src="app/controllers/productController.js"></script>
-    <script src="app/controllers/cartController.js"></script>
-    <script src="app/controllers/checkoutController.js"></script>
-    <script src="app/controllers/orderController.js"></script>
-    <script src="app/controllers/profileController.js"></script>
-    <script src="app/controllers/adminController.js"></script>
-    <script src="app/controllers/authController.js"></script>
-    <script src="app/controllers/adminProductController.js"></script>
-    <script src="app/controllers/adminCategoryController.js"></script>
-    
-    <!-- Directives -->
-    <script src="app/directives/productCard.js"></script>
-    <script src="app/directives/ratingStars.js"></script>
-    <script src="app/directives/loadingSpinner.js"></script>
-    <script src="app/directives/fileModel.js"></script>
-</body>
-</html> 
+@endsection

@@ -1,0 +1,352 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item"><a href="#!/cart">Shopping Cart</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Order Confirmation</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Custom Styles for Checkout Page -->
+<style>
+    /* Black and white color scheme */
+    .btn-primary {
+        background-color: #000;
+        border-color: #000;
+    }
+    .btn-primary:hover {
+        background-color: #333;
+        border-color: #333;
+    }
+    .btn-outline-primary {
+        color: #000;
+        border-color: #000;
+    }
+    .btn-outline-primary:hover {
+        background-color: #000;
+        color: #fff;
+    }
+    
+    /* Checkout steps */
+    .checkout-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+    .checkout-step {
+        flex: 1;
+        text-align: center;
+        padding: 1rem 0.5rem;
+        position: relative;
+    }
+    .checkout-step:not(:last-child):after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -10%;
+        width: 20%;
+        height: 2px;
+        background-color: #dee2e6;
+    }
+    .checkout-step.active {
+        font-weight: bold;
+    }
+    .checkout-step.active .step-number {
+        background-color: #000;
+        color: #fff;
+    }
+    .checkout-step.completed .step-number {
+        background-color: #28a745;
+        color: #fff;
+    }
+    .step-number {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Card styling */
+    .card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    .card-header {
+        background-color: #000;
+        color: #fff;
+        font-weight: 600;
+    }
+    
+    /* Order status */
+    .order-status {
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .order-status.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    .order-status.processing {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    .order-status.completed {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    .order-status.cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    /* Timeline */
+    .order-timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .timeline-item {
+        position: relative;
+        padding-bottom: 1.5rem;
+    }
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    .timeline-item:before {
+        content: '';
+        position: absolute;
+        left: -30px;
+        top: 0;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        background-color: #000;
+        z-index: 1;
+    }
+    .timeline-item:after {
+        content: '';
+        position: absolute;
+        left: -23px;
+        top: 15px;
+        width: 2px;
+        height: calc(100% - 15px);
+        background-color: #dee2e6;
+    }
+    .timeline-item:last-child:after {
+        display: none;
+    }
+    .timeline-date {
+        font-size: 0.75rem;
+        color: #6c757d;
+    }
+    
+    /* Success icon */
+    .success-icon {
+        font-size: 5rem;
+        color: #28a745;
+    }
+</style>
+
+<div class="container py-5">
+    <!-- Loading Spinner -->
+    <div class="text-center py-5" ng-if="loading">
+        <div class="spinner-border" style="color: #000;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading order information...</p>
+    </div>
+    
+    <div ng-if="!loading">
+        <!-- Order Success Message -->
+        <div class="text-center mb-5">
+            <i class="fas fa-check-circle success-icon mb-3"></i>
+            <h1 class="mb-2">Thank You for Your Order!</h1>
+            <p class="lead mb-0">Your order has been placed successfully.</p>
+            <p class="mb-4">Order #{{order.order_number}}</p>
+            <div class="d-inline-block order-status" ng-class="{
+                'pending': order.status === 'pending',
+                'processing': order.status === 'processing',
+                'completed': order.status === 'completed',
+                'cancelled': order.status === 'cancelled'
+            }">
+                {{order.status}}
+            </div>
+        </div>
+        
+        <!-- Checkout Steps -->
+        <div class="checkout-steps mb-5">
+            <div class="checkout-step completed">
+                <div class="step-number">1</div>
+                <div class="step-title">Cart</div>
+            </div>
+            <div class="checkout-step completed">
+                <div class="step-number">2</div>
+                <div class="step-title">Shipping</div>
+            </div>
+            <div class="checkout-step completed">
+                <div class="step-number">3</div>
+                <div class="step-title">Payment</div>
+            </div>
+            <div class="checkout-step completed active">
+                <div class="step-number">4</div>
+                <div class="step-title">Confirmation</div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-8">
+                <!-- Order Details -->
+                <div class="card mb-4">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0">Order Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Product</th>
+                                        <th scope="col">Quantity</th>
+                                        <th scope="col">Price</th>
+                                        <th scope="col">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr ng-repeat="item in order.items">
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <img ng-src="{{item.product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{item.product_name}}" style="width: 50px; height: 50px; object-fit: cover;" class="me-3">
+                                                <div>
+                                                    <h6 class="mb-0">{{item.product_name}}</h6>
+                                                    <small class="text-muted" ng-if="item.product.sku">SKU: {{item.product.sku}}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{item.quantity}}</td>
+                                        <td>Rp{{item.price | number}}</td>
+                                        <td>Rp{{item.subtotal | number}}</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="3" class="text-end">Subtotal:</td>
+                                        <td>Rp{{order.subtotal | number}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end">Shipping:</td>
+                                        <td>Rp{{order.shipping_cost | number}}</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="3" class="text-end fw-bold">Total:</td>
+                                        <td class="fw-bold">Rp{{order.total_amount | number}}</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Order Timeline -->
+                <div class="card mb-4">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0">Order Timeline</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="order-timeline">
+                            <div class="timeline-item" ng-repeat="history in order.tracking_history | orderBy:'-created_at'">
+                                <h6 class="mb-1">{{history.status | uppercase}}</h6>
+                                <p class="mb-0">{{history.description}}</p>
+                                <small class="timeline-date">{{history.created_at | date:'MMM d, y h:mm a'}}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Buttons -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="#!/orders" class="btn btn-outline-secondary">
+                        <i class="fas fa-list me-2"></i>View All Orders
+                    </a>
+                    <a href="#!/" class="btn btn-primary">
+                        <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+                    </a>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <!-- Shipping Information -->
+                <div class="card mb-4">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0">Shipping Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>{{order.shipping_name}}</strong></p>
+                        <p class="mb-1">{{order.shipping_address}}</p>
+                        <p class="mb-1">{{order.shipping_city}}, {{order.shipping_postal_code}}</p>
+                        <p class="mb-3">{{order.shipping_phone}}</p>
+                        
+                        <p class="mb-1"><strong>Shipping Method:</strong></p>
+                        <p class="mb-0">{{order.shipping_courier.toUpperCase()}} - {{order.shipping_service}}</p>
+                    </div>
+                </div>
+                
+                <!-- Payment Information -->
+                <div class="card mb-4">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0">Payment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1"><strong>Payment Method:</strong></p>
+                        <p class="mb-3">{{order.payment_method}}</p>
+                        
+                        <p class="mb-1"><strong>Payment Status:</strong></p>
+                        <p class="mb-0">
+                            <span class="badge" ng-class="{
+                                'bg-warning': order.payment_status === 'pending',
+                                'bg-success': order.payment_status === 'paid',
+                                'bg-danger': order.payment_status === 'failed'
+                            }">
+                                {{order.payment_status | uppercase}}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Need Help? -->
+                <div class="card">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0">Need Help?</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3">If you have any questions about your order, please contact our customer support.</p>
+                        <a href="#!/contact" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-headset me-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-dark text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div> 

@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\StockController;
 use App\Http\Controllers\Api\Admin\AdminController;
@@ -36,6 +37,11 @@ Route::get('/products/featured', [ProductController::class, 'featured']);
 Route::get('/products/search/{query}', [ProductController::class, 'search']);
 Route::get('/products/suggestions/{query}', [ProductController::class, 'suggestions']);
 Route::get('/products/{product}', [ProductController::class, 'show']);
+
+// Location data for shipping
+Route::get('/provinces', [LocationController::class, 'provinces']);
+Route::get('/cities/{provinceId}', [LocationController::class, 'cities']);
+Route::get('/cities', [LocationController::class, 'allCities']);
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {

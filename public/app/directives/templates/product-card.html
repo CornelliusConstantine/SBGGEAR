@@ -1,0 +1,29 @@
+<div class="card product-card h-100 border-0 shadow-sm">
+    <div class="position-relative">
+        <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" class="card-img-top" alt="{{product.name}}" style="height: 200px; object-fit: cover;">
+        <div class="position-absolute top-0 end-0 p-2">
+            <span class="badge bg-danger" ng-if="product.discount_percent > 0">-{{product.discount_percent}}%</span>
+            <span class="badge bg-primary" ng-if="product.is_new">New</span>
+        </div>
+    </div>
+    <div class="card-body d-flex flex-column">
+        <h5 class="card-title text-truncate">{{product.name}}</h5>
+        <div class="mb-2">
+            <rating-stars rating="product.average_rating" max="5"></rating-stars>
+            <small class="text-muted ms-1" ng-if="product.review_count">({{product.review_count}})</small>
+        </div>
+        <div class="mb-3">
+            <span class="fw-bold" ng-if="!product.discount_price">Rp{{product.price | number}}</span>
+            <span ng-if="product.discount_price">
+                <span class="fw-bold">Rp{{product.discount_price | number}}</span>
+                <span class="text-muted text-decoration-line-through ms-2">Rp{{product.price | number}}</span>
+            </span>
+        </div>
+        <div class="mt-auto">
+            <a href="/product/{{product.id}}" class="btn btn-outline-secondary btn-sm me-2">Details</a>
+            <button class="btn btn-primary btn-sm" ng-click="addToCart(product)">
+                <i class="fas fa-cart-plus me-1"></i> Add to Cart
+            </button>
+        </div>
+    </div>
+</div> 

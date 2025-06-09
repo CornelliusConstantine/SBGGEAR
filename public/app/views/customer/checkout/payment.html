@@ -1,0 +1,279 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item"><a href="#!/cart">Shopping Cart</a></li>
+            <li class="breadcrumb-item"><a href="#!/checkout/shipping">Shipping</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Payment</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Custom Styles for Checkout Page -->
+<style>
+    /* Black and white color scheme */
+    .btn-primary {
+        background-color: #000;
+        border-color: #000;
+    }
+    .btn-primary:hover {
+        background-color: #333;
+        border-color: #333;
+    }
+    .btn-outline-primary {
+        color: #000;
+        border-color: #000;
+    }
+    .btn-outline-primary:hover {
+        background-color: #000;
+        color: #fff;
+    }
+    
+    /* Checkout steps */
+    .checkout-steps {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 2rem;
+    }
+    .checkout-step {
+        flex: 1;
+        text-align: center;
+        padding: 1rem 0.5rem;
+        position: relative;
+    }
+    .checkout-step:not(:last-child):after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -10%;
+        width: 20%;
+        height: 2px;
+        background-color: #dee2e6;
+    }
+    .checkout-step.active {
+        font-weight: bold;
+    }
+    .checkout-step.active .step-number {
+        background-color: #000;
+        color: #fff;
+    }
+    .checkout-step.completed .step-number {
+        background-color: #28a745;
+        color: #fff;
+    }
+    .step-number {
+        display: inline-block;
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        border-radius: 50%;
+        background-color: #f8f9fa;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Card styling */
+    .card {
+        border: none;
+        box-shadow: 0 0 20px rgba(0,0,0,0.05);
+    }
+    .card-header {
+        background-color: #000;
+        color: #fff;
+        font-weight: 600;
+    }
+    
+    /* Payment methods */
+    .payment-method {
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .payment-method:hover {
+        border-color: #adb5bd;
+    }
+    .payment-method.selected {
+        border-color: #000;
+        background-color: #f8f9fa;
+    }
+    .payment-method .form-check-input:checked {
+        background-color: #000;
+        border-color: #000;
+    }
+    
+    /* Payment logos */
+    .payment-logos {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+    .payment-logo {
+        height: 30px;
+        filter: grayscale(100%);
+        opacity: 0.7;
+        transition: all 0.2s;
+    }
+    .payment-logo:hover {
+        filter: grayscale(0%);
+        opacity: 1;
+    }
+</style>
+
+<div class="container py-5">
+    <h1 class="mb-4">Checkout</h1>
+    
+    <!-- Checkout Steps -->
+    <div class="checkout-steps mb-5">
+        <div class="checkout-step completed">
+            <div class="step-number">1</div>
+            <div class="step-title">Cart</div>
+        </div>
+        <div class="checkout-step completed">
+            <div class="step-number">2</div>
+            <div class="step-title">Shipping</div>
+        </div>
+        <div class="checkout-step active">
+            <div class="step-number">3</div>
+            <div class="step-title">Payment</div>
+        </div>
+        <div class="checkout-step">
+            <div class="step-number">4</div>
+            <div class="step-title">Confirmation</div>
+        </div>
+    </div>
+    
+    <!-- Loading Spinner -->
+    <div class="text-center py-5" ng-if="loading">
+        <div class="spinner-border" style="color: #000;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading payment options...</p>
+    </div>
+    
+    <div class="row" ng-if="!loading">
+        <div class="col-lg-8">
+            <!-- Payment Method -->
+            <div class="card mb-4">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Please select your preferred payment method to complete your order.</p>
+                    
+                    <!-- Midtrans Payment Container -->
+                    <div id="midtrans-payment-container" class="mb-4">
+                        <!-- Midtrans Snap will be loaded here -->
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i> After clicking "Pay Now", you will be redirected to our secure payment gateway to complete your transaction.
+                    </div>
+                    
+                    <div class="payment-logos mt-4">
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/visa/visa-original.svg" alt="Visa" class="payment-logo">
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mastercard/mastercard-original.svg" alt="Mastercard" class="payment-logo">
+                        <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/paypal/paypal-original.svg" alt="PayPal" class="payment-logo">
+                        <img src="https://www.midtrans.com/assets/images/logo-midtrans-color.png" alt="Midtrans" class="payment-logo" style="height: 20px; margin-top: 5px;">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Shipping Information Summary -->
+            <div class="card mb-4">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">Shipping Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted">Name:</p>
+                            <p class="mb-0"><strong>{{shipping.name}}</strong></p>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <p class="mb-1 text-muted">Phone:</p>
+                            <p class="mb-0"><strong>{{shipping.phone}}</strong></p>
+                        </div>
+                        <div class="col-12 mb-3">
+                            <p class="mb-1 text-muted">Address:</p>
+                            <p class="mb-0"><strong>{{shipping.address}}, {{shipping.city}}, {{shipping.postalCode}}</strong></p>
+                        </div>
+                        <div class="col-12">
+                            <p class="mb-1 text-muted">Shipping Method:</p>
+                            <p class="mb-0"><strong>{{shipping.courier.toUpperCase()}} - {{shipping.serviceName}} (Rp{{shipping.cost | number}})</strong></p>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="#!/checkout/shipping" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-edit me-1"></i> Edit
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Buttons -->
+            <div class="d-flex justify-content-between mt-4">
+                <a href="#!/checkout/shipping" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Shipping
+                </a>
+                <button class="btn btn-primary" id="pay-button" ng-click="processPayment()">
+                    Pay Now<i class="fas fa-lock ms-2"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Order Summary -->
+            <div class="card">
+                <div class="card-header py-3">
+                    <h5 class="mb-0">Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2" ng-repeat="item in cart.items">
+                            <span>{{item.product.name}} × {{item.quantity}}</span>
+                            <span>Rp{{item.subtotal | number}}</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal</span>
+                        <span>Rp{{cart.total_amount | number}}</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Shipping</span>
+                        <span>Rp{{shipping.cost | number}}</span>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between mb-3">
+                        <strong>Total</strong>
+                        <strong>Rp{{cart.total_amount + shipping.cost | number}}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-dark text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : 'Error'}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div>
+
+<!-- Midtrans Snap.js -->
+<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{clientKey}}"></script> 

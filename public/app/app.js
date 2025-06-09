@@ -4,7 +4,8 @@
 var app = angular.module('sbgGearApp', [
     'ngRoute',
     'ngAnimate',
-    'ngSanitize'
+    'ngSanitize',
+    'ui.bootstrap'
 ]);
 
 // Configure routes
@@ -32,8 +33,40 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             controller: 'CartController'
         })
         .when('/checkout', {
-            templateUrl: 'app/views/customer/checkout.html',
-            controller: 'CheckoutController'
+            templateUrl: 'app/views/customer/checkout/shipping.html',
+            controller: 'CheckoutController',
+            resolve: {
+                auth: ['AuthService', function(AuthService) {
+                    return AuthService.requireAuth();
+                }]
+            }
+        })
+        .when('/checkout/shipping', {
+            templateUrl: 'app/views/customer/checkout/shipping.html',
+            controller: 'CheckoutController',
+            resolve: {
+                auth: ['AuthService', function(AuthService) {
+                    return AuthService.requireAuth();
+                }]
+            }
+        })
+        .when('/checkout/payment', {
+            templateUrl: 'app/views/customer/checkout/payment.html',
+            controller: 'CheckoutController',
+            resolve: {
+                auth: ['AuthService', function(AuthService) {
+                    return AuthService.requireAuth();
+                }]
+            }
+        })
+        .when('/checkout/confirmation/:orderId', {
+            templateUrl: 'app/views/customer/checkout/confirmation.html',
+            controller: 'CheckoutController',
+            resolve: {
+                auth: ['AuthService', function(AuthService) {
+                    return AuthService.requireAuth();
+                }]
+            }
         })
         .when('/order-success/:id', {
             templateUrl: 'app/views/customer/order-success.html',
