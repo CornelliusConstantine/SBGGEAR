@@ -301,19 +301,19 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 pb-0">
                             Subtotal
-                            <span>Rp {{cart.subtotal | number:0}}</span>
+                            <span>Rp {{orderSummary.subtotal | number:0}}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                             Shipping
-                            <span ng-if="shipping.cost > 0">Rp {{shipping.cost | number:0}}</span>
-                            <span ng-if="!shipping.cost">Select shipping method</span>
+                            <span ng-if="orderSummary.shipping > 0">Rp {{orderSummary.shipping | number:0}}</span>
+                            <span ng-if="!orderSummary.shipping">Select shipping method</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center border-0 px-0 mb-3">
                             <div>
                                 <strong>Total</strong>
                                 <p class="mb-0">(including tax)</p>
                             </div>
-                            <span><strong>Rp {{(cart.subtotal + (shipping.cost || 0)) | number:0}}</strong></span>
+                            <span><strong>Rp {{orderSummary.total | number:0}}</strong></span>
                         </li>
                     </ul>
                     

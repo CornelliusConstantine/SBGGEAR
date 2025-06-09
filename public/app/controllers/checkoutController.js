@@ -3,7 +3,11 @@
 app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthService', 'CartService', 'LocationService', function($scope, $http, $location, AuthService, CartService, LocationService) {
     // Initialize variables
     $scope.loading = true;
-    $scope.cart = {};
+    $scope.cart = {
+        items: [],
+        subtotal: 0,
+        total: 0
+    };
     $scope.shipping = {
         name: '',
         phone: '',
@@ -26,6 +30,11 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
         loading: false
     };
     $scope.order = {};
+    $scope.orderSummary = {
+        subtotal: 0,
+        shipping: 0,
+        total: 0
+    };
     
     // Location data
     $scope.provinces = [];
@@ -40,14 +49,36 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
             return;
         }
 
-        // Load cart and location data
-        Promise.all([
-            $scope.loadCart(),
-            $scope.loadProvinces()
-        ]).then(function() {
-            $scope.loading = false;
-            $scope.$apply();
-        });
+        // Check if we're on the payment page
+        if ($location.path() === '/checkout/payment') {
+            // Load saved shipping and order summary data
+            const savedShipping = localStorage.getItem('checkout_shipping');
+            const savedSummary = localStorage.getItem('checkout_summary');
+            
+            if (savedShipping) {
+                $scope.shipping = JSON.parse(savedShipping);
+            }
+            
+            if (savedSummary) {
+                $scope.orderSummary = JSON.parse(savedSummary);
+            }
+            
+            // Still load cart for item details
+            $scope.loadCart().then(function() {
+                $scope.loading = false;
+                $scope.$apply();
+            });
+        } else {
+            // Load cart and location data for shipping page
+            Promise.all([
+                $scope.loadCart(),
+                $scope.loadProvinces()
+            ]).then(function() {
+                $scope.loading = false;
+                $scope.updateOrderSummary();
+                $scope.$apply();
+            });
+        }
     };
 
     // Load cart data
@@ -56,6 +87,23 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
         return CartService.getCart()
             .then(function(response) {
                 $scope.cart = response;
+                
+                // Make sure subtotal is available
+                if (!$scope.cart.subtotal && $scope.cart.total) {
+                    $scope.cart.subtotal = $scope.cart.total;
+                }
+                
+                // Calculate subtotal if not available
+                if (!$scope.cart.subtotal) {
+                    $scope.cart.subtotal = 0;
+                    if ($scope.cart.items && $scope.cart.items.length > 0) {
+                        $scope.cart.items.forEach(function(item) {
+                            $scope.cart.subtotal += (parseFloat(item.price) * parseInt(item.quantity));
+                        });
+                    }
+                }
+                
+                $scope.updateOrderSummary();
                 return response;
             })
             .catch(function(error) {
@@ -63,6 +111,13 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
                 $scope.showToast('error', 'Failed to load cart data. Please try again.');
                 return null;
             });
+    };
+    
+    // Update order summary calculations
+    $scope.updateOrderSummary = function() {
+        $scope.orderSummary.subtotal = parseFloat($scope.cart.subtotal) || 0;
+        $scope.orderSummary.shipping = parseFloat($scope.shipping.cost) || 0;
+        $scope.orderSummary.total = $scope.orderSummary.subtotal + $scope.orderSummary.shipping;
     };
     
     // Load provinces
@@ -110,6 +165,7 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
         $scope.shipping.courier = courier;
         $scope.shipping.service = '';
         $scope.shipping.cost = 0;
+        $scope.updateOrderSummary();
         
         // Load shipping services based on selected courier
         $scope.loadShippingServices(courier);
@@ -147,6 +203,7 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
     $scope.selectService = function(service) {
         $scope.shipping.service = service.code;
         $scope.shipping.cost = service.cost;
+        $scope.updateOrderSummary();
     };
 
     // Submit shipping information
@@ -172,6 +229,8 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
             cityName: selectedCity ? selectedCity.name : ''
         };
         
+        // Store order summary for payment page
+        localStorage.setItem('checkout_summary', JSON.stringify($scope.orderSummary));
         localStorage.setItem('checkout_shipping', JSON.stringify(shippingData));
         
         // Navigate to payment page
@@ -192,7 +251,8 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', 'AuthServi
                 payment_details: {
                     transaction_id: 'mid-' + Math.random().toString(36).substr(2, 9),
                     payment_type: 'credit_card'
-                }
+                },
+                order_summary: $scope.orderSummary
             })
             .then(function(response) {
                 $scope.order = response.data;

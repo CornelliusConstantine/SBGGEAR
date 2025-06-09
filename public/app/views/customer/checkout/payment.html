@@ -243,18 +243,18 @@
                     
                     <div class="d-flex justify-content-between mb-2">
                         <span>Subtotal</span>
-                        <span>Rp{{cart.total_amount | number}}</span>
+                        <span>Rp{{orderSummary.subtotal | number}}</span>
                     </div>
                     <div class="d-flex justify-content-between mb-2">
                         <span>Shipping</span>
-                        <span>Rp{{shipping.cost | number}}</span>
+                        <span>Rp{{orderSummary.shipping | number}}</span>
                     </div>
                     
                     <hr>
                     
                     <div class="d-flex justify-content-between mb-3">
                         <strong>Total</strong>
-                        <strong>Rp{{cart.total_amount + shipping.cost | number}}</strong>
+                        <strong>Rp{{orderSummary.total | number}}</strong>
                     </div>
                 </div>
             </div>
