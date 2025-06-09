@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        h1 {
+            color: #333;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Static HTML Test</h1>
+        <p class="success">If you can see this page, static HTML files are being served correctly!</p>
+        
+        <h2>Links to test:</h2>
+        <ul>
+            <li><a href="/">Home (AngularJS app)</a></li>
+            <li><a href="/products">Products page (AngularJS route)</a></li>
+            <li><a href="/debug.php">Debug script</a></li>
+        </ul>
+        
+        <h2>Current URL:</h2>
+        <p id="current-url"></p>
+        
+        <script>
+            document.getElementById('current-url').textContent = window.location.href;
+        </script>
+    </div>
+</body>
+</html> 

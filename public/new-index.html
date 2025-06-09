@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="sbgGearApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBGEAR - Safety Equipment Store</title>
+    <!-- Base URL for HTML5 mode -->
+    <base href="/">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="assets/img/favicon.png">
+    <style>
+        /* Fix for duplicated navbar */
+        header:not(#main-header) {
+            display: none !important;
+        }
+        /* Make sure stars are black, not green */
+        .star-symbol {
+            color: #000 !important;
+        }
+        /* Remove hero-decoration (green stars) */
+        .hero-decoration {
+            display: none !important;
+        }
+        /* Search results dropdown styling */
+        .search-form {
+            position: relative;
+        }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .search-thumbnail {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        /* Debug banner */
+        .debug-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            text-align: center;
+            z-index: 9999;
+        }
+    </style>
+</head>
+<body>
+    <!-- Debug Banner -->
+    <div class="debug-banner">
+        This is the new-index.html file. HTML5 Mode is enabled.
+    </div>
+
+    <!-- Header -->
+    <header id="main-header" ng-controller="HeaderController">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white py-3">
+            <div class="container">
+                <a class="navbar-brand fw-bold fs-4" href="/">SBGEAR</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Shop</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/on-sale">On Sale</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/new-arrivals">New Arrivals</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/products">Products</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/category/on-sale">On Sale</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <div ng-view></div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light mt-5 py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 mb-4 mb-md-0">
+                    <h5 class="fw-bold mb-4">SBGEAR</h5>
+                    <p class="small">We offer affordable, comfortable for safety gear.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- AngularJS -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-sanitize.min.js"></script>
+    
+    <!-- App Module -->
+    <script src="app/app.js"></script>
+    
+    <!-- Services -->
+    <script src="app/services/authService.js"></script>
+    <script src="app/services/productService.js"></script>
+    <script src="app/services/cartService.js"></script>
+    <script src="app/services/orderService.js"></script>
+    <script src="app/services/paymentService.js"></script>
+    <script src="app/services/categoryService.js"></script>
+    
+    <!-- Controllers -->
+    <script src="app/controllers/headerController.js"></script>
+    <script src="app/controllers/mainController.js"></script>
+    <script src="app/controllers/productController.js"></script>
+    <script src="app/controllers/cartController.js"></script>
+    <script src="app/controllers/checkoutController.js"></script>
+    <script src="app/controllers/orderController.js"></script>
+    <script src="app/controllers/profileController.js"></script>
+    <script src="app/controllers/adminController.js"></script>
+    <script src="app/controllers/authController.js"></script>
+    <script src="app/controllers/adminProductController.js"></script>
+    <script src="app/controllers/adminCategoryController.js"></script>
+    
+    <!-- Directives -->
+    <script src="app/directives/productCard.js"></script>
+    <script src="app/directives/ratingStars.js"></script>
+    <script src="app/directives/loadingSpinner.js"></script>
+    <script src="app/directives/fileModel.js"></script>
+</body>
+</html> 

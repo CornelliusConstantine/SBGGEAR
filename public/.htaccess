@@ -14,17 +14,14 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteRule ^ index.php [L]
-
-    # Redirect API requests to Laravel
+    # API requests go to Laravel
     RewriteCond %{REQUEST_URI} ^/api/.*$
-    RewriteRule ^api/(.*)$ laravel.php [L]
+    RewriteRule ^api/(.*)$ index.php [L]
 
-    # If the file or directory exists, serve it directly
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.html [L]
+    # If the file exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ - [L]
+
+    # Send all other requests to index.php
+    RewriteRule ^ index.php [L]
 </IfModule>

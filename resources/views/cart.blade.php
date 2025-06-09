@@ -87,11 +87,8 @@
                         <span class="fw-bold">Total</span>
                         <span id="cart-total" class="fw-bold">$0.00</span>
                     </div>
-                    <a href="{{ route('checkout') }}" id="checkout-btn" class="btn btn-primary w-100 py-3">
-                        Proceed to Checkout
-                    </a>
-                    <div id="stock-warning" class="alert alert-warning mt-3 d-none">
-                        <small><i class="bi bi-exclamation-triangle me-2"></i>Some items in your cart have stock issues. Please review before checkout.</small>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> Checkout feature is currently under maintenance.
                     </div>
                 </div>
             </div>
@@ -251,16 +248,12 @@
     function showEmptyCart() {
         const container = document.getElementById('cart-items-container');
         const emptyMessage = document.getElementById('empty-cart-message');
-        const checkoutBtn = document.getElementById('checkout-btn');
-        const stockWarning = document.getElementById('stock-warning');
         
         // Clear existing items
         container.innerHTML = '';
         
         emptyMessage.classList.remove('d-none');
         container.appendChild(emptyMessage);
-        checkoutBtn.classList.add('disabled');
-        stockWarning.classList.add('d-none');
         document.getElementById('cart-subtotal').textContent = '$0.00';
         document.getElementById('cart-total').textContent = '$0.00';
     }
@@ -269,8 +262,6 @@
         const container = document.getElementById('cart-items-container');
         const template = document.getElementById('cart-item-template');
         const emptyMessage = document.getElementById('empty-cart-message');
-        const checkoutBtn = document.getElementById('checkout-btn');
-        const stockWarning = document.getElementById('stock-warning');
         
         // Clear existing items
         container.innerHTML = '';
@@ -278,17 +269,10 @@
         if (!cart.items || cart.items.length === 0) {
             emptyMessage.classList.remove('d-none');
             container.appendChild(emptyMessage);
-            checkoutBtn.classList.add('disabled');
-            stockWarning.classList.add('d-none');
             document.getElementById('cart-subtotal').textContent = '$0.00';
             document.getElementById('cart-total').textContent = '$0.00';
             return;
         }
-        
-        checkoutBtn.classList.remove('disabled');
-        
-        // Track if there are any stock issues
-        let hasStockIssues = false;
         
         // Add each item
         cart.items.forEach(item => {
@@ -320,31 +304,8 @@
             row.querySelector('.quantity-input').value = item.quantity;
             row.querySelector('.cart-item-subtotal').textContent = `$${parseFloat(item.subtotal).toFixed(2)}`;
             
-            // Check stock status
-            if (item.stock_status && !item.stock_status.available) {
-                hasStockIssues = true;
-                const stockWarningElement = row.querySelector('.stock-warning');
-                stockWarningElement.classList.remove('d-none');
-                stockWarningElement.querySelector('.stock-message').textContent = item.stock_status.message;
-                
-                // Disable quantity increase if stock is insufficient
-                if (item.stock_status.available_stock <= item.quantity) {
-                    row.querySelector('.quantity-increase').disabled = true;
-                }
-                
-                // Update quantity input max attribute
-                row.querySelector('.quantity-input').max = item.stock_status.available_stock;
-            }
-            
             container.appendChild(row);
         });
-        
-        // Show stock warning if needed
-        if (hasStockIssues) {
-            stockWarning.classList.remove('d-none');
-        } else {
-            stockWarning.classList.add('d-none');
-        }
         
         // Update total
         document.getElementById('cart-subtotal').textContent = `$${parseFloat(cart.total_amount).toFixed(2)}`;

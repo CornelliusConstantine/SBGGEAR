@@ -34,31 +34,6 @@ class CartController extends Controller
     }
 
     /**
-     * Display the checkout page
-     *
-     * @return \Illuminate\View\View
-     */
-    public function checkout(Request $request)
-    {
-        if (!Auth::check()) {
-            return redirect()->route('login')->with('error', 'Please log in to checkout');
-        }
-        
-        $cart = $this->getUserCart($request->user());
-        
-        if (!$cart || $cart->items->count() === 0) {
-            return redirect()->route('cart')->with('error', 'Your cart is empty');
-        }
-        
-        // Calculate total weight (250g per item)
-        $cartWeight = $cart->items->sum(function ($item) {
-            return $item->quantity * 250; // 250g per item
-        });
-        
-        return view('checkout', compact('cart', 'cartWeight'));
-    }
-    
-    /**
      * Get or create a cart for the user
      */
     private function getUserCart($user)

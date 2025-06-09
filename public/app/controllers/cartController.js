@@ -161,7 +161,8 @@ app.controller('CartController', ['$scope', '$location', 'CartService', '$timeou
     
     // Proceed to checkout
     $scope.checkout = function() {
-        $location.path('/checkout');
+        // Display maintenance message
+        $scope.showToast('Checkout feature is currently under maintenance', 'info');
     };
     
     // Continue shopping

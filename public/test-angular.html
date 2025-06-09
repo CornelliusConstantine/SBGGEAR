@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AngularJS Test</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <script src="/js/shipping.js"></script>
+</head>
+<body ng-app="shippingApp" ng-controller="ShippingController" ng-init="init(10000, 500)">
+    <h1>AngularJS Test</h1>
+    <p>Subtotal: {{ subtotal }}</p>
+    <p>Weight: {{ weight }}</p>
+    <p>Shipping Cost: {{ shippingCost }}</p>
+    <p>Total: {{ total }}</p>
+    
+    <h2>Provinces</h2>
+    <select ng-model="selectedProvince">
+        <option value="">Select Province</option>
+        <option ng-repeat="province in provinces" value="{{ province.province_id }}">{{ province.province }}</option>
+    </select>
+    
+    <h2>Cities</h2>
+    <select ng-model="selectedCity" ng-disabled="!selectedProvince">
+        <option value="">Select City</option>
+        <option ng-repeat="city in cities" value="{{ city.city_id }}">{{ city.type }} {{ city.city_name }}</option>
+    </select>
+    
+    <h2>Courier</h2>
+    <select ng-model="selectedCourier">
+        <option value="">Select Courier</option>
+        <option ng-repeat="courier in couriers" value="{{ courier.id }}">{{ courier.name }}</option>
+    </select>
+    
+    <button ng-click="calculateShipping()" ng-disabled="!selectedProvince || !selectedCity || !selectedCourier">
+        Calculate Shipping
+    </button>
+    
+    <h2>Shipping Options</h2>
+    <div ng-repeat="option in shippingOptions">
+        <h3>{{ option.service }} - {{ option.description }}</h3>
+        <div ng-repeat="cost in option.cost">
+            <p>Cost: {{ formatCurrency(cost.value) }}</p>
+            <p>Estimated Delivery: {{ cost.etd }} day(s)</p>
+            <button ng-click="selectShippingOption(option, cost)">Select</button>
+        </div>
+    </div>
+</body>
+</html> 

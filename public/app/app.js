@@ -181,12 +181,13 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
             redirectTo: '/'
         });
     
-    // Use HTML5 History API
+    // Use HTML5 History API instead of hashbang
+    $locationProvider.html5Mode(true);
     $locationProvider.hashPrefix('!');
 }]);
 
 // Run block to check authentication status on app start
-app.run(['$rootScope', '$location', 'AuthService', 'CartService', function($rootScope, $location, AuthService, CartService) {
+app.run(['$rootScope', '$location', '$window', 'AuthService', 'CartService', function($rootScope, $location, $window, AuthService, CartService) {
     // Check authentication on app start
     AuthService.checkAuth()
         .then(function(user) {
@@ -201,9 +202,14 @@ app.run(['$rootScope', '$location', 'AuthService', 'CartService', function($root
     // Handle route change errors (e.g., unauthorized access)
     $rootScope.$on('$routeChangeError', function(event, current, previous, rejection) {
         if (rejection === 'unauthorized') {
-            window.location.href = '#!/login';
+            $location.path('/login');
         } else if (rejection === 'forbidden') {
-            window.location.href = '#!/';
+            $location.path('/');
         }
     });
+    
+    // Helper function for navigation that all controllers can use
+    $rootScope.navigate = function(path) {
+        $location.path(path);
+    };
 }]); 

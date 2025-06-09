@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\StockController;
 use App\Http\Controllers\Api\Admin\AdminController;
-use App\Http\Controllers\Api\ShippingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -101,9 +100,3 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/flush-accounts', [AdminController::class, 'flushAdminAccounts']);
     });
 });
-
-// Shipping routes
-Route::get('/provinces', [ShippingController::class, 'getProvinces']);
-Route::post('/cities', [ShippingController::class, 'getCities']);
-Route::post('/shipping/cost', [ShippingController::class, 'calculateShipping']);
-Route::post('/shipping/save-details', [ShippingController::class, 'saveShippingDetails']);

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SBGEAR - Simple Index</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            line-height: 1.6;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .btn:hover {
+            background-color: #0069d9;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SBGEAR - Safety Equipment Store</h1>
+        
+        <p class="success">Simple index page loaded successfully!</p>
+        
+        <h2>Navigation Options:</h2>
+        
+        <div>
+            <h3>1. Using Hashbang Navigation (Original Method)</h3>
+            <a href="/#!" class="btn">Home</a>
+            <a href="/#!products" class="btn">Products</a>
+            <a href="/#!cart" class="btn">Cart</a>
+        </div>
+        
+        <div>
+            <h3>2. Using HTML5 Mode (Clean URLs)</h3>
+            <a href="/" class="btn">Home</a>
+            <a href="/products" class="btn">Products</a>
+            <a href="/cart" class="btn">Cart</a>
+        </div>
+        
+        <div>
+            <h3>3. Test Pages</h3>
+            <a href="/test-server.php" class="btn">Server Test</a>
+            <a href="/test.html" class="btn">Static HTML Test</a>
+            <a href="/spa.php" class="btn">SPA Direct</a>
+        </div>
+        
+        <h2>Server Information</h2>
+        <p>This is a static HTML file that should load regardless of server configuration.</p>
+    </div>
+    
+    <script>
+        // Simple script to show the current URL
+        document.addEventListener('DOMContentLoaded', function() {
+            const container = document.querySelector('.container');
+            const urlInfo = document.createElement('div');
+            urlInfo.innerHTML = `
+                <h2>Current URL Information</h2>
+                <p><strong>Full URL:</strong> ${window.location.href}</p>
+                <p><strong>Path:</strong> ${window.location.pathname}</p>
+                <p><strong>Hash:</strong> ${window.location.hash}</p>
+            `;
+            container.appendChild(urlInfo);
+        });
+    </script>
+</body>
+</html> 

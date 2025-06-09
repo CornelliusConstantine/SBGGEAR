@@ -6,7 +6,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\CheckoutController;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +18,13 @@ use App\Http\Controllers\CheckoutController;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// API routes should be defined in api.php
+// The frontend is handled by AngularJS
+
+// For SPA, we don't need Laravel to handle the root route
+// Route::get('/', function () {
+//     return view('welcome');
+// });
 
 Auth::routes();
 
@@ -38,12 +41,6 @@ Route::get('/on-sale', [ProductController::class, 'onSale'])->name('products.sal
 Route::middleware('auth')->group(function () {
     // Cart routes
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
-    
-    // Checkout routes
-    Route::get('/checkout', [CartController::class, 'checkout'])->name('checkout');
-    Route::get('/checkout/payment', [CheckoutController::class, 'payment'])->name('checkout.payment');
-    Route::post('/checkout/process', [CheckoutController::class, 'process'])->name('checkout.process');
-    Route::get('/checkout/confirmation', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
     
     // Order routes
     Route::get('/orders', [OrderController::class, 'userOrders'])->name('orders.index');
