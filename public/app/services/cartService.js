@@ -11,10 +11,18 @@ app.service('CartService', ['$http', '$q', '$rootScope', function($http, $q, $ro
     // Initialize cart
     service.init = function() {
         var token = localStorage.getItem('token');
+        var deferred = $q.defer();
         
         if (token) {
             // If user is logged in, get cart from server
-            service.getCart();
+            service.getCart()
+                .then(function(cartData) {
+                    deferred.resolve(cartData);
+                })
+                .catch(function(error) {
+                    console.error('Error initializing cart:', error);
+                    deferred.reject(error);
+                });
         } else {
             // Otherwise, try to get cart from localStorage
             var localCart = localStorage.getItem('cart');
@@ -22,12 +30,18 @@ app.service('CartService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 try {
                     cart = JSON.parse(localCart);
                     $rootScope.cartItemCount = service.getItemCount();
+                    deferred.resolve(cart);
                 } catch (e) {
                     console.error('Error parsing cart from localStorage', e);
                     cart = { items: [], total: 0 };
+                    deferred.resolve(cart);
                 }
+            } else {
+                deferred.resolve(cart);
             }
         }
+        
+        return deferred.promise;
     };
     
     // Save cart to localStorage
@@ -85,7 +99,7 @@ app.service('CartService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                     deferred.resolve(cart);
                 } else {
                     // For other errors, still use local cart but reject the promise
-                    deferred.reject(error.data);
+                    deferred.reject(error);
                 }
             });
         
@@ -337,7 +351,6 @@ app.service('CartService', ['$http', '$q', '$rootScope', function($http, $q, $ro
         
         if (token) {
             // If user is logged in, clear server cart
-            // Note: This is a custom endpoint that might need to be added to the API
             $http.delete(API_URL + '/cart', {
                 headers: {
                     'Authorization': 'Bearer ' + token
@@ -346,16 +359,28 @@ app.service('CartService', ['$http', '$q', '$rootScope', function($http, $q, $ro
                 .then(function(response) {
                     cart = { items: [], total: 0 };
                     $rootScope.cartItemCount = 0;
+                    service.saveCart();
                     deferred.resolve(cart);
                 })
                 .catch(function(error) {
-                    deferred.reject(error.data);
+                    console.error('Error clearing cart:', error);
+                    if (error.status === 401) {
+                        // Clear token if unauthorized
+                        localStorage.removeItem('token');
+                        $rootScope.isLoggedIn = false;
+                    }
+                    
+                    // Still clear local cart
+                    cart = { items: [], total: 0 };
+                    $rootScope.cartItemCount = 0;
+                    service.saveCart();
+                    deferred.resolve(cart);
                 });
         } else {
             // Otherwise, clear local cart
             cart = { items: [], total: 0 };
-            service.saveCart();
             $rootScope.cartItemCount = 0;
+            service.saveCart();
             deferred.resolve(cart);
         }
         
@@ -364,25 +389,27 @@ app.service('CartService', ['$http', '$q', '$rootScope', function($http, $q, $ro
     
     // Calculate cart total
     service.calculateTotal = function() {
-        if (!cart.items || cart.items.length === 0) {
-            cart.total = 0;
-            return;
-        }
+        cart.total = 0;
+        cart.items.forEach(function(item) {
+            var price = parseFloat(item.price);
+            var quantity = parseInt(item.quantity);
+            
+            if (!isNaN(price) && !isNaN(quantity)) {
+                item.subtotal = price * quantity;
+                cart.total += item.subtotal;
+            }
+        });
         
-        cart.total = cart.items.reduce(function(total, item) {
-            var itemPrice = parseFloat(item.price) || 0;
-            var itemQuantity = parseInt(item.quantity) || 0;
-            return total + (itemPrice * itemQuantity);
-        }, 0);
-        
-        console.log('Cart total calculated:', cart.total);
+        return cart.total;
     };
     
-    // Get cart item count
+    // Get item count
     service.getItemCount = function() {
-        return cart.items.reduce(function(count, item) {
-            return count + item.quantity;
-        }, 0);
+        if (!cart || !cart.items) {
+            return 0;
+        }
+        
+        return cart.items.length;
     };
     
     // Sync local cart with server after login
@@ -412,15 +439,20 @@ app.service('CartService', ['$http', '$q', '$rootScope', function($http, $q, $ro
         }
     };
     
-    // Reset cart completely
+    // Reset cart (used for logout)
     service.resetCart = function() {
-        cart = {
-            items: [],
-            total: 0
-        };
-        localStorage.removeItem('cart');
+        cart = { items: [], total: 0 };
         $rootScope.cartItemCount = 0;
-        return cart;
+        localStorage.removeItem('cart');
+    };
+    
+    // Update cart count in UI
+    service.updateCartCount = function(cartData) {
+        if (cartData && cartData.items) {
+            $rootScope.cartItemCount = cartData.items.length;
+        } else {
+            $rootScope.cartItemCount = 0;
+        }
     };
     
     return service;

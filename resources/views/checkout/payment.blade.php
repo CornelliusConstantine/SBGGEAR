@@ -69,12 +69,18 @@
                     
                     <div class="mb-4">
                         <h6 class="mb-3">Available Payment Methods:</h6>
+                        <div class="alert alert-info small">
+                            <i class="bi bi-info-circle me-2"></i>
+                            When you click "Proceed to Payment", you'll be able to choose from various payment methods provided by Midtrans, including:
+                        </div>
+                        
                         <div class="row row-cols-2 row-cols-md-4 g-3 mb-4">
                             <div class="col">
                                 <div class="card h-100 payment-method-card">
                                     <div class="card-body text-center p-3">
                                         <i class="bi bi-credit-card fs-3 mb-2"></i>
                                         <p class="mb-0 small">Credit Card</p>
+                                        <span class="badge bg-light text-dark mt-1">Visa / Mastercard</span>
                                     </div>
                                 </div>
                             </div>
@@ -83,6 +89,7 @@
                                     <div class="card-body text-center p-3">
                                         <i class="bi bi-bank fs-3 mb-2"></i>
                                         <p class="mb-0 small">Bank Transfer</p>
+                                        <span class="badge bg-light text-dark mt-1">BCA / Mandiri / BNI</span>
                                     </div>
                                 </div>
                             </div>
@@ -91,6 +98,7 @@
                                     <div class="card-body text-center p-3">
                                         <i class="bi bi-wallet2 fs-3 mb-2"></i>
                                         <p class="mb-0 small">E-Wallet</p>
+                                        <span class="badge bg-light text-dark mt-1">GoPay / ShopeePay / DANA</span>
                                     </div>
                                 </div>
                             </div>
@@ -99,6 +107,7 @@
                                     <div class="card-body text-center p-3">
                                         <i class="bi bi-qr-code fs-3 mb-2"></i>
                                         <p class="mb-0 small">QRIS</p>
+                                        <span class="badge bg-light text-dark mt-1">Multi-bank QR</span>
                                     </div>
                                 </div>
                             </div>
@@ -293,7 +302,7 @@
 
 @section('scripts')
 <!-- Midtrans Client Key -->
-<script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ env('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-NWRbGj3Ndj-152Ps') }}"></script>
+<script src="{{ env('MIDTRANS_SNAP_URL') }}" data-client-key="{{ env('MIDTRANS_CLIENT_KEY') }}"></script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -308,10 +317,12 @@
             snap.pay('{{ $snapToken }}', {
                 onSuccess: function(result) {
                     /* You may add your own implementation here */
+                    console.log('Payment success:', result);
                     handlePaymentResult(result);
                 },
                 onPending: function(result) {
                     /* You may add your own implementation here */
+                    console.log('Payment pending:', result);
                     handlePaymentResult(result);
                 },
                 onError: function(result) {
@@ -323,9 +334,11 @@
                 },
                 onClose: function() {
                     /* You may add your own implementation here */
+                    console.log('Customer closed the payment popup without completing payment');
                     payButton.disabled = false;
                     payButton.innerHTML = 'Proceed to Payment';
-                }
+                },
+                language: "en"
             });
         });
         

@@ -165,7 +165,59 @@
         <p class="mt-2">Loading order information...</p>
     </div>
     
-    <div ng-if="!loading">
+    <!-- Generic Confirmation (when order details are not available) -->
+    <div ng-if="!loading && genericConfirmation" class="text-center">
+        <div class="mb-5">
+            <i class="fas fa-check-circle success-icon mb-3"></i>
+            <h1 class="mb-2">Thank You for Your Order!</h1>
+            <p class="lead mb-0">Your payment has been processed successfully.</p>
+            <p class="mt-4">You will receive a confirmation email shortly with your order details.</p>
+        </div>
+        
+        <!-- Checkout Steps -->
+        <div class="checkout-steps mb-5">
+            <div class="checkout-step completed">
+                <div class="step-number">1</div>
+                <div class="step-title">Cart</div>
+            </div>
+            <div class="checkout-step completed">
+                <div class="step-number">2</div>
+                <div class="step-title">Shipping</div>
+            </div>
+            <div class="checkout-step completed">
+                <div class="step-number">3</div>
+                <div class="step-title">Payment</div>
+            </div>
+            <div class="checkout-step completed active">
+                <div class="step-number">4</div>
+                <div class="step-title">Confirmation</div>
+            </div>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card mb-4">
+                    <div class="card-header py-3">
+                        <h5 class="mb-0">What's Next?</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Your order has been placed and is being processed. You can check your order status in the "My Orders" section.</p>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="#!/orders" class="btn btn-outline-secondary">
+                                <i class="fas fa-list me-2"></i>View All Orders
+                            </a>
+                            <a href="#!/" class="btn btn-primary">
+                                <i class="fas fa-shopping-bag me-2"></i>Continue Shopping
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Order Details (when order details are available) -->
+    <div ng-if="!loading && !genericConfirmation && order">
         <!-- Order Success Message -->
         <div class="text-center mb-5">
             <i class="fas fa-check-circle success-icon mb-3"></i>

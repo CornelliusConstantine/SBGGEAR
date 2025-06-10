@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\CartController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\LocationController;
+use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\StockController;
 use App\Http\Controllers\Api\Admin\AdminController;
@@ -26,6 +27,9 @@ use App\Http\Controllers\Api\Admin\AdminController;
 // Public routes
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
+
+// Webhook for payment notifications (must be public)
+Route::post('/payment/webhook', [PaymentController::class, 'webhook'])->name('api.payment.webhook');
 
 // Categories
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -56,6 +60,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/cart/{cartItem}', [CartController::class, 'update']);
     Route::delete('/cart/{cartItem}', [CartController::class, 'destroy']);
     Route::delete('/cart', [CartController::class, 'clear']);
+    
+    // Payment
+    Route::get('/payment/methods', [PaymentController::class, 'methods']);
+    Route::post('/payment/token', [PaymentController::class, 'getToken']);
+    Route::post('/payment/process', [PaymentController::class, 'processPayment']);
+    Route::get('/payment/verify', [PaymentController::class, 'verifyPayment']);
     
     // Orders
     Route::get('/orders', [OrderController::class, 'index']);

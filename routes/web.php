@@ -70,3 +70,8 @@ Route::middleware('auth')->group(function () {
 
 // Midtrans webhook
 Route::post('/payment/webhook', [CheckoutController::class, 'webhook'])->name('payment.webhook');
+
+// Midtrans test route (only for development)
+if (app()->environment('local')) {
+    Route::get('/test-midtrans', [App\Http\Controllers\TestMidtransController::class, 'index'])->name('test.midtrans');
+}

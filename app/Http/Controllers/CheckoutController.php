@@ -285,6 +285,47 @@ class CheckoutController extends Controller
             'payment_type' => 'required',
         ]);
         
+        // Determine order status based on transaction status
+        $orderStatus = 'pending';
+        $paymentStatus = 'pending';
+        $paidAt = null;
+        
+        // Process different transaction statuses
+        switch ($request->transaction_status) {
+            case 'capture':
+            case 'settlement':
+                $orderStatus = 'processing';
+                $paymentStatus = 'paid';
+                $paidAt = now();
+                break;
+                
+            case 'pending':
+                $orderStatus = 'pending';
+                $paymentStatus = 'pending';
+                break;
+                
+            case 'deny':
+            case 'cancel':
+            case 'expire':
+            case 'failure':
+                $orderStatus = 'cancelled';
+                $paymentStatus = 'failed';
+                break;
+                
+            default:
+                $orderStatus = 'pending';
+                $paymentStatus = 'pending';
+                break;
+        }
+        
+        // Log the payment response
+        Log::info('Midtrans payment response', [
+            'order_number' => $orderNumber,
+            'transaction_status' => $request->transaction_status,
+            'payment_type' => $request->payment_type,
+            'transaction_id' => $request->transaction_id
+        ]);
+        
         // Create order
         $order = Order::create([
             'order_number' => $orderNumber,
@@ -292,8 +333,8 @@ class CheckoutController extends Controller
             'subtotal' => $cart->total_amount,
             'shipping_cost' => $shippingMethod['cost'],
             'total_amount' => $cart->total_amount + $shippingMethod['cost'],
-            'status' => $request->transaction_status === 'settlement' ? 'processing' : 'pending',
-            'payment_status' => $request->transaction_status === 'settlement' ? 'paid' : 'pending',
+            'status' => $orderStatus,
+            'payment_status' => $paymentStatus,
             'payment_method' => $request->payment_type,
             'midtrans_transaction_id' => $request->transaction_id,
             'midtrans_response' => $request->all(),
@@ -305,7 +346,7 @@ class CheckoutController extends Controller
             'shipping_province' => 'Indonesia', // Default for now
             'shipping_postal_code' => $shippingInfo['postal_code'],
             'notes' => $notes,
-            'paid_at' => $request->transaction_status === 'settlement' ? now() : null,
+            'paid_at' => $paidAt,
         ]);
         
         // Create order items
@@ -372,21 +413,46 @@ class CheckoutController extends Controller
      */
     public function webhook(Request $request)
     {
-        $notificationBody = json_decode($request->getContent(), true);
-        
-        // Validate notification
-        if (!isset($notificationBody['transaction_status']) || !isset($notificationBody['order_id'])) {
-            return response()->json(['status' => 'error', 'message' => 'Invalid notification'], 400);
+        try {
+            $notification = new \Midtrans\Notification();
+            
+            // Get notification object from Midtrans
+            $notificationBody = json_decode($request->getContent(), true);
+            
+            // Log the raw notification for debugging
+            Log::info('Midtrans webhook received', $notificationBody);
+            
+            // Validate notification
+            if (!isset($notificationBody['transaction_status']) || !isset($notificationBody['order_id'])) {
+                Log::error('Invalid Midtrans notification', $notificationBody);
+                return response()->json(['status' => 'error', 'message' => 'Invalid notification'], 400);
+            }
+            
+            // Process notification
+            $result = $this->midtransService->handleNotification($notificationBody);
+            
+            if ($result['status'] === 'error') {
+                Log::error('Error processing Midtrans notification', ['error' => $result['message'], 'data' => $notificationBody]);
+                return response()->json($result, 404);
+            }
+            
+            Log::info('Midtrans notification processed successfully', [
+                'order_id' => $notificationBody['order_id'],
+                'status' => $notificationBody['transaction_status']
+            ]);
+            
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            Log::error('Exception in Midtrans webhook handler', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Internal server error'
+            ], 500);
         }
-        
-        // Process notification
-        $result = $this->midtransService->handleNotification($notificationBody);
-        
-        if ($result['status'] === 'error') {
-            return response()->json($result, 404);
-        }
-        
-        return response()->json(['status' => 'success']);
     }
     
     /**

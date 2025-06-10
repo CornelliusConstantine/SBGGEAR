@@ -9,26 +9,23 @@ use Midtrans\Config;
 use Midtrans\Snap;
 use Midtrans\Transaction;
 use Midtrans\Notification;
+use Illuminate\Support\Facades\Route;
 
 class MidtransService
 {
     public function __construct()
     {
-        // Configure Midtrans
-        Config::$serverKey = env('MIDTRANS_SERVER_KEY', 'SB-Mid-server-LpZQd_jNi7NF9dMqdaDFFH95');
-        Config::$clientKey = env('MIDTRANS_CLIENT_KEY', 'SB-Mid-client-NWRbGj3Ndj-152Ps');
-        Config::$isProduction = env('MIDTRANS_IS_PRODUCTION', false);
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
+        // Configuration is handled by MidtransServiceProvider
+        // This ensures Midtrans is configured before any service methods are called
     }
 
     /**
      * Generate Snap token for payment
      *
-     * @param Order $order
+     * @param mixed $order Order object or stdClass with required properties
      * @return string
      */
-    public function getSnapToken(Order $order)
+    public function getSnapToken($order)
     {
         try {
             $params = [
@@ -54,11 +51,20 @@ class MidtransService
 
             // Add order items to Midtrans parameters
             foreach ($order->items as $item) {
+                $itemName = '';
+                if (isset($item->product_name)) {
+                    $itemName = $item->product_name;
+                } elseif (isset($item->product) && $item->product) {
+                    $itemName = $item->product->name;
+                } else {
+                    $itemName = 'Product #' . $item->product_id;
+                }
+                
                 $params['item_details'][] = [
                     'id' => $item->product_id,
                     'price' => (int) $item->price,
                     'quantity' => $item->quantity,
-                    'name' => $item->product_name,
+                    'name' => $itemName,
                 ];
             }
 
@@ -69,6 +75,14 @@ class MidtransService
                 'quantity' => 1,
                 'name' => 'Shipping Cost (' . $order->shipping_method . ')',
             ];
+
+            // Log request parameters for debugging
+            Log::info('Midtrans Snap Token Request', [
+                'order_number' => $order->order_number,
+                'params' => $params,
+                'server_key' => Config::$serverKey ? substr(Config::$serverKey, 0, 10) . '...' : 'not set',
+                'is_production' => Config::$isProduction ? 'true' : 'false'
+            ]);
 
             // Get Snap Token
             $snapToken = Snap::getSnapToken($params);
@@ -82,7 +96,12 @@ class MidtransService
 
             return $snapToken;
         } catch (\Exception $e) {
-            Log::error('Midtrans error: ' . $e->getMessage());
+            Log::error('Midtrans error: ' . $e->getMessage(), [
+                'order_number' => $order->order_number ?? 'unknown',
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             throw $e;
         }
     }

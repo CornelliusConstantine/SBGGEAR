@@ -59,9 +59,18 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
                 }]
             }
         })
-        .when('/checkout/confirmation/:orderId', {
+        .when('/checkout/confirmation/:id', {
             templateUrl: 'app/views/customer/checkout/confirmation.html',
-            controller: 'CheckoutController',
+            controller: 'ConfirmationController',
+            resolve: {
+                auth: ['AuthService', function(AuthService) {
+                    return AuthService.requireAuth();
+                }]
+            }
+        })
+        .when('/checkout/confirmation', {
+            templateUrl: 'app/views/customer/checkout/confirmation.html',
+            controller: 'ConfirmationController',
             resolve: {
                 auth: ['AuthService', function(AuthService) {
                     return AuthService.requireAuth();
