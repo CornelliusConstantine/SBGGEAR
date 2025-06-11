@@ -15,7 +15,8 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Product::where('is_active', true);
+        $query = Product::where('is_active', true)
+                        ->where('stock', '>', 0); // Only show products with stock > 0
         
         // Search functionality
         if ($request->has('search') && !empty($request->search)) {
@@ -39,6 +40,11 @@ class ProductController extends Controller
         
         if ($request->has('max_price')) {
             $query->where('price', '<=', $request->max_price);
+        }
+        
+        // Stock filter - include out of stock products if requested
+        if ($request->has('include_out_of_stock') && $request->include_out_of_stock) {
+            $query->where('is_active', true); // Reset the stock condition
         }
         
         // Sort options
@@ -68,11 +74,19 @@ class ProductController extends Controller
      * @param  \App\Models\Category  $category
      * @return \Illuminate\View\View
      */
-    public function byCategory(Category $category)
+    public function byCategory(Category $category, Request $request)
     {
-        $products = Product::where('category_id', $category->id)
+        $query = Product::where('category_id', $category->id)
             ->where('is_active', true)
-            ->orderBy('created_at', 'desc')
+            ->where('stock', '>', 0); // Only show products with stock > 0
+            
+        // Include out of stock products if requested
+        if ($request->has('include_out_of_stock') && $request->include_out_of_stock) {
+            $query = Product::where('category_id', $category->id)
+                ->where('is_active', true);
+        }
+        
+        $products = $query->orderBy('created_at', 'desc')
             ->paginate(12);
             
         $categories = Category::all();
@@ -95,6 +109,7 @@ class ProductController extends Controller
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
+            ->where('stock', '>', 0) // Only show related products with stock > 0
             ->inRandomOrder()
             ->limit(4)
             ->get();
@@ -107,12 +122,19 @@ class ProductController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function newArrivals()
+    public function newArrivals(Request $request)
     {
-        $products = Product::where('is_active', true)
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
+        $query = Product::where('is_active', true)
+            ->where('stock', '>', 0) // Only show products with stock > 0
+            ->orderBy('created_at', 'desc');
             
+        // Include out of stock products if requested
+        if ($request->has('include_out_of_stock') && $request->include_out_of_stock) {
+            $query = Product::where('is_active', true)
+                ->orderBy('created_at', 'desc');
+        }
+        
+        $products = $query->paginate(12);
         $categories = Category::all();
         
         return view('products.index', [
@@ -127,13 +149,21 @@ class ProductController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function onSale()
+    public function onSale(Request $request)
     {
-        $products = Product::where('is_active', true)
+        $query = Product::where('is_active', true)
             ->where('is_featured', true)
-            ->orderBy('created_at', 'desc')
-            ->paginate(12);
+            ->where('stock', '>', 0) // Only show products with stock > 0
+            ->orderBy('created_at', 'desc');
             
+        // Include out of stock products if requested
+        if ($request->has('include_out_of_stock') && $request->include_out_of_stock) {
+            $query = Product::where('is_active', true)
+                ->where('is_featured', true)
+                ->orderBy('created_at', 'desc');
+        }
+        
+        $products = $query->paginate(12);
         $categories = Category::all();
         
         return view('products.index', [

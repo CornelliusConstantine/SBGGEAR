@@ -70,4 +70,4 @@ if ($uri !== '/' && file_exists(__DIR__ . $uri) && !is_dir(__DIR__ . $uri)) {
 
 // For all other requests, serve the AngularJS app
 include_once __DIR__ . '/index.html';
-exit; 
+exit;

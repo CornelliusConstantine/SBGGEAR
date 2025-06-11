@@ -276,9 +276,41 @@ app.service('AuthService', ['$http', '$q', '$rootScope', 'CartService', function
         return deferred.promise;
     };
     
-    // Get current user
+    // Get current user data
     service.getCurrentUser = function() {
-        return currentUser;
+        var deferred = $q.defer();
+        var token = localStorage.getItem('token');
+        
+        if (token) {
+            // If we already have the user data cached and it's valid
+            if (currentUser) {
+                deferred.resolve(currentUser);
+            } else {
+                // Otherwise fetch from API
+                $http.get(API_URL + '/user', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                }).then(function(response) {
+                    currentUser = response.data;
+                    $rootScope.currentUser = currentUser;
+                    $rootScope.isLoggedIn = true;
+                    
+                    // Ensure role is set properly
+                    var userRole = currentUser.role || 'customer';
+                    $rootScope.isAdmin = userRole === 'admin';
+                    
+                    deferred.resolve(currentUser);
+                }).catch(function(error) {
+                    console.error('Failed to get current user:', error);
+                    deferred.reject(error.data);
+                });
+            }
+        } else {
+            deferred.reject('unauthorized');
+        }
+        
+        return deferred.promise;
     };
     
     // Check if user is admin

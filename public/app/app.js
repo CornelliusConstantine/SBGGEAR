@@ -224,7 +224,10 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
         });
     
     // Use HTML5 History API instead of hashbang
-    $locationProvider.html5Mode(true);
+    $locationProvider.html5Mode({
+        enabled: true,
+        requireBase: true
+    });
     $locationProvider.hashPrefix('!');
 }]);
 
@@ -249,9 +252,58 @@ app.run(['$rootScope', '$location', '$window', 'AuthService', 'CartService', fun
             $location.path('/');
         }
     });
+
+    // Handle links with hashbang URLs and convert them to HTML5 mode
+    $rootScope.$on('$viewContentLoaded', function() {
+        // Find all links with href starting with "#!/"
+        setTimeout(function() {
+            var hashbangLinks = document.querySelectorAll('a[href^="#!/"]');
+            
+            // Convert each hashbang link to HTML5 mode
+            angular.forEach(hashbangLinks, function(link) {
+                var href = link.getAttribute('href');
+                if (href && href.startsWith('#!/')) {
+                    // Convert #!/path to /path
+                    var newHref = href.replace('#!/', '/');
+                    link.setAttribute('ng-href', newHref);
+                    link.setAttribute('href', newHref);
+                    
+                    // Add click handler to prevent default and use $location
+                    link.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        var path = newHref;
+                        $rootScope.$apply(function() {
+                            $location.path(path);
+                        });
+                    });
+                }
+            });
+        }, 100);
+    });
     
-    // Helper function for navigation that all controllers can use
-    $rootScope.navigate = function(path) {
-        $location.path(path);
+    // Handle hash URLs in the browser address bar
+    if ($window.location.hash && $window.location.hash.startsWith('#!')) {
+        var path = $window.location.hash.substring(2); // Remove the '#!'
+        $window.history.replaceState({}, document.title, path);
+        $location.path(path).replace();
+    }
+}]);
+
+// Global HTTP interceptor for authentication
+app.factory('AuthInterceptor', ['$q', '$location', '$window', function($q, $location, $window) {
+    return {
+        responseError: function(rejection) {
+            if (rejection.status === 401) {
+                // Unauthorized, redirect to login
+                $window.localStorage.removeItem('token');
+                $location.path('/login');
+            }
+            return $q.reject(rejection);
+        }
     };
+}]);
+
+// Configure HTTP interceptors
+app.config(['$httpProvider', function($httpProvider) {
+    $httpProvider.interceptors.push('AuthInterceptor');
 }]); 

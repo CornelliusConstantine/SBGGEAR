@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class OrderTrackingHistory extends Model
 {
     use HasFactory;
+    
+    protected $table = 'order_tracking_history';
 
     protected $fillable = [
         'order_id',

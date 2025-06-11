@@ -85,16 +85,16 @@
 </style>
 
 <!-- Breadcrumb -->
-<nav aria-label="breadcrumb" class="bg-light py-2">
-    <div class="container">
-        <ol class="breadcrumb mb-0">
-            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
-            <li class="breadcrumb-item"><a href="#!/products">Products</a></li>
-            <li class="breadcrumb-item"><a href="#!/category/{{product.category.slug}}">{{product.category.name}}</a></li>
+<div class="container">
+    <nav aria-label="breadcrumb" class="mt-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a ng-href="/">Home</a></li>
+            <li class="breadcrumb-item"><a ng-href="/products">Products</a></li>
+            <li class="breadcrumb-item"><a ng-href="/category/{{product.category.slug}}">{{product.category.name}}</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{product.name}}</li>
         </ol>
-    </div>
-</nav>
+    </nav>
+</div>
 
 <!-- Loading Spinner -->
 <div class="container py-5" ng-if="loading.product">
@@ -210,9 +210,9 @@
             </div>
             
             <!-- Category -->
-            <p class="mb-2">
-                <strong>Category:</strong>
-                <a href="#!/category/{{product.category.slug}}">{{product.category.name}}</a>
+            <p class="mb-3">
+                <span class="text-muted">Category:</span> 
+                <a ng-href="/category/{{product.category.slug}}">{{product.category.name}}</a>
             </p>
             
             <!-- Weight -->
@@ -300,8 +300,8 @@
                     </div>
                     
                     <!-- Login message if not logged in -->
-                    <div class="alert alert-info mb-4" ng-if="!isLoggedIn">
-                        <i class="fas fa-info-circle me-2"></i>Please <a href="#!/login" class="alert-link">login</a> to ask questions about this product.
+                    <div class="alert alert-info" ng-if="!isLoggedIn">
+                        <i class="fas fa-info-circle me-2"></i>Please <a ng-href="/login" class="alert-link">login</a> to ask questions about this product.
                     </div>
                     
                     <!-- Comments List -->
@@ -400,7 +400,7 @@
         <div class="row">
             <div class="col-6 col-md-3 mb-4" ng-repeat="product in relatedProducts">
                 <div class="product-card">
-                    <a href="#!/product/{{product.id}}">
+                    <a ng-href="/product/{{product.id}}">
                         <img ng-src="{{product.image_url || 'assets/img/product-placeholder.png'}}" alt="{{product.name}}" class="product-image">
                     </a>
                     <div class="product-body">
@@ -410,7 +410,7 @@
                             <span class="rating-count">({{product.rating_count || 0}})</span>
                         </div>
                         <h5 class="product-title">
-                            <a href="#!/product/{{product.id}}" class="text-decoration-none text-dark">{{product.name}}</a>
+                            <a ng-href="/product/{{product.id}}" class="text-decoration-none text-dark">{{product.name}}</a>
                         </h5>
                         <div class="d-flex justify-content-between align-items-center">
                             <p class="product-price mb-0">Rp{{product.price | number}}</p>
@@ -424,6 +424,7 @@
             
             <div class="col-12 text-center" ng-if="!relatedProducts || relatedProducts.length === 0">
                 <p class="text-muted">No related products found.</p>
+                <a ng-href="/products" class="btn btn-primary">Browse Products</a>
             </div>
         </div>
     </div>

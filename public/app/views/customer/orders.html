@@ -1,0 +1,434 @@
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="bg-light py-2">
+    <div class="container">
+        <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a href="#!/">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">My Orders</li>
+        </ol>
+    </div>
+</nav>
+
+<!-- Orders Page Styles -->
+<style>
+    .orders-page {
+        background-color: #f8f9fa;
+        padding: 3rem 0;
+    }
+    
+    .page-title {
+        margin-bottom: 2rem;
+        position: relative;
+    }
+    
+    .page-title:after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background-color: #000;
+    }
+    
+    .order-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .order-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .order-card .card-header {
+        background-color: #000;
+        color: #fff;
+        border: none;
+        padding: 1rem 1.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .order-number {
+        font-weight: 600;
+        margin-bottom: 0;
+    }
+    
+    .order-date {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+    
+    .order-status {
+        font-size: 0.85rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .status-processing {
+        background-color: #d1ecf1;
+        color: #0c5460;
+    }
+    
+    .status-shipped {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+    
+    .status-delivered {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-cancelled {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .payment-status {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+    
+    .payment-paid {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .payment-pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+    
+    .payment-failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .order-summary {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .order-summary:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .order-product-image {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 5px;
+    }
+    
+    .order-total {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+    
+    .order-actions .btn {
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+    
+    .empty-orders {
+        text-align: center;
+        padding: 3rem;
+        background-color: #fff;
+        border-radius: 10px;
+        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.08);
+    }
+    
+    .empty-orders-icon {
+        font-size: 4rem;
+        color: #dee2e6;
+        margin-bottom: 1.5rem;
+    }
+    
+    .order-filter {
+        margin-bottom: 2rem;
+    }
+    
+    .filter-btn {
+        border: 1px solid #dee2e6;
+        background-color: #fff;
+        color: #495057;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+    }
+    
+    .filter-btn.active {
+        background-color: #000;
+        color: #fff;
+        border-color: #000;
+    }
+    
+    .filter-btn:hover:not(.active) {
+        background-color: #f8f9fa;
+    }
+    
+    .order-item-row {
+        display: flex;
+        margin-bottom: 1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #f1f1f1;
+    }
+    
+    .order-item-row:last-child {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .order-item-details {
+        flex: 1;
+        padding-left: 1rem;
+    }
+    
+    .order-item-name {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+    
+    .order-item-price {
+        font-weight: 700;
+    }
+    
+    .order-item-quantity {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+    
+    .shimmer-loading {
+        position: relative;
+        background: #f6f7f8;
+        background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+        background-repeat: no-repeat;
+        background-size: 800px 104px;
+        border-radius: 4px;
+        animation-duration: 1.5s;
+        animation-fill-mode: forwards;
+        animation-iteration-count: infinite;
+        animation-name: shimmer;
+        animation-timing-function: linear;
+    }
+    
+    @keyframes shimmer {
+        0% {
+            background-position: -468px 0;
+        }
+        100% {
+            background-position: 468px 0;
+        }
+    }
+</style>
+
+<!-- Orders Page Content -->
+<div class="orders-page">
+    <div class="container">
+        <!-- Page Title -->
+        <h1 class="page-title">My Orders</h1>
+        
+        <!-- Debug Button (Development Only) -->
+        <div class="mb-4">
+            <button class="btn btn-sm btn-outline-secondary" ng-click="debugOrders()">
+                <i class="fas fa-bug me-2"></i>Debug Orders
+            </button>
+        </div>
+        
+        <!-- Loading State -->
+        <div ng-if="loading">
+            <div class="row">
+                <div class="col-12" ng-repeat="i in [1, 2, 3]">
+                    <div class="order-card card mb-4">
+                        <div class="card-header shimmer-loading" style="height: 60px;"></div>
+                        <div class="card-body">
+                            <div class="shimmer-loading mb-3" style="height: 20px; width: 60%;"></div>
+                            <div class="shimmer-loading mb-3" style="height: 20px; width: 40%;"></div>
+                            <div class="shimmer-loading mb-3" style="height: 20px; width: 80%;"></div>
+                            <div class="shimmer-loading" style="height: 40px; width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Filter Options -->
+        <div class="order-filter" ng-if="!loading && orders.data.length > 0">
+            <div class="d-flex flex-wrap">
+                <button class="filter-btn" ng-class="{'active': currentFilter === 'all'}" ng-click="filterOrders('all')">
+                    All Orders
+                </button>
+                <button class="filter-btn" ng-class="{'active': currentFilter === 'pending'}" ng-click="filterOrders('pending')">
+                    Pending
+                </button>
+                <button class="filter-btn" ng-class="{'active': currentFilter === 'processing'}" ng-click="filterOrders('processing')">
+                    Processing
+                </button>
+                <button class="filter-btn" ng-class="{'active': currentFilter === 'shipped'}" ng-click="filterOrders('shipped')">
+                    Shipped
+                </button>
+                <button class="filter-btn" ng-class="{'active': currentFilter === 'delivered'}" ng-click="filterOrders('delivered')">
+                    Delivered
+                </button>
+                <button class="filter-btn" ng-class="{'active': currentFilter === 'cancelled'}" ng-click="filterOrders('cancelled')">
+                    Cancelled
+                </button>
+            </div>
+        </div>
+        
+        <!-- Empty State -->
+        <div class="empty-orders" ng-if="!loading && (!orders.data || orders.data.length === 0)">
+            <i class="fas fa-shopping-bag empty-orders-icon"></i>
+            <h3 class="mb-3">No Orders Found</h3>
+            <p class="text-muted mb-4">You haven't placed any orders yet. Start shopping to see your orders here.</p>
+            <a href="#!/products" class="btn btn-dark">
+                <i class="fas fa-shopping-cart me-2"></i>Start Shopping
+            </a>
+        </div>
+        
+        <!-- Orders List -->
+        <div class="row" ng-if="!loading && orders.data && orders.data.length > 0">
+            <div class="col-12" ng-repeat="order in filteredOrders">
+                <div class="order-card card">
+                    <div class="card-header">
+                        <div>
+                            <h5 class="order-number">Order #{{order.order_number}}</h5>
+                            <span class="order-date">{{formatDate(order.created_at)}}</span>
+                        </div>
+                        <div class="order-status" ng-class="{
+                            'status-pending': order.status === 'pending',
+                            'status-processing': order.status === 'processing',
+                            'status-shipped': order.status === 'shipped',
+                            'status-delivered': order.status === 'delivered',
+                            'status-cancelled': order.status === 'cancelled'
+                        }">
+                            {{order.status}}
+                        </div>
+                    </div>
+                    
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Order Items -->
+                            <div class="col-md-8">
+                                <h6 class="mb-3">Order Items</h6>
+                                
+                                <div class="order-item-row" ng-repeat="item in order.items | limitTo: 2">
+                                    <img ng-src="{{item.product.image || 'assets/images/product-placeholder.jpg'}}" alt="{{item.product_name}}" class="order-product-image">
+                                    <div class="order-item-details">
+                                        <h6 class="order-item-name">{{item.product_name}}</h6>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="order-item-quantity">Quantity: {{item.quantity}}</span>
+                                            <span class="order-item-price">{{item.price | currency:'Rp ':0}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-3" ng-if="order.items.length > 2">
+                                    <small class="text-muted">+ {{order.items.length - 2}} more items</small>
+                                </div>
+                            </div>
+                            
+                            <!-- Order Summary -->
+                            <div class="col-md-4">
+                                <h6 class="mb-3">Order Summary</h6>
+                                
+                                <div class="order-summary">
+                                    <span>Total Items</span>
+                                    <span>{{getTotalItems(order.items)}} items</span>
+                                </div>
+                                
+                                <div class="order-summary">
+                                    <span>Payment Status</span>
+                                    <span class="payment-status" ng-class="{
+                                        'payment-paid': order.payment_status === 'paid',
+                                        'payment-pending': order.payment_status === 'pending',
+                                        'payment-failed': order.payment_status === 'failed'
+                                    }">{{order.payment_status}}</span>
+                                </div>
+                                
+                                <div class="order-summary">
+                                    <span>Shipping</span>
+                                    <span>{{order.shipping_method}}</span>
+                                </div>
+                                
+                                <div class="order-summary order-total">
+                                    <span>Total</span>
+                                    <span>{{order.total_amount | currency:'Rp ':0}}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Actions -->
+                        <div class="order-actions mt-4 d-flex justify-content-between">
+                            <button class="btn btn-outline-dark" ng-click="checkPaymentStatus(order.id)" ng-disabled="checkingPayment === order.id">
+                                <i class="fas fa-sync-alt me-2" ng-class="{'fa-spin': checkingPayment === order.id}"></i>Update Status
+                            </button>
+                            <button class="btn btn-dark" ng-click="viewOrder(order.id)">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="col-12" ng-if="orders.last_page > 1">
+                <nav aria-label="Orders pagination">
+                    <ul class="pagination justify-content-center">
+                        <li class="page-item" ng-class="{disabled: orders.current_page === 1}">
+                            <a class="page-link" href ng-click="changePage(orders.current_page - 1)">Previous</a>
+                        </li>
+                        
+                        <li class="page-item" ng-repeat="page in getPages(orders.last_page)" ng-class="{active: page === orders.current_page}">
+                            <a class="page-link" href ng-click="changePage(page)">{{page}}</a>
+                        </li>
+                        
+                        <li class="page-item" ng-class="{disabled: orders.current_page === orders.last_page}">
+                            <a class="page-link" href ng-click="changePage(orders.current_page + 1)">Next</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 5" ng-if="toast.show">
+    <div class="toast show" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" ng-class="{'bg-dark text-white': toast.type === 'success', 'bg-danger text-white': toast.type === 'error', 'bg-warning text-dark': toast.type === 'warning'}">
+            <strong class="me-auto">{{toast.type === 'success' ? 'Success' : (toast.type === 'error' ? 'Error' : 'Warning')}}</strong>
+            <button type="button" class="btn-close" ng-click="toast.show = false"></button>
+        </div>
+        <div class="toast-body">
+            {{toast.message}}
+        </div>
+    </div>
+</div> 

@@ -1,0 +1,166 @@
+<div class="container-fluid py-4" ng-init="init()">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-0">User Management</h2>
+            <p class="text-muted">Manage system users</p>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h5 class="mb-0">All Users</h5>
+                </div>
+                <div class="col-auto">
+                    <div class="input-group">
+                        <input type="text" class="form-control" placeholder="Search users..." ng-model="searchQuery">
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Registered</th>
+                            <th>Orders</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-if="loading">
+                            <td colspan="7" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr ng-if="!loading && (!users || users.length === 0)">
+                            <td colspan="7" class="text-center py-4">
+                                <p class="mb-0 text-muted">No users found</p>
+                            </td>
+                        </tr>
+                        <tr ng-repeat="user in users | filter:searchQuery">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar me-2" ng-class="{'bg-primary': user.role === 'admin', 'bg-secondary': user.role === 'customer'}">
+                                        <span>{{user.name.charAt(0).toUpperCase()}}</span>
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{user.name}}</h6>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{user.email}}</td>
+                            <td>
+                                <span class="badge" ng-class="{
+                                    'bg-primary': user.role === 'admin',
+                                    'bg-secondary': user.role === 'customer'
+                                }">
+                                    {{user.role}}
+                                </span>
+                            </td>
+                            <td>{{user.created_at | date:'dd MMM yyyy'}}</td>
+                            <td>{{user.orders_count || 0}}</td>
+                            <td>
+                                <span class="badge" ng-class="{
+                                    'bg-success': user.is_active,
+                                    'bg-danger': !user.is_active
+                                }">
+                                    {{user.is_active ? 'Active' : 'Inactive'}}
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        Actions
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-end">
+                                        <li><a class="dropdown-item" href="#" ng-click="viewUser(user)">View Details</a></li>
+                                        <li><a class="dropdown-item" href="#" ng-click="toggleUserStatus(user)">
+                                            {{user.is_active ? 'Deactivate' : 'Activate'}}
+                                        </a></li>
+                                        <li ng-if="user.role === 'customer'"><a class="dropdown-item" href="#" ng-click="promoteToAdmin(user)">Promote to Admin</a></li>
+                                        <li ng-if="user.role === 'admin' && user.id !== currentUser.id"><a class="dropdown-item" href="#" ng-click="demoteToCustomer(user)">Demote to Customer</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item text-danger" href="#" ng-click="deleteUser(user)">Delete User</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Detail Modal -->
+    <script type="text/ng-template" id="userDetailModal.html">
+        <div class="modal-header">
+            <h5 class="modal-title">User Details</h5>
+            <button type="button" class="btn-close" ng-click="cancel()"></button>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Name</h6>
+                    <p>{{user.name}}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Email</h6>
+                    <p>{{user.email}}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Role</h6>
+                    <p>
+                        <span class="badge" ng-class="{
+                            'bg-primary': user.role === 'admin',
+                            'bg-secondary': user.role === 'customer'
+                        }">
+                            {{user.role}}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Status</h6>
+                    <p>
+                        <span class="badge" ng-class="{
+                            'bg-success': user.is_active,
+                            'bg-danger': !user.is_active
+                        }">
+                            {{user.is_active ? 'Active' : 'Inactive'}}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Registered</h6>
+                    <p>{{user.created_at | date:'dd MMM yyyy, HH:mm'}}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Last Login</h6>
+                    <p>{{user.last_login | date:'dd MMM yyyy, HH:mm' || 'Never'}}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Orders</h6>
+                    <p>{{user.orders_count || 0}}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <h6 class="text-muted mb-2">Total Spent</h6>
+                    <p>Rp{{user.total_spent | number || 0}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" ng-click="cancel()">Close</button>
+        </div>
+    </script>
+</div> 

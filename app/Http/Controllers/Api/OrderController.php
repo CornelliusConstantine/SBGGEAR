@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -26,13 +27,64 @@ class OrderController extends Controller
 
     public function index(Request $request)
     {
+        // Debug information
+        \Log::info('OrderController@index - User ID: ' . $request->user()->id);
+        \Log::info('OrderController@index - User Email: ' . $request->user()->email);
+        
+        // Direct database query to check for orders
+        $directOrderCount = \DB::table('orders')
+            ->where('user_id', $request->user()->id)
+            ->count();
+        \Log::info('OrderController@index - Direct DB query order count: ' . $directOrderCount);
+        
+        // Get all orders for debugging
+        if ($directOrderCount == 0) {
+            $allOrders = \DB::table('orders')->count();
+            \Log::info('OrderController@index - Total orders in database: ' . $allOrders);
+            
+            // Check if there are any orders with this user ID
+            $userOrders = \DB::table('orders')
+                ->where('user_id', $request->user()->id)
+                ->get();
+            \Log::info('OrderController@index - User orders from direct query: ' . json_encode($userOrders));
+        }
+        
+        // Get user orders
         $orders = $request->user()
             ->orders()
             ->with(['items.product', 'trackingHistory'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->orderBy('created_at', 'desc');
+            
+        // Debug order count before pagination
+        $orderCount = $orders->count();
+        \Log::info('OrderController@index - Total orders before pagination: ' . $orderCount);
+        
+        // If no orders found, return a more descriptive response
+        if ($orderCount == 0) {
+            return response()->json([
+                'data' => [],
+                'current_page' => 1,
+                'last_page' => 1,
+                'per_page' => 10,
+                'total' => 0,
+                'message' => 'No orders found for this user',
+                'user_id' => $request->user()->id,
+                'debug_info' => [
+                    'direct_query_count' => $directOrderCount,
+                    'eloquent_count' => $orderCount,
+                    'user_email' => $request->user()->email
+                ]
+            ]);
+        }
+        
+        // Paginate results
+        $paginatedOrders = $orders->paginate(10);
+        
+        // Debug paginated results
+        \Log::info('OrderController@index - Paginated orders count: ' . $paginatedOrders->count());
+        \Log::info('OrderController@index - Total orders in pagination: ' . $paginatedOrders->total());
 
-        return response()->json($orders);
+        return response()->json($paginatedOrders);
     }
 
     public function show(Request $request, Order $order)

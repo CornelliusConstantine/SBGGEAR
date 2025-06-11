@@ -549,13 +549,18 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
             // Store order data if available
             if (response && response.order) {
                 $scope.order = response.order;
+                
+                // Automatically redirect to confirmation page after 1 second
+                $timeout(function() {
+                    $scope.proceedToConfirmation();
+                }, 1000);
             }
             
             // Apply changes to UI
             safeApply();
             
             // Show success message
-            $scope.showToast('success', 'Payment successful! You can now proceed to confirmation.');
+            $scope.showToast('success', 'Payment successful! Redirecting to confirmation...');
         })
         .catch(function(error) {
             console.error('Error processing payment:', error);

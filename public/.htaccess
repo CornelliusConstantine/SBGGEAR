@@ -18,10 +18,19 @@
     RewriteCond %{REQUEST_URI} ^/api/.*$
     RewriteRule ^api/(.*)$ index.php [L]
 
+    # Admin routes should be handled by the SPA
+    RewriteCond %{REQUEST_URI} ^/admin/.*$ [OR]
+    RewriteCond %{REQUEST_URI} ^/admin$
+    RewriteRule ^ index.html [L]
+
     # If the file exists, serve it directly
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ - [L]
 
-    # Send all other requests to index.php
-    RewriteRule ^ index.php [L]
+    # If the directory exists, serve it directly
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # Send all other requests to index.html for AngularJS HTML5 mode
+    RewriteRule ^ index.html [L]
 </IfModule>

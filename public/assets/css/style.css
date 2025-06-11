@@ -16,6 +16,32 @@ body {
     padding: 0;
 }
 
+/* Breadcrumb Styles */
+.breadcrumb {
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+    background-color: var(--secondary-color);
+    border-radius: 0.25rem;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: var(--dark-gray);
+}
+
+.breadcrumb-item a {
+    color: var(--primary-color);
+    text-decoration: none;
+}
+
+.breadcrumb-item a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb-item.active {
+    color: var(--dark-gray);
+}
+
 /* Header Styles */
 .navbar-brand {
     font-weight: 700;

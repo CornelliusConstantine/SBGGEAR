@@ -35,6 +35,20 @@ class CheckoutController extends Controller
             return redirect()->route('products.index')->with('error', 'Your cart is empty. Please add products before checkout.');
         }
         
+        // Check stock availability
+        $stockIssues = [];
+        foreach ($cart->items as $item) {
+            if ($item->product->stock <= 0) {
+                $stockIssues[] = "{$item->product->name} is out of stock.";
+            } elseif ($item->product->stock < $item->quantity) {
+                $stockIssues[] = "Only {$item->product->stock} units available for {$item->product->name}.";
+            }
+        }
+        
+        if (!empty($stockIssues)) {
+            return redirect()->route('cart')->with('error', implode('<br>', $stockIssues));
+        }
+        
         // Render the checkout index view with cart data
         return view('checkout.index', compact('cart'));
     }
@@ -78,6 +92,20 @@ class CheckoutController extends Controller
         // Check if cart is empty
         if ($cart->items->isEmpty()) {
             return redirect()->route('products.index')->with('error', 'Your cart is empty. Please add products before checkout.');
+        }
+        
+        // Check stock availability
+        $stockIssues = [];
+        foreach ($cart->items as $item) {
+            if ($item->product->stock <= 0) {
+                $stockIssues[] = "{$item->product->name} is out of stock.";
+            } elseif ($item->product->stock < $item->quantity) {
+                $stockIssues[] = "Only {$item->product->stock} units available for {$item->product->name}.";
+            }
+        }
+        
+        if (!empty($stockIssues)) {
+            return redirect()->route('cart')->with('error', implode('<br>', $stockIssues));
         }
         
         // Calculate total weight
@@ -206,6 +234,25 @@ class CheckoutController extends Controller
         $user = Auth::user();
         $cart = $this->getUserCart($user);
         
+        // Check if cart is empty
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('products.index')->with('error', 'Your cart is empty. Please add products before checkout.');
+        }
+        
+        // Check stock availability
+        $stockIssues = [];
+        foreach ($cart->items as $item) {
+            if ($item->product->stock <= 0) {
+                $stockIssues[] = "{$item->product->name} is out of stock.";
+            } elseif ($item->product->stock < $item->quantity) {
+                $stockIssues[] = "Only {$item->product->stock} units available for {$item->product->name}.";
+            }
+        }
+        
+        if (!empty($stockIssues)) {
+            return redirect()->route('cart')->with('error', implode('<br>', $stockIssues));
+        }
+        
         // Check if shipping info exists in session
         if (!session()->has('checkout.shipping_info')) {
             return redirect()->route('checkout.shipping')->with('error', 'Please complete shipping information first.');
@@ -267,6 +314,27 @@ class CheckoutController extends Controller
     {
         $user = Auth::user();
         $cart = $this->getUserCart($user);
+        
+        // Check if cart is empty
+        if ($cart->items->isEmpty()) {
+            return redirect()->route('products.index')->with('error', 'Your cart is empty. Please add products before checkout.');
+        }
+        
+        // Check stock availability one final time before creating order
+        $stockIssues = [];
+        foreach ($cart->items as $item) {
+            // Refresh the product to get the latest stock
+            $product = Product::find($item->product_id);
+            if ($product->stock <= 0) {
+                $stockIssues[] = "{$product->name} is out of stock.";
+            } elseif ($product->stock < $item->quantity) {
+                $stockIssues[] = "Only {$product->stock} units available for {$product->name}.";
+            }
+        }
+        
+        if (!empty($stockIssues)) {
+            return redirect()->route('cart')->with('error', implode('<br>', $stockIssues));
+        }
         
         // Check if order number exists in session
         if (!session()->has('checkout.order_number')) {
@@ -349,7 +417,7 @@ class CheckoutController extends Controller
             'paid_at' => $paidAt,
         ]);
         
-        // Create order items
+        // Create order items and update stock
         foreach ($cart->items as $item) {
             $order->items()->create([
                 'product_id' => $item->product_id,

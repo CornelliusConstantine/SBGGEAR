@@ -22,16 +22,7 @@ use App\Http\Controllers\CheckoutController;
 // API routes should be defined in api.php
 // The frontend is handled by AngularJS
 
-// SPA route - Angular will handle routing on the frontend
-Route::get('/', function () {
-    return view('spa');
-});
-
-// SPA fallback route - All routes not matched by Laravel will be handled by Angular
-Route::get('/{any}', function () {
-    return view('spa');
-})->where('any', '.*')->where('any', '^(?!api).*$');
-
+// Define our web routes first
 Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
@@ -47,6 +38,9 @@ Route::get('/on-sale', [ProductController::class, 'onSale'])->name('products.sal
 Route::middleware('auth')->group(function () {
     // Cart routes
     Route::get('/cart', [CartController::class, 'index'])->name('cart');
+    Route::post('/cart/add', [CartController::class, 'add'])->name('cart.add');
+    Route::post('/cart/update', [CartController::class, 'update'])->name('cart.update');
+    Route::post('/cart/remove', [CartController::class, 'remove'])->name('cart.remove');
     
     // Checkout routes
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
@@ -57,9 +51,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout/confirmation/{order}', [CheckoutController::class, 'confirmation'])->name('checkout.confirmation');
     Route::post('/checkout/calculate-shipping', [CheckoutController::class, 'calculateShipping'])->name('checkout.calculate-shipping');
     
-    // Order routes
-    Route::get('/orders', [OrderController::class, 'userOrders'])->name('orders.index');
-    Route::get('/orders/{order}', [OrderController::class, 'show'])->name('orders.show');
+    // Order routes - IMPORTANT: These routes should take precedence over the SPA routes
+    // Comment out the Laravel route for orders to let Angular handle it
+    // Route::get('/orders', [OrderController::class, 'userOrders'])->name('orders.index');
+    Route::get('/orders/laravel', [OrderController::class, 'userOrders'])->name('orders.laravel');
+    Route::get('/orders/redirect', [OrderController::class, 'redirect'])->name('orders.redirect');
+    Route::get('/orders/{order}/laravel', [OrderController::class, 'show'])->name('orders.show');
     Route::get('/orders/{order}/confirmation', [OrderController::class, 'confirmation'])->name('orders.confirmation');
     
     // Account routes
@@ -75,3 +72,15 @@ Route::post('/payment/webhook', [CheckoutController::class, 'webhook'])->name('p
 if (app()->environment('local')) {
     Route::get('/test-midtrans', [App\Http\Controllers\TestMidtransController::class, 'index'])->name('test.midtrans');
 }
+
+// SPA route - Angular will handle routing on the frontend
+// IMPORTANT: This route must come AFTER all other specific routes
+Route::get('/', function () {
+    return view('spa');
+});
+
+// SPA fallback route - All routes not matched by Laravel will be handled by Angular
+// IMPORTANT: This route must be the LAST route defined
+Route::get('/{any}', function () {
+    return view('spa');
+})->where('any', '^(?!api|account|cart|checkout|products|home|login|register|password).*$');

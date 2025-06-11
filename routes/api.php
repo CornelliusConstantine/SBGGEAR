@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
@@ -51,7 +52,7 @@ Route::get('/cities', [LocationController::class, 'allCities']);
 Route::middleware('auth:sanctum')->group(function () {
     // User profile
     Route::get('/user', [AuthController::class, 'user']);
-    Route::put('/user', [AuthController::class, 'update']);
+    Route::put('/user', [AuthController::class, 'updateProfile']);
     Route::post('/logout', [AuthController::class, 'logout']);
     
     // Cart
@@ -73,6 +74,33 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/orders/{order}', [OrderController::class, 'show']);
     Route::post('/orders/{order}/pay', [OrderController::class, 'pay']);
     Route::get('/orders/{order}/status', [OrderController::class, 'checkStatus']);
+    
+    // Debug route for orders - only for development
+    Route::get('/debug/orders', function (Request $request) {
+        if (!app()->environment('local')) {
+            return response()->json(['message' => 'Not available in production'], 403);
+        }
+        
+        $user = $request->user();
+        if (!$user) {
+            return response()->json(['message' => 'No authenticated user'], 401);
+        }
+        
+        $directOrders = \DB::table('orders')
+            ->where('user_id', $user->id)
+            ->get();
+        
+        $eloquentOrders = $user->orders()->get();
+        
+        return response()->json([
+            'user_id' => $user->id,
+            'user_email' => $user->email,
+            'direct_orders_count' => $directOrders->count(),
+            'eloquent_orders_count' => $eloquentOrders->count(),
+            'direct_orders' => $directOrders,
+            'eloquent_orders' => $eloquentOrders
+        ]);
+    });
     
     // Product operations that require authentication
     Route::delete('/products/{product}', [ProductController::class, 'destroy']);

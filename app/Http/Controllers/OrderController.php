@@ -56,4 +56,18 @@ class OrderController extends Controller
         
         return view('orders.confirmation', compact('order'));
     }
+    
+    /**
+     * Handle redirecting to orders page
+     * This is used for the SPA redirect page
+     *
+     * @return \Illuminate\View\View
+     */
+    public function redirect()
+    {
+        // Return a view that will redirect to the Angular route
+        return view('orders.redirect', [
+            'angularRoute' => '#!/orders'
+        ]);
+    }
 } 
