@@ -1,0 +1,1749 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use App\Models\Product;
+
+class ProductSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Create products
+        $products = [
+            // Kategori 1: Helm Keselamatan
+            [
+                'name' => 'Helm Proyek MSA X3000',
+                'slug' => 'helm-proyek-msa-x3000',
+                'description' => 'Helm proyek premium dengan sistem ventilasi canggih dan kenyamanan maksimal untuk penggunaan jangka panjang. Dilengkapi dengan tali dagu yang dapat dilepas dan penutup yang dapat disesuaikan.',
+                'price' => 325000,
+                'stock' => 45,
+                'category_id' => 1,
+                'sku' => 'HLM-001',
+                'is_active' => true,
+                'weight' => 450.00,
+                'specifications' => json_encode([
+                    'Material' => 'ABS berkualitas tinggi',
+                    'Warna' => 'Kuning',
+                    'Sertifikasi' => 'SNI 8056:2014, ANSI Z89.1-2014 Type I, Class E',
+                    'Fitur' => 'Sistem ventilasi, tali dagu, penyesuaian ukuran ratchet'
+                ]),
+                'images' => json_encode([
+                    'main' => 'helm-msa-x3000-main.jpg',
+                    'gallery' => [
+                        'helm-msa-x3000-1.jpg',
+                        'helm-msa-x3000-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Helm Industri Honeywell H2000',
+                'slug' => 'helm-industri-honeywell-h2000',
+                'description' => 'Helm industri tahan benturan dengan desain ergonomis untuk kenyamanan sepanjang hari. Cocok untuk penggunaan di pabrik, konstruksi, dan lingkungan industri lainnya.',
+                'price' => 275000,
+                'stock' => 60,
+                'category_id' => 1,
+                'sku' => 'HLM-002',
+                'is_active' => true,
+                'weight' => 420.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polietilen densitas tinggi',
+                    'Warna' => 'Putih',
+                    'Sertifikasi' => 'SNI 8056:2014, EN 397',
+                    'Fitur' => 'Penyerap keringat, sistem penyesuaian 4 titik'
+                ]),
+                'images' => json_encode([
+                    'main' => 'helm-honeywell-h2000-main.jpg',
+                    'gallery' => [
+                        'helm-honeywell-h2000-1.jpg',
+                        'helm-honeywell-h2000-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Helm Keselamatan 3M H-700',
+                'slug' => 'helm-keselamatan-3m-h-700',
+                'description' => 'Helm keselamatan ringan dengan desain modern dan perlindungan superior. Dilengkapi dengan sistem ventilasi dan suspensi yang dapat disesuaikan untuk kenyamanan sepanjang hari.',
+                'price' => 295000,
+                'stock' => 40,
+                'category_id' => 1,
+                'sku' => 'HLM-003',
+                'is_active' => true,
+                'weight' => 380.00,
+                'specifications' => json_encode([
+                    'Material' => 'ABS tahan UV',
+                    'Warna' => 'Oranye',
+                    'Sertifikasi' => 'SNI 8056:2014, ANSI Z89.1-2014 Type I, Class C',
+                    'Fitur' => 'Bobot ringan, ventilasi, desain modern'
+                ]),
+                'images' => json_encode([
+                    'main' => 'helm-3m-h700-main.jpg',
+                    'gallery' => [
+                        'helm-3m-h700-1.jpg',
+                        'helm-3m-h700-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            
+            // Kategori 2: Sepatu Keselamatan
+            [
+                'name' => 'Sepatu Safety Caterpillar Hydroedge',
+                'slug' => 'sepatu-safety-caterpillar-hydroedge',
+                'description' => 'Sepatu safety premium dengan ujung baja dan teknologi anti-air. Dirancang untuk kenyamanan maksimal dalam penggunaan jangka panjang di berbagai kondisi kerja.',
+                'price' => 1250000,
+                'stock' => 30,
+                'category_id' => 2,
+                'sku' => 'SPT-001',
+                'is_active' => true,
+                'weight' => 1200.00,
+                'specifications' => json_encode([
+                    'Material' => 'Kulit asli dengan lapisan anti-air',
+                    'Warna' => 'Coklat tua',
+                    'Sertifikasi' => 'SNI 7079:2016, ASTM F2413-18',
+                    'Fitur' => 'Ujung baja, sol anti-slip, teknologi anti-air, bantalan EVA'
+                ]),
+                'images' => json_encode([
+                    'main' => 'sepatu-cat-hydroedge-main.jpg',
+                    'gallery' => [
+                        'sepatu-cat-hydroedge-1.jpg',
+                        'sepatu-cat-hydroedge-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Sepatu Keselamatan Krisbow Apache',
+                'slug' => 'sepatu-keselamatan-krisbow-apache',
+                'description' => 'Sepatu keselamatan tangguh dengan desain ringan dan nyaman. Dilengkapi dengan ujung komposit dan sol anti-penetrasi untuk perlindungan optimal.',
+                'price' => 875000,
+                'stock' => 45,
+                'category_id' => 2,
+                'sku' => 'SPT-002',
+                'is_active' => true,
+                'weight' => 950.00,
+                'specifications' => json_encode([
+                    'Material' => 'Kulit sintetis berkualitas tinggi',
+                    'Warna' => 'Hitam',
+                    'Sertifikasi' => 'SNI 7079:2016, EN ISO 20345:2011 S3',
+                    'Fitur' => 'Ujung komposit, sol anti-penetrasi, tahan minyak'
+                ]),
+                'images' => json_encode([
+                    'main' => 'sepatu-krisbow-apache-main.jpg',
+                    'gallery' => [
+                        'sepatu-krisbow-apache-1.jpg',
+                        'sepatu-krisbow-apache-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Sepatu Safety Cheetah 7012H',
+                'slug' => 'sepatu-safety-cheetah-7012h',
+                'description' => 'Sepatu safety lokal berkualitas tinggi dengan ujung baja dan fitur anti-statis. Cocok untuk penggunaan di pabrik, bengkel, dan area konstruksi.',
+                'price' => 685000,
+                'stock' => 55,
+                'category_id' => 2,
+                'sku' => 'SPT-003',
+                'is_active' => true,
+                'weight' => 1050.00,
+                'specifications' => json_encode([
+                    'Material' => 'Kulit asli dan kain nilon',
+                    'Warna' => 'Hitam dengan aksen kuning',
+                    'Sertifikasi' => 'SNI 7079:2016',
+                    'Fitur' => 'Ujung baja, anti-statis, sol tahan panas'
+                ]),
+                'images' => json_encode([
+                    'main' => 'sepatu-cheetah-7012h-main.jpg',
+                    'gallery' => [
+                        'sepatu-cheetah-7012h-1.jpg',
+                        'sepatu-cheetah-7012h-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            
+            // Kategori 3: Sarung Tangan Kerja
+            [
+                'name' => 'Sarung Tangan Ansell HyFlex 11-840',
+                'slug' => 'sarung-tangan-ansell-hyflex-11-840',
+                'description' => 'Sarung tangan presisi dengan lapisan nitrile foam yang memberikan cengkeraman superior dan sensitivitas tinggi. Ideal untuk pekerjaan presisi di industri elektronik dan perakitan.',
+                'price' => 95000,
+                'stock' => 120,
+                'category_id' => 3,
+                'sku' => 'SRG-001',
+                'is_active' => true,
+                'weight' => 60.00,
+                'specifications' => json_encode([
+                    'Material' => 'Nylon knit dengan lapisan nitrile foam',
+                    'Warna' => 'Abu-abu dengan lapisan hitam',
+                    'Sertifikasi' => 'EN 388:2016 (4131A)',
+                    'Fitur' => 'Anti-slip, sensitivitas tinggi, tahan minyak'
+                ]),
+                'images' => json_encode([
+                    'main' => 'sarung-tangan-ansell-hyflex-main.jpg',
+                    'gallery' => [
+                        'sarung-tangan-ansell-hyflex-1.jpg',
+                        'sarung-tangan-ansell-hyflex-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Sarung Tangan Kulit Las Leopard',
+                'slug' => 'sarung-tangan-kulit-las-leopard',
+                'description' => 'Sarung tangan las berbahan kulit sapi asli dengan lapisan perlindungan panas. Tahan terhadap suhu tinggi dan percikan api, ideal untuk pekerjaan pengelasan dan pengerjaan logam panas.',
+                'price' => 125000,
+                'stock' => 80,
+                'category_id' => 3,
+                'sku' => 'SRG-002',
+                'is_active' => true,
+                'weight' => 180.00,
+                'specifications' => json_encode([
+                    'Material' => 'Kulit sapi asli dengan lapisan perlindungan panas',
+                    'Warna' => 'Kuning kecoklatan',
+                    'Sertifikasi' => 'EN 388:2016, EN 407',
+                    'Fitur' => 'Tahan panas, tahan api, jahitan kevlar'
+                ]),
+                'images' => json_encode([
+                    'main' => 'sarung-tangan-las-leopard-main.jpg',
+                    'gallery' => [
+                        'sarung-tangan-las-leopard-1.jpg',
+                        'sarung-tangan-las-leopard-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Sarung Tangan Anti Kimia 3M Virtex',
+                'slug' => 'sarung-tangan-anti-kimia-3m-virtex',
+                'description' => 'Sarung tangan khusus tahan bahan kimia untuk perlindungan maksimal dari zat berbahaya. Dirancang dengan material nitrile tebal dan tekstur grip untuk penanganan cairan kimia yang aman.',
+                'price' => 135000,
+                'stock' => 65,
+                'category_id' => 3,
+                'sku' => 'SRG-003',
+                'is_active' => true,
+                'weight' => 90.00,
+                'specifications' => json_encode([
+                    'Material' => 'Nitrile tebal 15mil',
+                    'Warna' => 'Hijau',
+                    'Sertifikasi' => 'EN 374-1:2016 Type A, EN 388:2016',
+                    'Fitur' => 'Tahan kimia, tekstur grip, panjang 33cm'
+                ]),
+                'images' => json_encode([
+                    'main' => 'sarung-tangan-3m-virtex-main.jpg',
+                    'gallery' => [
+                        'sarung-tangan-3m-virtex-1.jpg',
+                        'sarung-tangan-3m-virtex-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            
+            // Kategori 4: Masker Pelindung
+            [
+                'name' => 'Masker Respirator 3M 6200 Half Face',
+                'slug' => 'masker-respirator-3m-6200-half-face',
+                'description' => 'Masker respirator setengah wajah dengan desain ergonomis dan sistem filter ganda. Memberikan perlindungan superior dari partikel, gas, dan uap dengan kenyamanan maksimal.',
+                'price' => 450000,
+                'stock' => 40,
+                'category_id' => 4,
+                'sku' => 'MSK-001',
+                'is_active' => true,
+                'weight' => 250.00,
+                'specifications' => json_encode([
+                    'Material' => 'Elastomer termoplastik',
+                    'Warna' => 'Abu-abu dengan filter hitam',
+                    'Sertifikasi' => 'EN 140:1998, NIOSH',
+                    'Fitur' => 'Filter ganda, desain ergonomis, tali kepala yang dapat disesuaikan'
+                ]),
+                'images' => json_encode([
+                    'main' => 'masker-3m-6200-main.jpg',
+                    'gallery' => [
+                        'masker-3m-6200-1.jpg',
+                        'masker-3m-6200-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Masker N95 Honeywell H910 Plus',
+                'slug' => 'masker-n95-honeywell-h910-plus',
+                'description' => 'Masker N95 premium dengan efisiensi filtrasi 95% untuk partikel hingga 0.3 mikron. Desain lipat datar dengan klip hidung yang dapat disesuaikan dan tali elastis nyaman.',
+                'price' => 25000,
+                'stock' => 200,
+                'category_id' => 4,
+                'sku' => 'MSK-002',
+                'is_active' => true,
+                'weight' => 10.00,
+                'specifications' => json_encode([
+                    'Material' => 'Meltblown polypropylene',
+                    'Warna' => 'Putih',
+                    'Sertifikasi' => 'SNI 8394:2017, NIOSH N95',
+                    'Fitur' => 'Efisiensi filtrasi 95%, desain lipat datar, klip hidung aluminium'
+                ]),
+                'images' => json_encode([
+                    'main' => 'masker-honeywell-n95-main.jpg',
+                    'gallery' => [
+                        'masker-honeywell-n95-1.jpg',
+                        'masker-honeywell-n95-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Masker Full Face Dräger X-plore 6300',
+                'slug' => 'masker-full-face-drager-xplore-6300',
+                'description' => 'Masker pelindung seluruh wajah dengan visor anti-gores lebar dan sistem filter premium. Memberikan perlindungan maksimal untuk mata dan sistem pernapasan.',
+                'price' => 1850000,
+                'stock' => 15,
+                'category_id' => 4,
+                'sku' => 'MSK-003',
+                'is_active' => true,
+                'weight' => 580.00,
+                'specifications' => json_encode([
+                    'Material' => 'EPDM berkualitas tinggi dengan visor polikarbonat',
+                    'Warna' => 'Hitam dengan visor transparan',
+                    'Sertifikasi' => 'EN 136 Class 3, EN 148-1',
+                    'Fitur' => 'Visor lebar anti-gores, sistem 5 titik pengikat, kompatibel dengan filter RD40'
+                ]),
+                'images' => json_encode([
+                    'main' => 'masker-drager-xplore-main.jpg',
+                    'gallery' => [
+                        'masker-drager-xplore-1.jpg',
+                        'masker-drager-xplore-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            
+            // Kategori 5: Kacamata Keselamatan
+            [
+                'name' => 'Kacamata Safety 3M Virtua CCS',
+                'slug' => 'kacamata-safety-3m-virtua-ccs',
+                'description' => 'Kacamata pelindung ringan dengan desain stylish dan lapisan anti-gores. Dilengkapi dengan sistem tali cord control untuk kenyamanan penggunaan sepanjang hari.',
+                'price' => 125000,
+                'stock' => 85,
+                'category_id' => 5,
+                'sku' => 'KCM-001',
+                'is_active' => true,
+                'weight' => 30.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polikarbonat dengan frame nilon',
+                    'Warna' => 'Clear lens dengan frame hitam',
+                    'Sertifikasi' => 'ANSI Z87.1-2020, CSA Z94.3',
+                    'Fitur' => 'Anti-gores, sistem cord control, desain ringan'
+                ]),
+                'images' => json_encode([
+                    'main' => 'kacamata-3m-virtua-main.jpg',
+                    'gallery' => [
+                        'kacamata-3m-virtua-1.jpg',
+                        'kacamata-3m-virtua-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Kacamata Goggle Kings KY1151',
+                'slug' => 'kacamata-goggle-kings-ky1151',
+                'description' => 'Kacamata goggle dengan ventilasi tidak langsung dan lapisan anti-kabut. Memberikan perlindungan menyeluruh untuk mata dari percikan dan partikel berbahaya.',
+                'price' => 185000,
+                'stock' => 60,
+                'category_id' => 5,
+                'sku' => 'KCM-002',
+                'is_active' => true,
+                'weight' => 80.00,
+                'specifications' => json_encode([
+                    'Material' => 'Lensa polikarbonat dengan frame PVC lunak',
+                    'Warna' => 'Clear lens dengan frame hitam',
+                    'Sertifikasi' => 'EN 166, ANSI Z87.1+',
+                    'Fitur' => 'Anti-kabut, ventilasi tidak langsung, tahan bahan kimia'
+                ]),
+                'images' => json_encode([
+                    'main' => 'kacamata-kings-ky1151-main.jpg',
+                    'gallery' => [
+                        'kacamata-kings-ky1151-1.jpg',
+                        'kacamata-kings-ky1151-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Kacamata Las Lakoni Xtra Vision',
+                'slug' => 'kacamata-las-lakoni-xtra-vision',
+                'description' => 'Kacamata las premium dengan lensa flip-up dan perlindungan radiasi inframerah. Dirancang untuk memberikan kenyamanan maksimal saat pengelasan dengan visibilitas optimal.',
+                'price' => 225000,
+                'stock' => 40,
+                'category_id' => 5,
+                'sku' => 'KCM-003',
+                'is_active' => true,
+                'weight' => 110.00,
+                'specifications' => json_encode([
+                    'Material' => 'Lensa mineral dengan frame nilon tahan panas',
+                    'Warna' => 'Hitam dengan lensa gelap',
+                    'Sertifikasi' => 'EN 166, EN 169, EN 175',
+                    'Fitur' => 'Sistem flip-up, filter radiasi IR, ventilasi samping'
+                ]),
+                'images' => json_encode([
+                    'main' => 'kacamata-las-lakoni-main.jpg',
+                    'gallery' => [
+                        'kacamata-las-lakoni-1.jpg',
+                        'kacamata-las-lakoni-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            
+            // Kategori 6: Rompi Keselamatan
+            [
+                'name' => 'Rompi Keselamatan Safety Vest KV01',
+                'slug' => 'rompi-keselamatan-safety-vest-kv01',
+                'description' => 'Rompi keselamatan dengan visibilitas tinggi dan reflektif kelas 2. Dilengkapi dengan saku utilitas dan ventilasi mesh untuk kenyamanan di lingkungan kerja outdoor.',
+                'price' => 85000,
+                'stock' => 100,
+                'category_id' => 6,
+                'sku' => 'RMP-001',
+                'is_active' => true,
+                'weight' => 250.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polyester 120 gsm dengan panel mesh',
+                    'Warna' => 'Kuning neon dengan strip reflektif',
+                    'Sertifikasi' => 'EN ISO 20471:2013 Class 2',
+                    'Fitur' => '4 saku depan, resleting depan, panel mesh untuk ventilasi'
+                ]),
+                'images' => json_encode([
+                    'main' => 'rompi-kv01-main.jpg',
+                    'gallery' => [
+                        'rompi-kv01-1.jpg',
+                        'rompi-kv01-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Rompi Surveyor Krisbow Orange',
+                'slug' => 'rompi-surveyor-krisbow-orange',
+                'description' => 'Rompi surveyor profesional dengan banyak kantong fungsional dan visibilitas tinggi. Ideal untuk surveyor, supervisor, dan personel lapangan yang membutuhkan banyak penyimpanan.',
+                'price' => 155000,
+                'stock' => 70,
+                'category_id' => 6,
+                'sku' => 'RMP-002',
+                'is_active' => true,
+                'weight' => 350.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polyester 150 gsm dengan lapisan mesh',
+                    'Warna' => 'Oranye dengan strip reflektif',
+                    'Sertifikasi' => 'EN ISO 20471:2013 Class 2',
+                    'Fitur' => '8 kantong multifungsi, gantungan radio, ring ID'
+                ]),
+                'images' => json_encode([
+                    'main' => 'rompi-krisbow-surveyor-main.jpg',
+                    'gallery' => [
+                        'rompi-krisbow-surveyor-1.jpg',
+                        'rompi-krisbow-surveyor-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Rompi Cooling Techkewl Phase Change',
+                'slug' => 'rompi-cooling-techkewl-phase-change',
+                'description' => 'Rompi pendingin inovatif dengan teknologi phase change untuk menjaga suhu tubuh di lingkungan panas. Ideal untuk pekerja di lingkungan bersuhu tinggi seperti pabrik baja dan konstruksi outdoor.',
+                'price' => 750000,
+                'stock' => 25,
+                'category_id' => 6,
+                'sku' => 'RMP-003',
+                'is_active' => true,
+                'weight' => 1200.00,
+                'specifications' => json_encode([
+                    'Material' => 'Nilon luar dengan panel PCM (Phase Change Material)',
+                    'Warna' => 'Biru dengan aksen reflektif',
+                    'Sertifikasi' => 'ASTM F2300',
+                    'Fitur' => 'Pendinginan hingga 3 jam, paket PCM dapat diisi ulang, tali samping yang dapat disesuaikan'
+                ]),
+                'images' => json_encode([
+                    'main' => 'rompi-techkewl-main.jpg',
+                    'gallery' => [
+                        'rompi-techkewl-1.jpg',
+                        'rompi-techkewl-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            
+            // Kategori 7: Alat Pelindung Telinga
+            [
+                'name' => 'Earplug 3M E-A-R Classic',
+                'slug' => 'earplug-3m-e-a-r-classic',
+                'description' => 'Sumbat telinga berbahan busa PVC berkualitas tinggi dengan desain ergonomis. Memberikan perlindungan pendengaran optimal dengan tingkat reduksi kebisingan tinggi.',
+                'price' => 12000,
+                'stock' => 250,
+                'category_id' => 7,
+                'sku' => 'APT-001',
+                'is_active' => true,
+                'weight' => 5.00,
+                'specifications' => json_encode([
+                    'Material' => 'Busa PVC slow recovery',
+                    'Warna' => 'Kuning',
+                    'Sertifikasi' => 'EN 352-2, SNI',
+                    'Fitur' => 'NRR 29dB, bisa digunakan berulang, bentuk silinder'
+                ]),
+                'images' => json_encode([
+                    'main' => 'earplug-3m-classic-main.jpg',
+                    'gallery' => [
+                        'earplug-3m-classic-1.jpg',
+                        'earplug-3m-classic-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Earmuff Peltor X5A 3M',
+                'slug' => 'earmuff-peltor-x5a-3m',
+                'description' => 'Pelindung telinga premium dengan peredam suara tertinggi di kelasnya. Dilengkapi dengan bantalan lembut dan headband yang dapat disesuaikan untuk kenyamanan sepanjang hari.',
+                'price' => 485000,
+                'stock' => 45,
+                'category_id' => 7,
+                'sku' => 'APT-002',
+                'is_active' => true,
+                'weight' => 350.00,
+                'specifications' => json_encode([
+                    'Material' => 'ABS dengan bantalan PVC dan busa',
+                    'Warna' => 'Hitam dengan aksen hijau',
+                    'Sertifikasi' => 'EN 352-1, ANSI S3.19-1974',
+                    'Fitur' => 'NRR 31dB, headband yang dapat disesuaikan, teknologi space cup'
+                ]),
+                'images' => json_encode([
+                    'main' => 'earmuff-peltor-x5a-main.jpg',
+                    'gallery' => [
+                        'earmuff-peltor-x5a-1.jpg',
+                        'earmuff-peltor-x5a-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Earmuff Elektronik Howard Leight Sync',
+                'slug' => 'earmuff-elektronik-howard-leight-sync',
+                'description' => 'Earmuff elektronik dengan radio FM terintegrasi dan bluetooth. Melindungi pendengaran sekaligus memungkinkan komunikasi dan hiburan saat bekerja di lingkungan bising.',
+                'price' => 1250000,
+                'stock' => 20,
+                'category_id' => 7,
+                'sku' => 'APT-003',
+                'is_active' => true,
+                'weight' => 380.00,
+                'specifications' => json_encode([
+                    'Material' => 'ABS premium dengan bantalan gel',
+                    'Warna' => 'Hitam dengan aksen merah',
+                    'Sertifikasi' => 'EN 352-1, EN 352-8',
+                    'Fitur' => 'NRR 25dB, Bluetooth, radio FM, mikrofon terintegrasi'
+                ]),
+                'images' => json_encode([
+                    'main' => 'earmuff-howard-leight-main.jpg',
+                    'gallery' => [
+                        'earmuff-howard-leight-1.jpg',
+                        'earmuff-howard-leight-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            
+            // Kategori 8: Peralatan Keselamatan Ketinggian
+            [
+                'name' => 'Full Body Harness Karam PN 56',
+                'slug' => 'full-body-harness-karam-pn56',
+                'description' => 'Harness tubuh lengkap dengan 5 titik pengikatan dan bantalan ergonomis. Dirancang untuk kenyamanan maksimal dalam pemakaian jangka panjang saat bekerja di ketinggian.',
+                'price' => 1850000,
+                'stock' => 30,
+                'category_id' => 8,
+                'sku' => 'PKK-001',
+                'is_active' => true,
+                'weight' => 1800.00,
+                'specifications' => json_encode([
+                    'Material' => 'Webbing poliester 45mm dengan fitting baja',
+                    'Warna' => 'Hitam dengan aksen merah',
+                    'Sertifikasi' => 'EN 361, ANSI Z359.1',
+                    'Fitur' => '5 titik pengikatan, bantalan punggung ergonomis, buckle quick release'
+                ]),
+                'images' => json_encode([
+                    'main' => 'harness-karam-pn56-main.jpg',
+                    'gallery' => [
+                        'harness-karam-pn56-1.jpg',
+                        'harness-karam-pn56-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+            [
+                'name' => 'Lanyard Petzl Absorbica-Y MGO',
+                'slug' => 'lanyard-petzl-absorbica-y-mgo',
+                'description' => 'Lanyard double dengan penyerap energi terintegrasi. Dirancang untuk pergerakan vertikal dengan pengamanan 100% pada struktur logam atau kabel.',
+                'price' => 3250000,
+                'stock' => 15,
+                'category_id' => 8,
+                'sku' => 'PKK-002',
+                'is_active' => true,
+                'weight' => 1650.00,
+                'specifications' => json_encode([
+                    'Material' => 'Webbing poliamida dengan karabiner aluminium',
+                    'Warna' => 'Kuning hitam',
+                    'Sertifikasi' => 'CE EN 355, ANSI Z359.13',
+                    'Fitur' => 'Panjang 150cm, penyerap energi, karabiner MGO, desain Y'
+                ]),
+                'images' => json_encode([
+                    'main' => 'lanyard-petzl-absorbica-main.jpg',
+                    'gallery' => [
+                        'lanyard-petzl-absorbica-1.jpg',
+                        'lanyard-petzl-absorbica-2.jpg'
+                    ]
+                ]),
+                'is_featured' => false,
+            ],
+            [
+                'name' => 'Self Retracting Lifeline Protecta Rebel',
+                'slug' => 'self-retracting-lifeline-protecta-rebel',
+                'description' => 'Perangkat penangkap jatuh otomatis dengan kabel baja galvanis. Memberikan kebebasan bergerak maksimal sambil tetap memberikan perlindungan jatuh yang andal.',
+                'price' => 5750000,
+                'stock' => 10,
+                'category_id' => 8,
+                'sku' => 'PKK-003',
+                'is_active' => true,
+                'weight' => 7500.00,
+                'specifications' => json_encode([
+                    'Material' => 'Housing thermoplastic dengan kabel baja galvanis',
+                    'Warna' => 'Hitam kuning',
+                    'Sertifikasi' => 'EN 360, ANSI Z359.14 Class B',
+                    'Fitur' => 'Panjang 15m, indikator jatuh, swivel top, pengunci ganda'
+                ]),
+                'images' => json_encode([
+                    'main' => 'srl-protecta-rebel-main.jpg',
+                    'gallery' => [
+                        'srl-protecta-rebel-1.jpg',
+                        'srl-protecta-rebel-2.jpg'
+                    ]
+                ]),
+                'is_featured' => true,
+            ],
+        ];
+        
+        foreach ($products as $product) {
+            Product::updateOrCreate(
+                ['slug' => $product['slug']],
+                $product
+            );
+        }
+    }
+}
+                'description' => 'Industry standard hard hat with 4-point ratchet suspension.',
+                'price' => 250000,
+                'stock' => 50,
+                'category_id' => 1,
+                'sku' => 'MSA-001',
+                'is_active' => true,
+                'weight' => 500.00,
+                'specifications' => json_encode([
+                    'Material' => 'High-density polyethylene',
+                    'Color' => 'White',
+                    'Certification' => 'ANSI Z89.1-2014 Type I, Class E'
+                ]),
+                'images' => json_encode([
+                    'main' => 'msa-v-gard-main.jpg',
+                    'thumbnails' => [
+                        'msa-v-gard-1.jpg',
+                        'msa-v-gard-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'JSP Evolution Deluxe Mining Helmet',
+                'slug' => 'jsp-evolution-deluxe-mining-helmet',
+                'description' => 'Mining safety helmet with integrated lamp bracket and chin strap.',
+                'price' => 320000,
+                'stock' => 40,
+                'category_id' => 1,
+                'sku' => 'JSP-001',
+                'is_active' => true,
+                'weight' => 550.00,
+                'specifications' => json_encode([
+                    'Material' => 'ABS plastic shell',
+                    'Color' => 'Yellow',
+                    'Certification' => 'ANSI Z89.1-2014 Type I, Class E',
+                    'Features' => 'Lamp bracket, chin strap, 6-point suspension'
+                ]),
+                'images' => json_encode([
+                    'main' => 'jsp-mining-main.jpg',
+                    'thumbnails' => [
+                        'jsp-mining-1.jpg',
+                        'jsp-mining-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Delta Plus Baseball Cap Style Safety Helmet',
+                'slug' => 'delta-plus-baseball-cap-helmet',
+                'description' => 'Modern baseball cap style safety helmet with ABS shell and comfortable padding.',
+                'price' => 275000,
+                'stock' => 60,
+                'category_id' => 1,
+                'sku' => 'DLT-001',
+                'is_active' => true,
+                'weight' => 450.00,
+                'specifications' => json_encode([
+                    'Material' => 'ABS shell with EVA padding',
+                    'Color' => 'Navy Blue',
+                    'Certification' => 'EN 812:2012',
+                    'Features' => 'Short visor, ventilation holes'
+                ]),
+                'images' => json_encode([
+                    'main' => 'delta-plus-main.jpg',
+                    'thumbnails' => [
+                        'delta-plus-1.jpg',
+                        'delta-plus-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Bullard AboveView Full Brim Hard Hat',
+                'slug' => 'bullard-aboveview-hard-hat',
+                'description' => 'Full brim hard hat with transparent visor for improved upward visibility.',
+                'price' => 400000,
+                'stock' => 35,
+                'category_id' => 1,
+                'sku' => 'BUL-001',
+                'is_active' => true,
+                'weight' => 580.00,
+                'specifications' => json_encode([
+                    'Material' => 'Fiberglass reinforced nylon',
+                    'Color' => 'White with clear visor',
+                    'Certification' => 'ANSI Z89.1-2014 Type I, Class E',
+                    'Features' => 'See-through visor panel, full brim'
+                ]),
+                'images' => json_encode([
+                    'main' => 'bullard-aboveview-main.jpg',
+                    'thumbnails' => [
+                        'bullard-aboveview-1.jpg',
+                        'bullard-aboveview-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => '3M SecureFit Safety Helmet with Ratchet',
+                'slug' => '3m-securefit-safety-helmet',
+                'description' => 'Lightweight ventilated safety helmet with pressure diffusion technology for better comfort.',
+                'price' => 290000,
+                'stock' => 55,
+                'category_id' => 1,
+                'sku' => '3M-HLM001',
+                'is_active' => true,
+                'weight' => 480.00,
+                'specifications' => json_encode([
+                    'Material' => 'UV-resistant ABS',
+                    'Color' => 'Hi-Vis Green',
+                    'Certification' => 'ANSI Z89.1-2014 Type I, Class C',
+                    'Features' => 'Ventilated design, reflective elements, pressure diffusion padding'
+                ]),
+                'images' => json_encode([
+                    'main' => '3m-securefit-helmet-main.jpg',
+                    'thumbnails' => [
+                        '3m-securefit-helmet-1.jpg',
+                        '3m-securefit-helmet-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => '3M SecureFit Safety Glasses',
+                'slug' => '3m-securefit-safety-glasses',
+                'description' => 'Lightweight safety glasses with anti-fog coating.',
+                'price' => 120000,
+                'stock' => 100,
+                'category_id' => 6,
+                'sku' => '3M-SG001',
+                'is_active' => true,
+                'weight' => 150.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polycarbonate',
+                    'Color' => 'Clear',
+                    'Certification' => 'ANSI Z87.1-2020'
+                ]),
+                'images' => json_encode([
+                    'main' => '3m-securefit-main.jpg',
+                    'thumbnails' => [
+                        '3m-securefit-1.jpg',
+                        '3m-securefit-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Honeywell Uvex Stealth OTG Goggles',
+                'slug' => 'honeywell-uvex-stealth-goggles',
+                'description' => 'Over-the-glasses safety goggles with indirect ventilation and anti-fog treatment.',
+                'price' => 185000,
+                'stock' => 80,
+                'category_id' => 6,
+                'sku' => 'UVX-001',
+                'is_active' => true,
+                'weight' => 180.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polycarbonate lens with PVC frame',
+                    'Color' => 'Gray/Clear',
+                    'Certification' => 'ANSI Z87.1-2020, CSA Z94.3',
+                    'Features' => 'Indirect ventilation, can be worn over prescription glasses'
+                ]),
+                'images' => json_encode([
+                    'main' => 'uvex-stealth-main.jpg',
+                    'thumbnails' => [
+                        'uvex-stealth-1.jpg',
+                        'uvex-stealth-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Bolle Rush+ Safety Glasses with Blue Light Filter',
+                'slug' => 'bolle-rush-blue-light-glasses',
+                'description' => 'Stylish safety glasses with blue light filtering for computer work and UV protection.',
+                'price' => 210000,
+                'stock' => 65,
+                'category_id' => 6,
+                'sku' => 'BLR-001',
+                'is_active' => true,
+                'weight' => 120.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polycarbonate with anti-scratch coating',
+                    'Color' => 'Black/Blue tint',
+                    'Certification' => 'EN166 FT, EN170, EN172',
+                    'Features' => 'Blue light filter, UV protection, sporty design'
+                ]),
+                'images' => json_encode([
+                    'main' => 'bolle-rush-main.jpg',
+                    'thumbnails' => [
+                        'bolle-rush-1.jpg',
+                        'bolle-rush-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Pyramex Proximity Safety Glasses with Foam Gasket',
+                'slug' => 'pyramex-proximity-foam-glasses',
+                'description' => 'Sealed safety glasses with removable foam gasket for dust protection.',
+                'price' => 165000,
+                'stock' => 90,
+                'category_id' => 6,
+                'sku' => 'PYR-001',
+                'is_active' => true,
+                'weight' => 145.00,
+                'specifications' => json_encode([
+                    'Material' => 'H2X anti-fog polycarbonate lens',
+                    'Color' => 'Black/Clear',
+                    'Certification' => 'ANSI Z87.1-2020 High Impact',
+                    'Features' => 'Removable foam gasket, rubber temples, impact resistant'
+                ]),
+                'images' => json_encode([
+                    'main' => 'pyramex-proximity-main.jpg',
+                    'thumbnails' => [
+                        'pyramex-proximity-1.jpg',
+                        'pyramex-proximity-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Edge Tactical Acid Gambit Polarized Safety Glasses',
+                'slug' => 'edge-tactical-polarized-glasses',
+                'description' => 'Military-grade polarized safety glasses for outdoor work environments.',
+                'price' => 250000,
+                'stock' => 50,
+                'category_id' => 6,
+                'sku' => 'EDG-001',
+                'is_active' => true,
+                'weight' => 135.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polarized polycarbonate with Vapor Shield',
+                    'Color' => 'Matte Black/Smoke',
+                    'Certification' => 'ANSI Z87.1+, MIL-PRF-32432 Ballistic',
+                    'Features' => 'Polarized lenses, ballistic rated, anti-fog, vapor shield technology'
+                ]),
+                'images' => json_encode([
+                    'main' => 'edge-tactical-main.jpg',
+                    'thumbnails' => [
+                        'edge-tactical-1.jpg',
+                        'edge-tactical-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Mechanix Wear M-Pact Gloves',
+                'slug' => 'mechanix-wear-m-pact-gloves',
+                'description' => 'Heavy-duty work gloves with impact protection.',
+                'price' => 350000,
+                'stock' => 75,
+                'category_id' => 3,
+                'sku' => 'MECH-001',
+                'is_active' => true,
+                'weight' => 250.00,
+                'specifications' => json_encode([
+                    'Material' => 'Synthetic leather, TPR',
+                    'Size' => 'L',
+                    'Color' => 'Black/Yellow'
+                ]),
+                'images' => json_encode([
+                    'main' => 'mechanix-mpact-main.jpg',
+                    'thumbnails' => [
+                        'mechanix-mpact-1.jpg',
+                        'mechanix-mpact-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Ansell HyFlex 11-840 Precision Work Gloves',
+                'slug' => 'ansell-hyflex-11-840-gloves',
+                'description' => 'Ultra-thin precision handling gloves with excellent dexterity for assembly work.',
+                'price' => 120000,
+                'stock' => 100,
+                'category_id' => 3,
+                'sku' => 'ANS-001',
+                'is_active' => true,
+                'weight' => 150.00,
+                'specifications' => json_encode([
+                    'Material' => 'Nylon/Spandex with nitrile foam coating',
+                    'Size' => 'M',
+                    'Color' => 'Gray/Black',
+                    'Cut Resistance' => 'ANSI Cut Level A2'
+                ]),
+                'images' => json_encode([
+                    'main' => 'ansell-hyflex-main.jpg',
+                    'thumbnails' => [
+                        'ansell-hyflex-1.jpg',
+                        'ansell-hyflex-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Hexarmor Chrome Series 4026 Cut Resistant Gloves',
+                'slug' => 'hexarmor-chrome-4026-gloves',
+                'description' => 'Heavy-duty cut resistant gloves for glass handling and sharp metal work.',
+                'price' => 450000,
+                'stock' => 60,
+                'category_id' => 3,
+                'sku' => 'HEX-001',
+                'is_active' => true,
+                'weight' => 280.00,
+                'specifications' => json_encode([
+                    'Material' => 'SuperFabric with leather palm',
+                    'Size' => 'XL',
+                    'Color' => 'Gray/Black',
+                    'Cut Resistance' => 'ANSI/ISEA Cut Level A8',
+                    'Puncture Resistance' => 'ANSI/ISEA Level 5'
+                ]),
+                'images' => json_encode([
+                    'main' => 'hexarmor-chrome-main.jpg',
+                    'thumbnails' => [
+                        'hexarmor-chrome-1.jpg',
+                        'hexarmor-chrome-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Showa 377 Nitrile Foam Grip Gloves',
+                'slug' => 'showa-377-nitrile-foam-gloves',
+                'description' => 'Breathable nitrile foam coated gloves for wet and oily conditions with excellent grip.',
+                'price' => 95000,
+                'stock' => 120,
+                'category_id' => 3,
+                'sku' => 'SHW-001',
+                'is_active' => true,
+                'weight' => 130.00,
+                'specifications' => json_encode([
+                    'Material' => 'Breathable nylon liner with nitrile foam coating',
+                    'Size' => 'L',
+                    'Color' => 'Dark Blue/Black',
+                    'Grip Technology' => 'Microporous nitrile foam',
+                    'Features' => 'Waterproof palm, breathable back'
+                ]),
+                'images' => json_encode([
+                    'main' => 'showa-377-main.jpg',
+                    'thumbnails' => [
+                        'showa-377-1.jpg',
+                        'showa-377-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Ringers R-33 Extrication Rescue Gloves',
+                'slug' => 'ringers-r33-rescue-gloves',
+                'description' => 'High-visibility rescue gloves designed for emergency response and extrication operations.',
+                'price' => 380000,
+                'stock' => 45,
+                'category_id' => 3,
+                'sku' => 'RNG-001',
+                'is_active' => true,
+                'weight' => 260.00,
+                'specifications' => json_encode([
+                    'Material' => 'Clarino synthetic leather with TPR armor',
+                    'Size' => 'XL',
+                    'Color' => 'Hi-Vis Yellow/Black',
+                    'Features' => 'Waterproof barrier, padded knuckles, reflective elements',
+                    'Certification' => 'EN 388:2016 (3,1,3,2,X)'
+                ]),
+                'images' => json_encode([
+                    'main' => 'ringers-r33-main.jpg',
+                    'thumbnails' => [
+                        'ringers-r33-1.jpg',
+                        'ringers-r33-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Timberland PRO Steel Toe Boots',
+                'slug' => 'timberland-pro-steel-toe-boots',
+                'description' => 'Waterproof leather boots with steel toe protection.',
+                'price' => 1200000,
+                'stock' => 30,
+                'category_id' => 2,
+                'sku' => 'TIMB-001',
+                'is_active' => true,
+                'weight' => 1200.00,
+                'specifications' => json_encode([
+                    'Material' => 'Full-grain leather',
+                    'Size' => '42',
+                    'Color' => 'Wheat',
+                    'Certification' => 'ASTM F2413-18'
+                ]),
+                'images' => json_encode([
+                    'main' => 'timberland-pro-main.jpg',
+                    'thumbnails' => [
+                        'timberland-pro-1.jpg',
+                        'timberland-pro-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Caterpillar Threshold Waterproof Steel Toe Work Boots',
+                'slug' => 'caterpillar-threshold-boots',
+                'description' => 'Industrial waterproof work boots with ERGO comfort system and steel toe.',
+                'price' => 1050000,
+                'stock' => 25,
+                'category_id' => 2,
+                'sku' => 'CAT-001',
+                'is_active' => true,
+                'weight' => 1300.00,
+                'specifications' => json_encode([
+                    'Material' => 'Full-grain leather with rubber outsole',
+                    'Size' => '41',
+                    'Color' => 'Brown',
+                    'Certification' => 'ASTM F2413-18 I/75 C/75 EH',
+                    'Features' => 'Slip resistant, oil resistant, waterproof'
+                ]),
+                'images' => json_encode([
+                    'main' => 'cat-threshold-main.jpg',
+                    'thumbnails' => [
+                        'cat-threshold-1.jpg',
+                        'cat-threshold-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Dr. Martens Industrial Steel Toe Boots',
+                'slug' => 'dr-martens-industrial-boots',
+                'description' => 'Classic styled work boots with modern safety features and air-cushioned sole.',
+                'price' => 1350000,
+                'stock' => 20,
+                'category_id' => 2,
+                'sku' => 'DRM-001',
+                'is_active' => true,
+                'weight' => 1250.00,
+                'specifications' => json_encode([
+                    'Material' => 'Industrial tumbled leather',
+                    'Size' => '43',
+                    'Color' => 'Black',
+                    'Certification' => 'ASTM F2413-11 M I/75 C/75 EH',
+                    'Features' => 'PVC air-cushioned sole, Goodyear welt construction'
+                ]),
+                'images' => json_encode([
+                    'main' => 'dr-martens-industrial-main.jpg',
+                    'thumbnails' => [
+                        'dr-martens-industrial-1.jpg',
+                        'dr-martens-industrial-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Keen Utility Atlanta Cool Steel Toe Work Shoes',
+                'slug' => 'keen-utility-atlanta-work-shoes',
+                'description' => 'Lightweight breathable mesh work shoes with steel toe for hot environments.',
+                'price' => 950000,
+                'stock' => 40,
+                'category_id' => 2,
+                'sku' => 'KEN-001',
+                'is_active' => true,
+                'weight' => 850.00,
+                'specifications' => json_encode([
+                    'Material' => 'Mesh with leather overlays',
+                    'Size' => '44',
+                    'Color' => 'Gray/Blue',
+                    'Certification' => 'ASTM F2412-17 and F2413-17 I/75 C/75 EH',
+                    'Features' => 'Breathable, oil and slip resistant, contoured heel lock'
+                ]),
+                'images' => json_encode([
+                    'main' => 'keen-atlanta-main.jpg',
+                    'thumbnails' => [
+                        'keen-atlanta-1.jpg',
+                        'keen-atlanta-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Red Wing Worx MetGuard Composite Toe Boots',
+                'slug' => 'red-wing-worx-metguard-boots',
+                'description' => 'Heavy duty work boots with external metatarsal guard and composite toe.',
+                'price' => 1500000,
+                'stock' => 15,
+                'category_id' => 2,
+                'sku' => 'RDW-001',
+                'is_active' => true,
+                'weight' => 1400.00,
+                'specifications' => json_encode([
+                    'Material' => 'Full-grain waterproof leather',
+                    'Size' => '45',
+                    'Color' => 'Black',
+                    'Certification' => 'ASTM F2413-11 M I/75 C/75 Mt/75 EH',
+                    'Features' => 'External metatarsal guard, composite toe, electrical hazard protection'
+                ]),
+                'images' => json_encode([
+                    'main' => 'red-wing-metguard-main.jpg',
+                    'thumbnails' => [
+                        'red-wing-metguard-1.jpg',
+                        'red-wing-metguard-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => '3M Peltor Earmuffs',
+                'slug' => '3m-peltor-earmuffs',
+                'description' => 'High-performance hearing protection for noisy environments.',
+                'price' => 280000,
+                'stock' => 60,
+                'category_id' => 8,
+                'sku' => '3M-EM001',
+                'is_active' => true,
+                'weight' => 350.00,
+                'specifications' => json_encode([
+                    'NRR Rating' => '28 dB',
+                    'Color' => 'Black/Red',
+                    'Certification' => 'ANSI S3.19-1974'
+                ]),
+                'images' => json_encode([
+                    'main' => '3m-peltor-main.jpg',
+                    'thumbnails' => [
+                        '3m-peltor-1.jpg',
+                        '3m-peltor-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Howard Leight Impact Sport Electronic Earmuffs',
+                'slug' => 'howard-leight-impact-sport-earmuffs',
+                'description' => 'Electronic earmuffs that amplify ambient sounds while blocking harmful noise.',
+                'price' => 450000,
+                'stock' => 40,
+                'category_id' => 8,
+                'sku' => 'HOW-001',
+                'is_active' => true,
+                'weight' => 380.00,
+                'specifications' => json_encode([
+                    'NRR Rating' => '22 dB',
+                    'Color' => 'Green',
+                    'Certification' => 'ANSI S3.19-1974',
+                    'Features' => 'Electronic amplification, auto shut-off, AUX input',
+                    'Power' => '2 AAA batteries'
+                ]),
+                'images' => json_encode([
+                    'main' => 'howard-leight-impact-main.jpg',
+                    'thumbnails' => [
+                        'howard-leight-impact-1.jpg',
+                        'howard-leight-impact-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Moldex Sparkplugs Corded Earplugs',
+                'slug' => 'moldex-sparkplugs-earplugs',
+                'description' => 'High visibility disposable corded earplugs with tapered design for comfort.',
+                'price' => 55000,
+                'stock' => 200,
+                'category_id' => 8,
+                'sku' => 'MOL-EP001',
+                'is_active' => true,
+                'weight' => 50.00,
+                'specifications' => json_encode([
+                    'NRR Rating' => '33 dB',
+                    'Color' => 'Green/Yellow',
+                    'Certification' => 'ANSI S3.19-1974',
+                    'Features' => 'Corded, non-irritating foam, tapered shape',
+                    'Quantity' => '100 pairs'
+                ]),
+                'images' => json_encode([
+                    'main' => 'moldex-sparkplugs-main.jpg',
+                    'thumbnails' => [
+                        'moldex-sparkplugs-1.jpg',
+                        'moldex-sparkplugs-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'MSA Sordin Supreme Pro-X Hearing Protection',
+                'slug' => 'msa-sordin-supreme-pro-x',
+                'description' => 'Premium electronic ear defenders with ambient sound amplification and waterproof design.',
+                'price' => 1800000,
+                'stock' => 15,
+                'category_id' => 8,
+                'sku' => 'MSA-HP001',
+                'is_active' => true,
+                'weight' => 420.00,
+                'specifications' => json_encode([
+                    'NRR Rating' => '25 dB',
+                    'Color' => 'Black',
+                    'Certification' => 'CE EN352-1:2002, EN352-4:2001, EN352-6:2002',
+                    'Features' => 'Waterproof microphones, audio input, leather headband, gel seals',
+                    'Power' => '2 AAA batteries'
+                ]),
+                'images' => json_encode([
+                    'main' => 'msa-sordin-main.jpg',
+                    'thumbnails' => [
+                        'msa-sordin-1.jpg',
+                        'msa-sordin-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => '3M E-A-R Classic Foam Earplugs',
+                'slug' => '3m-ear-classic-earplugs',
+                'description' => 'Industry standard foam earplugs with excellent noise reduction and comfort.',
+                'price' => 45000,
+                'stock' => 250,
+                'category_id' => 8,
+                'sku' => '3M-EP001',
+                'is_active' => true,
+                'weight' => 40.00,
+                'specifications' => json_encode([
+                    'NRR Rating' => '29 dB',
+                    'Color' => 'Yellow',
+                    'Certification' => 'ANSI S3.19-1974',
+                    'Features' => 'Slow recovery foam, cylindrical shape',
+                    'Quantity' => '200 pairs'
+                ]),
+                'images' => json_encode([
+                    'main' => '3m-ear-classic-main.jpg',
+                    'thumbnails' => [
+                        '3m-ear-classic-1.jpg',
+                        '3m-ear-classic-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Moldex N95 Respirator',
+                'slug' => 'moldex-n95-respirator',
+                'description' => 'NIOSH-approved N95 particulate respirator.',
+                'price' => 150000,
+                'stock' => 200,
+                'category_id' => 4,
+                'sku' => 'MOLD-001',
+                'is_active' => true,
+                'weight' => 50.00,
+                'specifications' => json_encode([
+                    'Type' => 'N95',
+                    'Certification' => 'NIOSH-approved',
+                    'Valve' => 'Yes'
+                ]),
+                'images' => json_encode([
+                    'main' => 'moldex-n95-main.jpg',
+                    'thumbnails' => [
+                        'moldex-n95-1.jpg',
+                        'moldex-n95-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => '3M 6800 Full Face Respirator',
+                'slug' => '3m-6800-full-face-respirator',
+                'description' => 'Reusable full face respirator with wide field of view for protection against gases and particles.',
+                'price' => 1200000,
+                'stock' => 30,
+                'category_id' => 4,
+                'sku' => '3M-FF001',
+                'is_active' => true,
+                'weight' => 650.00,
+                'specifications' => json_encode([
+                    'Type' => 'Full Face Respirator',
+                    'Size' => 'Medium',
+                    'Certification' => 'NIOSH-approved',
+                    'Features' => 'Bayonet filter connection, silicone face seal, polycarbonate lens',
+                    'Compatible Filters' => '3M 6000 Series Cartridges and 2000 Series Filters'
+                ]),
+                'images' => json_encode([
+                    'main' => '3m-6800-main.jpg',
+                    'thumbnails' => [
+                        '3m-6800-1.jpg',
+                        '3m-6800-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Honeywell P100 Particulate Filter',
+                'slug' => 'honeywell-p100-filter',
+                'description' => 'High efficiency particulate filter for use with compatible Honeywell respirators.',
+                'price' => 180000,
+                'stock' => 150,
+                'category_id' => 4,
+                'sku' => 'HON-P100',
+                'is_active' => true,
+                'weight' => 120.00,
+                'specifications' => json_encode([
+                    'Type' => 'P100 Filter',
+                    'Certification' => 'NIOSH-approved 99.97% filtration efficiency',
+                    'Color' => 'Magenta',
+                    'Compatible With' => 'Honeywell North Series Respirators',
+                    'Quantity' => 'Pair (2 filters)'
+                ]),
+                'images' => json_encode([
+                    'main' => 'honeywell-p100-main.jpg',
+                    'thumbnails' => [
+                        'honeywell-p100-1.jpg',
+                        'honeywell-p100-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'MSA Advantage 200 LS Half-Mask Respirator',
+                'slug' => 'msa-advantage-200-respirator',
+                'description' => 'Lightweight and comfortable half-mask respirator with low breathing resistance.',
+                'price' => 350000,
+                'stock' => 60,
+                'category_id' => 4,
+                'sku' => 'MSA-HM001',
+                'is_active' => true,
+                'weight' => 280.00,
+                'specifications' => json_encode([
+                    'Type' => 'Half-Mask Respirator',
+                    'Size' => 'Large',
+                    'Certification' => 'NIOSH-approved',
+                    'Features' => 'AnthroCurve Sealing Surface, multiflex system for custom fit',
+                    'Material' => 'Thermoplastic rubber'
+                ]),
+                'images' => json_encode([
+                    'main' => 'msa-advantage-main.jpg',
+                    'thumbnails' => [
+                        'msa-advantage-1.jpg',
+                        'msa-advantage-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Dräger X-plore 1750 N95 Respirator',
+                'slug' => 'drager-xplore-1750-respirator',
+                'description' => 'Premium N95 respirator with VarioFLEX head harness and low breathing resistance.',
+                'price' => 165000,
+                'stock' => 180,
+                'category_id' => 4,
+                'sku' => 'DRG-001',
+                'is_active' => true,
+                'weight' => 45.00,
+                'specifications' => json_encode([
+                    'Type' => 'N95 Folding Respirator',
+                    'Certification' => 'NIOSH-approved, EN 149:2001+A1:2009',
+                    'Valve' => 'CoolMAX exhalation valve',
+                    'Features' => 'VarioFLEX head harness, folding design, individually sealed',
+                    'Quantity' => '10 masks'
+                ]),
+                'images' => json_encode([
+                    'main' => 'drager-xplore-main.jpg',
+                    'thumbnails' => [
+                        'drager-xplore-1.jpg',
+                        'drager-xplore-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Reflective Safety Vest',
+                'slug' => 'reflective-safety-vest',
+                'description' => 'High-visibility vest with reflective strips.',
+                'price' => 85000,
+                'stock' => 150,
+                'category_id' => 5,
+                'sku' => 'SBG-001',
+                'is_active' => true,
+                'weight' => 200.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polyester mesh',
+                    'Size' => 'XL',
+                    'Color' => 'Neon Yellow',
+                    'Certification' => 'ANSI/ISEA 107-2020 Type R, Class 2'
+                ]),
+                'images' => json_encode([
+                    'main' => 'safety-vest-main.jpg',
+                    'thumbnails' => [
+                        'safety-vest-1.jpg',
+                        'safety-vest-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Ergodyne GloWear 8265 Class 2 Vest',
+                'slug' => 'ergodyne-glowear-8265-vest',
+                'description' => 'Heavy-duty safety vest with multiple pockets and adjustable sides.',
+                'price' => 120000,
+                'stock' => 100,
+                'category_id' => 5,
+                'sku' => 'ERG-001',
+                'is_active' => true,
+                'weight' => 250.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polyester with 3M Scotchlite reflective material',
+                    'Size' => 'L/XL',
+                    'Color' => 'Orange',
+                    'Certification' => 'ANSI/ISEA 107-2020 Type R, Class 2',
+                    'Features' => '5-point breakaway design, 8 pockets, adjustable sides'
+                ]),
+                'images' => json_encode([
+                    'main' => 'ergodyne-glowear-main.jpg',
+                    'thumbnails' => [
+                        'ergodyne-glowear-1.jpg',
+                        'ergodyne-glowear-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'ML Kishigo Premium Black Series Vest',
+                'slug' => 'ml-kishigo-black-series-vest',
+                'description' => 'Premium black series safety vest with contrast trim and enhanced visibility.',
+                'price' => 160000,
+                'stock' => 80,
+                'category_id' => 5,
+                'sku' => 'MLK-001',
+                'is_active' => true,
+                'weight' => 240.00,
+                'specifications' => json_encode([
+                    'Material' => 'Premium microfiber mesh with 3M Scotchlite',
+                    'Size' => '2XL/3XL',
+                    'Color' => 'Black with Yellow Trim',
+                    'Certification' => 'ANSI/ISEA 107-2020 Type R, Class 2',
+                    'Features' => 'Zipper closure, 6 pockets, mic tabs, padded neck'
+                ]),
+                'images' => json_encode([
+                    'main' => 'ml-kishigo-main.jpg',
+                    'thumbnails' => [
+                        'ml-kishigo-1.jpg',
+                        'ml-kishigo-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Pyramex Class 3 Hi-Vis Winter Jacket',
+                'slug' => 'pyramex-class3-winter-jacket',
+                'description' => 'High visibility winter jacket with built-in safety vest and thermal lining.',
+                'price' => 450000,
+                'stock' => 40,
+                'category_id' => 5,
+                'sku' => 'PYR-J001',
+                'is_active' => true,
+                'weight' => 950.00,
+                'specifications' => json_encode([
+                    'Material' => 'Waterproof polyester with quilted lining',
+                    'Size' => 'L',
+                    'Color' => 'Lime with Black Bottom',
+                    'Certification' => 'ANSI/ISEA 107-2020 Type R, Class 3',
+                    'Features' => 'Detachable hood, waterproof, windproof, thermal insulation'
+                ]),
+                'images' => json_encode([
+                    'main' => 'pyramex-jacket-main.jpg',
+                    'thumbnails' => [
+                        'pyramex-jacket-1.jpg',
+                        'pyramex-jacket-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Radians SV55 Class 1 Engineer Vest',
+                'slug' => 'radians-sv55-engineer-vest',
+                'description' => 'Professional surveyor/engineer safety vest with specialized tool pockets.',
+                'price' => 180000,
+                'stock' => 65,
+                'category_id' => 5,
+                'sku' => 'RAD-001',
+                'is_active' => true,
+                'weight' => 300.00,
+                'specifications' => json_encode([
+                    'Material' => 'Solid polyester front, mesh back',
+                    'Size' => 'M',
+                    'Color' => 'Orange',
+                    'Certification' => 'ANSI/ISEA 107-2020 Type O, Class 1',
+                    'Features' => '12 specialized pockets, 2 mic tabs, heavy-duty zipper'
+                ]),
+                'images' => json_encode([
+                    'main' => 'radians-sv55-main.jpg',
+                    'thumbnails' => [
+                        'radians-sv55-1.jpg',
+                        'radians-sv55-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Full Body Harness',
+                'slug' => 'full-body-harness',
+                'description' => 'ANSI-compliant full body harness for fall protection.',
+                'price' => 950000,
+                'stock' => 25,
+                'category_id' => 9,
+                'sku' => 'GUARD-001',
+                'is_active' => true,
+                'weight' => 1500.00,
+                'specifications' => json_encode([
+                    'Material' => 'Polyester webbing',
+                    'Size' => 'Universal',
+                    'D-Rings' => '3',
+                    'Certification' => 'ANSI Z359.11-2014'
+                ]),
+                'images' => json_encode([
+                    'main' => 'body-harness-main.jpg',
+                    'thumbnails' => [
+                        'body-harness-1.jpg',
+                        'body-harness-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Petzl ASAP Mobile Fall Arrester',
+                'slug' => 'petzl-asap-fall-arrester',
+                'description' => 'Advanced mobile fall arrester that follows the user during ascents and arrests falls during descents.',
+                'price' => 2800000,
+                'stock' => 15,
+                'category_id' => 9,
+                'sku' => 'PTZ-001',
+                'is_active' => true,
+                'weight' => 425.00,
+                'specifications' => json_encode([
+                    'Material' => 'Aluminum, stainless steel, nylon',
+                    'Compatibility' => '10-13mm ropes',
+                    'Certification' => 'CE EN 12841 type A, CE EN 353-2, ANSI Z359.15',
+                    'Maximum Arrest Distance' => '100cm',
+                    'Features' => 'Locking mechanism, bidirectional movement'
+                ]),
+                'images' => json_encode([
+                    'main' => 'petzl-asap-main.jpg',
+                    'thumbnails' => [
+                        'petzl-asap-1.jpg',
+                        'petzl-asap-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Miller Twin Turbo Fall Protection System',
+                'slug' => 'miller-twin-turbo-system',
+                'description' => 'Complete twin-leg fall protection system with shock absorber and connectors.',
+                'price' => 3500000,
+                'stock' => 20,
+                'category_id' => 9,
+                'sku' => 'MIL-001',
+                'is_active' => true,
+                'weight' => 2200.00,
+                'specifications' => json_encode([
+                    'Type' => 'Twin-leg personal fall limiter',
+                    'Length' => '6 feet (1.8m)',
+                    'Certification' => 'ANSI Z359.14-2014, OSHA 1926.502',
+                    'Working Capacity' => '400 lbs (181 kg)',
+                    'Features' => 'Quick-connect adapters, retractable design, aluminum connectors'
+                ]),
+                'images' => json_encode([
+                    'main' => 'miller-twin-turbo-main.jpg',
+                    'thumbnails' => [
+                        'miller-twin-turbo-1.jpg',
+                        'miller-twin-turbo-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'DBI-SALA Sealed Self-Retracting Lifeline',
+                'slug' => 'dbi-sala-retracting-lifeline',
+                'description' => 'Heavy-duty sealed self-retracting lifeline for harsh environments with retrieval capability.',
+                'price' => 7500000,
+                'stock' => 10,
+                'category_id' => 9,
+                'sku' => 'DBI-001',
+                'is_active' => true,
+                'weight' => 12000.00,
+                'specifications' => json_encode([
+                    'Type' => 'Self-Retracting Lifeline with Retrieval',
+                    'Cable Length' => '15m (50ft) galvanized steel',
+                    'Certification' => 'ANSI Z359.14-2014 Class B, OSHA 1910.66, 1926.502',
+                    'Housing' => 'Sealed aluminum with thermoplastic bumpers',
+                    'Features' => '3-way retrieval mechanism, IP68 rated, impact indicator'
+                ]),
+                'images' => json_encode([
+                    'main' => 'dbi-sala-srl-main.jpg',
+                    'thumbnails' => [
+                        'dbi-sala-srl-1.jpg',
+                        'dbi-sala-srl-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Guardian Angel Anchor Point',
+                'slug' => 'guardian-angel-anchor-point',
+                'description' => 'Versatile and easily installed temporary roof anchor point for fall protection.',
+                'price' => 850000,
+                'stock' => 30,
+                'category_id' => 9,
+                'sku' => 'GRD-001',
+                'is_active' => true,
+                'weight' => 1800.00,
+                'specifications' => json_encode([
+                    'Type' => 'Reusable roof anchor',
+                    'Material' => 'Zinc-plated steel',
+                    'Certification' => 'ANSI Z359.18 Type A, OSHA 1926.502(d)(15)',
+                    'Compatible Roofing' => 'Wood, metal, concrete',
+                    'Features' => 'Swiveling D-ring, includes fasteners, fits multiple roof pitches'
+                ]),
+                'images' => json_encode([
+                    'main' => 'guardian-anchor-main.jpg',
+                    'thumbnails' => [
+                        'guardian-anchor-1.jpg',
+                        'guardian-anchor-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Certified Safety First Aid Kit - 25 Person',
+                'slug' => 'certified-first-aid-kit-25',
+                'description' => 'ANSI Z308.1-2015 compliant first aid kit for workplace emergencies.',
+                'price' => 350000,
+                'stock' => 50,
+                'category_id' => 7,
+                'sku' => 'FA-001',
+                'is_active' => true,
+                'weight' => 800.00,
+                'specifications' => json_encode([
+                    'Type' => 'Class A First Aid Kit',
+                    'Capacity' => '25 Person',
+                    'Certification' => 'ANSI Z308.1-2015',
+                    'Contents' => '96 pieces including bandages, antiseptics, burn care, and trauma supplies',
+                    'Case' => 'Wall-mountable plastic case with gasket'
+                ]),
+                'images' => json_encode([
+                    'main' => 'first-aid-kit-main.jpg',
+                    'thumbnails' => [
+                        'first-aid-kit-1.jpg',
+                        'first-aid-kit-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Emergency Eyewash Station - Wall Mount',
+                'slug' => 'emergency-eyewash-station',
+                'description' => 'Wall-mounted emergency eyewash station for chemical splash incidents.',
+                'price' => 1200000,
+                'stock' => 15,
+                'category_id' => 7,
+                'sku' => 'EYE-001',
+                'is_active' => true,
+                'weight' => 3500.00,
+                'specifications' => json_encode([
+                    'Type' => 'Wall-mounted Eyewash Station',
+                    'Capacity' => '11 liters',
+                    'Certification' => 'ANSI Z358.1-2014',
+                    'Features' => 'Hands-free operation, dust cover, high-visibility signage',
+                    'Flow Rate' => '1.5 liters per minute for 15 minutes'
+                ]),
+                'images' => json_encode([
+                    'main' => 'eyewash-station-main.jpg',
+                    'thumbnails' => [
+                        'eyewash-station-1.jpg',
+                        'eyewash-station-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Emergency Trauma Bleeding Control Kit',
+                'slug' => 'trauma-bleeding-control-kit',
+                'description' => 'Specialized kit for severe bleeding emergencies with tourniquets and hemostatic dressings.',
+                'price' => 750000,
+                'stock' => 30,
+                'category_id' => 7,
+                'sku' => 'TRM-001',
+                'is_active' => true,
+                'weight' => 650.00,
+                'specifications' => json_encode([
+                    'Type' => 'Trauma Bleeding Control Kit',
+                    'Contents' => 'CAT Tourniquet, QuikClot hemostatic gauze, compression bandages, trauma shears, nitrile gloves',
+                    'Case' => 'High-visibility orange nylon case',
+                    'Features' => 'MOLLE-compatible straps, clear pocket organization'
+                ]),
+                'images' => json_encode([
+                    'main' => 'trauma-kit-main.jpg',
+                    'thumbnails' => [
+                        'trauma-kit-1.jpg',
+                        'trauma-kit-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Automated External Defibrillator (AED)',
+                'slug' => 'automatic-external-defibrillator',
+                'description' => 'Easy-to-use AED with voice prompts for workplace cardiac emergencies.',
+                'price' => 15000000,
+                'stock' => 5,
+                'category_id' => 7,
+                'sku' => 'AED-001',
+                'is_active' => true,
+                'weight' => 1700.00,
+                'specifications' => json_encode([
+                    'Type' => 'Semi-Automatic External Defibrillator',
+                    'Battery Life' => '4 years standby',
+                    'Certification' => 'FDA approved, AHA guidelines compliant',
+                    'Features' => 'Voice and visual prompts, child/adult modes, self-testing',
+                    'Includes' => 'Carrying case, adult pads, rescue kit, battery'
+                ]),
+                'images' => json_encode([
+                    'main' => 'aed-main.jpg',
+                    'thumbnails' => [
+                        'aed-1.jpg',
+                        'aed-2.jpg'
+                    ]
+                ])
+            ],
+            [
+                'name' => 'Emergency Burn Care Kit',
+                'slug' => 'emergency-burn-care-kit',
+                'description' => 'Specialized kit for treating workplace burns and scalds.',
+                'price' => 420000,
+                'stock' => 35,
+                'category_id' => 7,
+                'sku' => 'BRN-001',
+                'is_active' => true,
+                'weight' => 550.00,
+                'specifications' => json_encode([
+                    'Type' => 'Burn Treatment Kit',
+                    'Contents' => 'Water Jel burn dressings (various sizes), burn gel sachets, cooling spray, non-adherent gauze, bandages',
+                    'Case' => 'Wall-mountable plastic case',
+                    'Features' => 'Quick reference guide, inventory list, easy-to-find components'
+                ]),
+                'images' => json_encode([
+                    'main' => 'burn-kit-main.jpg',
+                    'thumbnails' => [
+                        'burn-kit-1.jpg',
+                        'burn-kit-2.jpg'
+                    ]
+                ])
+            ],
+        ];
+
+        foreach ($products as $product) {
+            Product::updateOrCreate(
+                ['slug' => $product['slug']],
+                $product
+            );
+        }
+    }
+} 

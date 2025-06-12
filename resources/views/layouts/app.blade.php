@@ -7,6 +7,10 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <!-- Midtrans Configuration -->
+    <meta name="midtrans-snap-url" content="{{ env('MIDTRANS_SNAP_URL', 'https://app.sandbox.midtrans.com/snap/snap.js') }}">
+    <meta name="midtrans-client-key" content="{{ env('MIDTRANS_CLIENT_KEY') }}">
+
     <title>{{ config('app.name', 'SBGEAR') }}</title>
 
     <!-- Fonts -->

@@ -28,6 +28,12 @@ class MidtransService
     public function getSnapToken($order)
     {
         try {
+            // First, verify that Midtrans is properly configured
+            if (empty(Config::$serverKey)) {
+                Log::error('Midtrans configuration error: Server key is empty');
+                throw new \Exception('Midtrans server key is not configured');
+            }
+
             $params = [
                 'transaction_details' => [
                     'order_id' => $order->order_number,
@@ -81,11 +87,24 @@ class MidtransService
                 'order_number' => $order->order_number,
                 'params' => $params,
                 'server_key' => Config::$serverKey ? substr(Config::$serverKey, 0, 10) . '...' : 'not set',
-                'is_production' => Config::$isProduction ? 'true' : 'false'
+                'is_production' => Config::$isProduction ? 'true' : 'false',
+                'client_key' => Config::$clientKey ? substr(Config::$clientKey, 0, 10) . '...' : 'not set',
+                'api_endpoint' => Config::$isProduction ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com'
             ]);
 
             // Get Snap Token
             $snapToken = Snap::getSnapToken($params);
+            
+            if (empty($snapToken)) {
+                Log::error('Empty snap token returned from Midtrans');
+                throw new \Exception('Failed to generate Midtrans snap token (empty response)');
+            }
+            
+            // Log success
+            Log::info('Midtrans Snap Token generated successfully', [
+                'order_number' => $order->order_number,
+                'token' => substr($snapToken, 0, 10) . '...'
+            ]);
             
             // Log transaction
             $this->logTransaction($order->order_number, [

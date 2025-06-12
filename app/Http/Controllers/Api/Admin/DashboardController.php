@@ -5,35 +5,45 @@ namespace App\Http\Controllers\Api\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
     public function stats()
     {
-        $today = now()->startOfDay();
-        $thisMonth = now()->startOfMonth();
+        $today = Carbon::today();
+        $thisMonth = Carbon::now()->startOfMonth();
+
+        // Get total sales for this month (only paid orders)
+        $totalSalesThisMonth = Order::whereMonth('created_at', $thisMonth->month)
+            ->whereYear('created_at', $thisMonth->year)
+            ->where('payment_status', 'paid')
+            ->sum('total_amount');
+
+        // Get total orders for this month
+        $totalOrdersThisMonth = Order::whereMonth('created_at', $thisMonth->month)
+            ->whereYear('created_at', $thisMonth->year)
+            ->count();
 
         $stats = [
             'total_orders' => Order::count(),
             'orders_today' => Order::whereDate('created_at', $today)->count(),
-            'orders_this_month' => Order::whereMonth('created_at', $thisMonth->month)
-                ->whereYear('created_at', $thisMonth->year)
-                ->count(),
+            'orders_this_month' => $totalOrdersThisMonth,
             'revenue_today' => Order::whereDate('created_at', $today)
                 ->where('payment_status', 'paid')
                 ->sum('total_amount'),
-            'revenue_this_month' => Order::whereMonth('created_at', $thisMonth->month)
-                ->whereYear('created_at', $thisMonth->year)
-                ->where('payment_status', 'paid')
-                ->sum('total_amount'),
+            'revenue_this_month' => $totalSalesThisMonth,
             'pending_orders' => Order::where('status', 'pending')->count(),
             'processing_orders' => Order::where('status', 'processing')->count(),
             'shipped_orders' => Order::where('status', 'shipped')->count(),
             'completed_orders' => Order::where('status', 'delivered')->count(),
             'low_stock_products' => Product::where('stock', '<=', 10)->count(),
             'out_of_stock_products' => Product::where('stock', 0)->count(),
+            'total_products' => Product::count(),
+            'total_customers' => User::where('role', '!=', 'admin')->count(),
         ];
 
         return response()->json($stats);
@@ -41,7 +51,8 @@ class DashboardController extends Controller
 
     public function recentOrders()
     {
-        $orders = Order::with(['user:id,name,email', 'items.product:id,name'])
+        $orders = Order::with(['user:id,name,email'])
+            ->select('id', 'order_number', 'user_id', 'total_amount', 'status', 'payment_status', 'created_at')
             ->orderBy('created_at', 'desc')
             ->take(10)
             ->get();
@@ -78,7 +89,7 @@ class DashboardController extends Controller
 
         if ($request->period === 'daily') {
             $sales = Order::where('payment_status', 'paid')
-                ->whereBetween('created_at', [now()->subDays(30), now()])
+                ->whereBetween('created_at', [Carbon::now()->subDays(30), Carbon::now()])
                 ->select(
                     DB::raw('DATE(created_at) as date'),
                     DB::raw('COUNT(*) as total_orders'),
@@ -89,7 +100,7 @@ class DashboardController extends Controller
                 ->get();
         } else {
             $sales = Order::where('payment_status', 'paid')
-                ->whereBetween('created_at', [now()->subMonths(12), now()])
+                ->whereBetween('created_at', [Carbon::now()->subMonths(12), Carbon::now()])
                 ->select(
                     DB::raw('YEAR(created_at) as year'),
                     DB::raw('MONTH(created_at) as month'),
@@ -103,5 +114,17 @@ class DashboardController extends Controller
         }
 
         return response()->json($sales);
+    }
+
+    public function lowStockProducts()
+    {
+        $products = Product::where('stock', '<=', 10)
+            ->orderBy('stock', 'asc')
+            ->select('id', 'name', 'sku', 'stock', 'category_id')
+            ->with('category:id,name')
+            ->take(10)
+            ->get();
+            
+        return response()->json($products);
     }
 } 

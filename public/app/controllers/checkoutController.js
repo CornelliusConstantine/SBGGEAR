@@ -313,7 +313,13 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
                     // Load Snap.js
                     console.log('Loading Snap.js with client key:', $scope.payment.clientKey);
                     var script = document.createElement('script');
-                    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+                    
+                    // Try to get the snap URL from a data attribute if available
+                    var snapUrl = document.querySelector('meta[name="midtrans-snap-url"]');
+                    script.src = snapUrl ? snapUrl.getAttribute('content') : 'https://app.sandbox.midtrans.com/snap/snap.js';
+                    
+                    console.log('Loading Midtrans Snap from: ' + script.src);
+                    
                     script.setAttribute('data-client-key', $scope.payment.clientKey);
                     script.onload = function() {
                         console.log('Snap.js loaded successfully');
@@ -352,8 +358,21 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
             console.log('Snap.js is not loaded, loading it now...');
             // Load Snap.js dynamically
             var script = document.createElement('script');
-            script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-            script.setAttribute('data-client-key', 'SB-Mid-client-NWRbGj3Ndj-152Ps');
+            
+            // Try to get the snap URL from a data attribute if available
+            var snapUrl = document.querySelector('meta[name="midtrans-snap-url"]');
+            script.src = snapUrl ? snapUrl.getAttribute('content') : 'https://app.sandbox.midtrans.com/snap/snap.js';
+            
+            console.log('Loading Midtrans Snap from: ' + script.src);
+            
+            // Use the client key from the payment response if available
+            var clientKey = $scope.payment.clientKey || '';
+            
+            if (clientKey) {
+                script.setAttribute('data-client-key', clientKey);
+                console.log('Setting client key:', clientKey);
+            }
+            
             script.onload = function() {
                 console.log('Snap.js loaded successfully');
                 safeApply();

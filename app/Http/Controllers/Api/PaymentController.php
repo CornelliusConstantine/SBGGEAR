@@ -62,6 +62,15 @@ class PaymentController extends Controller
                 ], 500);
             }
 
+            // Double-check that Midtrans is configured properly
+            if (!class_exists('\\Midtrans\\Config')) {
+                Log::error('Midtrans PHP SDK not found');
+                return response()->json([
+                    'message' => 'Payment gateway not available',
+                    'error' => 'Midtrans SDK not found',
+                ], 500);
+            }
+
             // Create a temporary order object for Midtrans
             $orderNumber = 'TMP-' . date('Ymd') . '-' . strtoupper(substr(md5(uniqid()), 0, 8));
             $shippingInfo = $request->shipping_info;
@@ -144,7 +153,7 @@ class PaymentController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return response()->json([
-                'message' => 'Failed to generate payment token',
+                'message' => 'Failed to generate payment token: ' . $e->getMessage(),
                 'error' => $e->getMessage(),
             ], 500);
         }
@@ -323,42 +332,49 @@ class PaymentController extends Controller
      */
     public function webhook(Request $request)
     {
+        Log::info('Midtrans webhook received', [
+            'headers' => $request->headers->all(),
+            'request_data' => $request->all()
+        ]);
+
         try {
-            // Get notification object from Midtrans
-            $notificationBody = json_decode($request->getContent(), true);
-            
-            // Log the raw notification for debugging
-            Log::info('API Midtrans webhook received', $notificationBody);
-            
-            // Validate notification
-            if (!isset($notificationBody['transaction_status']) || !isset($notificationBody['order_id'])) {
-                Log::error('Invalid Midtrans notification', $notificationBody);
-                return response()->json(['status' => 'error', 'message' => 'Invalid notification'], 400);
+            // Check if this is a real Midtrans notification
+            if (!$request->has('transaction_id') || !$request->has('order_id')) {
+                Log::warning('Invalid webhook notification: Missing transaction_id or order_id');
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid notification format'
+                ], 422);
             }
+
+            // Get notification body
+            $notificationBody = $request->all();
             
-            // Process notification
+            // Process notification with Midtrans service
             $result = $this->midtransService->handleNotification($notificationBody);
             
-            if ($result['status'] === 'error') {
-                Log::error('Error processing Midtrans notification', ['error' => $result['message'], 'data' => $notificationBody]);
-                return response()->json($result, 404);
-            }
-            
-            Log::info('Midtrans notification processed successfully', [
+            Log::info('Webhook processed successfully', [
                 'order_id' => $notificationBody['order_id'],
-                'status' => $notificationBody['transaction_status']
+                'transaction_id' => $notificationBody['transaction_id'],
+                'status' => $notificationBody['transaction_status'] ?? 'unknown'
             ]);
-            
-            return response()->json(['status' => 'success']);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Notification processed successfully',
+                'data' => $result
+            ]);
         } catch (\Exception $e) {
-            Log::error('Exception in Midtrans webhook handler', [
-                'error' => $e->getMessage(),
+            Log::error('Webhook error: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'error_code' => $e->getCode(),
+                'error_message' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
             return response()->json([
                 'status' => 'error',
-                'message' => 'Internal server error'
+                'message' => 'Failed to process notification: ' . $e->getMessage()
             ], 500);
         }
     }

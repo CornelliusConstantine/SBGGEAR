@@ -158,7 +158,16 @@
             <div class="col-6 col-md-3 mb-4" ng-repeat="category in categories | limitTo:8">
                 <a ng-href="/category/{{category.slug}}" class="text-decoration-none">
                     <div class="category-card">
-                        <img ng-src="{{category.image_url || 'assets/img/category-placeholder.jpg'}}" alt="{{category.name}}" class="category-image">
+                        <img ng-src="images/categoryimg/{{category.slug === 'eye-protection' ? 'pelindungmata.jpg' : 
+                                      category.slug === 'footwear' ? 'alaskaki.jpg' : 
+                                      category.slug === 'hand-protection' ? 'pelindungtangan.jpg' : 
+                                      category.slug === 'head-protection' ? 'pelindungkepala.jpg' : 
+                                      category.slug === 'respiratory-protection' ? 'pelindungpernapasan.jpeg' : 
+                                      category.slug === 'visibility' ? 'alatvisibilitas.jpg' : 
+                                      category.slug === 'ear-protection' ? 'pelindungtelinga.jpg' : 
+                                      category.slug === 'fall-protection' ? 'alatkeselamatanketinggian.jpg' : 
+                                      'assets/img/category-placeholder.jpg'}}" 
+                             alt="{{category.name}}" class="category-image">
                         <div class="category-overlay">
                             <h5 class="category-title">{{category.name}}</h5>
                         </div>

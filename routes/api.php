@@ -112,9 +112,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin routes
     Route::middleware('admin')->prefix('admin')->group(function () {
         // Dashboard
-        Route::get('/dashboard', [DashboardController::class, 'index']);
-        Route::get('/dashboard/sales', [DashboardController::class, 'sales']);
-        Route::get('/dashboard/products', [DashboardController::class, 'products']);
+        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
+        Route::get('/dashboard/recent-orders', [DashboardController::class, 'recentOrders']);
+        Route::get('/dashboard/top-products', [DashboardController::class, 'topProducts']);
+        Route::get('/dashboard/sales-chart', [DashboardController::class, 'salesChart']);
+        Route::get('/dashboard/low-stock-products', [DashboardController::class, 'lowStockProducts']);
         
         // Categories management
         Route::post('/categories', [CategoryController::class, 'store']);

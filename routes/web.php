@@ -7,6 +7,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\Admin\AdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +64,15 @@ Route::middleware('auth')->group(function () {
     Route::get('/account', [HomeController::class, 'account'])->name('account');
     Route::get('/account/edit', [HomeController::class, 'editAccount'])->name('account.edit');
     Route::put('/account', [HomeController::class, 'updateAccount'])->name('account.update');
+    
+    // Admin routes
+    Route::middleware('admin')->prefix('admin')->group(function () {
+        Route::get('/', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders.index');
+        Route::get('/orders/{order}', [AdminController::class, 'showOrder'])->name('admin.orders.show');
+        Route::get('/products', [AdminController::class, 'products'])->name('admin.products.index');
+        Route::get('/users', [AdminController::class, 'users'])->name('admin.users.index');
+    });
 });
 
 // Midtrans webhook
@@ -83,4 +93,4 @@ Route::get('/', function () {
 // IMPORTANT: This route must be the LAST route defined
 Route::get('/{any}', function () {
     return view('spa');
-})->where('any', '^(?!api|account|cart|checkout|products|home|login|register|password).*$');
+})->where('any', '^(?!api|account|cart|checkout|products|home|login|register|password|admin).*$');
