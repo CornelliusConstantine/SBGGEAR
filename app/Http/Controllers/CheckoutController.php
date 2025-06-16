@@ -477,6 +477,60 @@ class CheckoutController extends Controller
     }
     
     /**
+     * Show order confirmation page by order number
+     * Used for Midtrans redirect URLs
+     */
+    public function confirmationByOrderNumber(Request $request)
+    {
+        // Check if we have an order number in the request
+        $orderNumber = $request->input('order_number') ?? 
+                      $request->input('order_id') ?? 
+                      session('checkout.order_number');
+                      
+        if (!$orderNumber) {
+            return redirect()->route('products.index')->with('error', 'Order not found');
+        }
+        
+        // Find the order
+        $order = Order::where('order_number', $orderNumber)
+                      ->where('user_id', Auth::id())
+                      ->first();
+                      
+        if (!$order) {
+            return redirect()->route('products.index')->with('error', 'Order not found');
+        }
+        
+        $order->load('items.product', 'trackingHistory');
+        
+        // Check if we have transaction data in the request
+        $transactionId = $request->input('transaction_id');
+        $transactionStatus = $request->input('transaction_status');
+        
+        // If we have transaction data, update the order
+        if ($transactionId && $transactionStatus) {
+            // Only update if the order is not already paid
+            if ($order->payment_status !== 'paid') {
+                if ($transactionStatus === 'settlement' || $transactionStatus === 'capture') {
+                    $order->update([
+                        'payment_status' => 'paid',
+                        'status' => 'processing',
+                        'midtrans_transaction_id' => $transactionId,
+                        'paid_at' => now(),
+                    ]);
+                    
+                    // Add tracking history
+                    $order->trackingHistory()->create([
+                        'status' => 'processing',
+                        'description' => 'Payment received, order is being processed',
+                    ]);
+                }
+            }
+        }
+        
+        return view('checkout.confirmation', compact('order'));
+    }
+    
+    /**
      * Handle Midtrans webhook notifications
      */
     public function webhook(Request $request)

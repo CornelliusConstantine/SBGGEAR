@@ -44,7 +44,13 @@ class PaymentController extends Controller
         Log::info('Payment token request received', [
             'user_id' => $request->user()->id,
             'headers' => $request->headers->all(),
-            'request_data' => $request->all()
+            'request_data' => $request->all(),
+            'midtrans_config' => [
+                'server_key' => !empty(Config::$serverKey) ? 'Set' : 'Not set',
+                'client_key' => !empty(Config::$clientKey) ? 'Set' : 'Not set',
+                'is_production' => Config::$isProduction ? 'true' : 'false',
+                'api_endpoint' => Config::$isProduction ? 'https://app.midtrans.com' : 'https://app.sandbox.midtrans.com',
+            ]
         ]);
         
         $request->validate([

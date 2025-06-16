@@ -14,6 +14,12 @@
                         </div>
                     @endif
 
+                    @if(isset($redirect) && $redirect)
+                        <div class="alert alert-info mb-3">
+                            After login, you will be redirected to: {{ $redirect }}
+                        </div>
+                    @endif
+
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         

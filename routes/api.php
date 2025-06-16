@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\StockController;
 use App\Http\Controllers\Api\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminController as AdminControllerAdmin;
+use App\Http\Controllers\Api\AdminApiController;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,6 +49,14 @@ Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/provinces', [LocationController::class, 'provinces']);
 Route::get('/cities/{provinceId}', [LocationController::class, 'cities']);
 Route::get('/cities', [LocationController::class, 'allCities']);
+
+// Product management API (no CSRF)
+Route::middleware(['auth:sanctum', 'admin'])->group(function() {
+    // Products management without CSRF
+    Route::post('/admin/products', [ProductController::class, 'store']);
+    Route::post('/admin/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/admin/products/{product}', [ProductController::class, 'destroy']);
+});
 
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -110,39 +120,38 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/products/{product}/comments/{commentId}/reply', [ProductController::class, 'replyToComment']);
 
     // Admin routes
-    Route::middleware('admin')->prefix('admin')->group(function () {
+    Route::middleware(['web', 'auth:sanctum,web', 'admin'])->prefix('admin')->group(function () {
         // Dashboard
-        Route::get('/dashboard/stats', [DashboardController::class, 'stats']);
-        Route::get('/dashboard/recent-orders', [DashboardController::class, 'recentOrders']);
-        Route::get('/dashboard/top-products', [DashboardController::class, 'topProducts']);
-        Route::get('/dashboard/sales-chart', [DashboardController::class, 'salesChart']);
-        Route::get('/dashboard/low-stock-products', [DashboardController::class, 'lowStockProducts']);
+        Route::get('/dashboard/stats', [App\Http\Controllers\Api\Admin\DashboardController::class, 'stats']);
+        Route::get('/dashboard/recent-orders', [App\Http\Controllers\Api\Admin\DashboardController::class, 'recentOrders']);
+        Route::get('/dashboard/top-products', [App\Http\Controllers\Api\Admin\DashboardController::class, 'topProducts']);
+        Route::get('/dashboard/sales-chart', [App\Http\Controllers\Api\Admin\DashboardController::class, 'salesChart']);
+        Route::get('/dashboard/low-stock-products', [App\Http\Controllers\Api\Admin\DashboardController::class, 'lowStockProducts']);
         
         // Categories management
-        Route::post('/categories', [CategoryController::class, 'store']);
-        Route::put('/categories/{category}', [CategoryController::class, 'update']);
-        Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
-        
-        // Products management
-        Route::post('/products', [ProductController::class, 'store']);
-        Route::post('/products/{product}', [ProductController::class, 'update']);
-        Route::delete('/products/{product}', [ProductController::class, 'destroy']);
+        Route::post('/categories', [App\Http\Controllers\Api\CategoryController::class, 'store']);
+        Route::put('/categories/{category}', [App\Http\Controllers\Api\CategoryController::class, 'update']);
+        Route::delete('/categories/{category}', [App\Http\Controllers\Api\CategoryController::class, 'destroy']);
         
         // Product comments management (admin only)
-        Route::delete('/products/{product}/comments/{commentId}/replies/{replyId}', [ProductController::class, 'deleteReply']);
-        Route::delete('/products/{product}/comments/{commentId}', [ProductController::class, 'deleteComment']);
+        Route::delete('/products/{product}/comments/{commentId}/replies/{replyId}', [App\Http\Controllers\Api\ProductController::class, 'deleteReply']);
+        Route::delete('/products/{product}/comments/{commentId}', [App\Http\Controllers\Api\ProductController::class, 'deleteComment']);
         
         // Stock management
-        Route::get('/stock', [StockController::class, 'index']);
-        Route::post('/stock/{product}/add', [StockController::class, 'addStock']);
-        Route::post('/stock/{product}/reduce', [StockController::class, 'reduceStock']);
-        Route::get('/stock/history', [StockController::class, 'history']);
+        Route::get('/stock', [App\Http\Controllers\Api\Admin\StockController::class, 'index']);
+        Route::post('/stock/{product}/add', [App\Http\Controllers\Api\Admin\StockController::class, 'addStock']);
+        Route::post('/stock/{product}/reduce', [App\Http\Controllers\Api\Admin\StockController::class, 'reduceStock']);
+        Route::get('/stock/history', [App\Http\Controllers\Api\Admin\StockController::class, 'history']);
         
         // Order management
-        Route::get('/orders', [OrderController::class, 'adminIndex']);
-        Route::put('/orders/{order}/status', [OrderController::class, 'updateStatus']);
+        Route::get('/orders', [App\Http\Controllers\Api\OrderController::class, 'adminIndex']);
+        Route::get('/orders/{order}', [App\Http\Controllers\Api\OrderController::class, 'show']);
+        Route::put('/orders/{order}/status', [App\Http\Controllers\Api\OrderController::class, 'updateStatus']);
+        Route::put('/orders/{order}/tracking', [App\Http\Controllers\Api\OrderController::class, 'updateTracking']);
         
         // Admin management
-        Route::post('/flush-accounts', [AdminController::class, 'flushAdminAccounts']);
+        Route::post('/flush-accounts', [AdminControllerAdmin::class, 'flushAdminAccounts']);
     });
+
+    // Admin API routes are moved to web.php for session compatibility
 });

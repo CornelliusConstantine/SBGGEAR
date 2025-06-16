@@ -295,6 +295,31 @@ class OrderController extends Controller
 
     public function adminIndex(Request $request)
     {
+        // Debug information
+        \Log::info('AdminIndex called', [
+            'user' => $request->user() ? [
+                'id' => $request->user()->id,
+                'email' => $request->user()->email,
+                'role' => $request->user()->role,
+                'isAdmin' => $request->user()->isAdmin()
+            ] : 'No authenticated user',
+            'headers' => $request->header(),
+            'cookies' => $request->cookies->all(),
+            'ip' => $request->ip(),
+            'ajax' => $request->ajax(),
+            'expectsJson' => $request->expectsJson(),
+            'wantsJson' => $request->wantsJson(),
+        ]);
+        
+        // Check if user is authenticated and an admin
+        if (!$request->user()) {
+            return response()->json(['message' => 'Unauthenticated. Please log in.'], 401);
+        }
+        
+        if (!$request->user()->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized. Admin access required.'], 403);
+        }
+        
         $query = Order::with(['user', 'items.product', 'trackingHistory']);
 
         if ($request->filled('status')) {
@@ -311,6 +336,11 @@ class OrderController extends Controller
 
         $orders = $query->orderBy('created_at', 'desc')
             ->paginate($request->input('per_page', 10));
+            
+        \Log::info('Orders fetched', [
+            'count' => $orders->count(),
+            'total' => $orders->total()
+        ]);
 
         return response()->json($orders);
     }
@@ -318,24 +348,49 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => ['required', 'string', 'in:processing,shipped,delivered,cancelled'],
-            'description' => ['required', 'string'],
+            'status' => 'required|string|in:pending,processing,shipped,delivered,cancelled',
         ]);
 
-        $order->update([
-            'status' => $request->status,
-            $request->status . '_at' => now(),
-        ]);
+        $order->status = $request->status;
+        $order->save();
 
-        // Create tracking history
+        // Add to tracking history
         $order->trackingHistory()->create([
             'status' => $request->status,
-            'description' => $request->description,
+            'description' => "Order status updated to {$request->status}",
         ]);
 
         return response()->json([
             'message' => 'Order status updated successfully',
-            'order' => $order,
+            'order' => $order->load(['items.product', 'trackingHistory']),
+        ]);
+    }
+
+    /**
+     * Update tracking number for an order
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Order  $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateTracking(Request $request, Order $order)
+    {
+        $request->validate([
+            'tracking_number' => 'required|string',
+        ]);
+
+        $order->tracking_number = $request->tracking_number;
+        $order->save();
+
+        // Add to tracking history
+        $order->trackingHistory()->create([
+            'status' => $order->status,
+            'description' => "Tracking number updated to {$request->tracking_number}",
+        ]);
+
+        return response()->json([
+            'message' => 'Tracking number updated successfully',
+            'order' => $order->load(['items.product', 'trackingHistory']),
         ]);
     }
 
@@ -363,6 +418,40 @@ class OrderController extends Controller
         return response()->json([
             'message' => 'Shipping information updated successfully',
             'order' => $order,
+        ]);
+    }
+
+    /**
+     * Update seat receipt number for an order
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Models\Order  $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateSeatReceipt(Request $request, Order $order)
+    {
+        $request->validate([
+            'seat_receipt_number' => 'required|string',
+        ]);
+
+        $order->seat_receipt_number = $request->seat_receipt_number;
+        
+        // If we're setting a seat receipt, update the status to processing if it's still pending
+        if ($order->status === 'pending') {
+            $order->status = 'processing';
+        }
+        
+        $order->save();
+
+        // Add to tracking history
+        $order->trackingHistory()->create([
+            'status' => $order->status,
+            'description' => "Seat receipt number updated to {$request->seat_receipt_number}",
+        ]);
+
+        return response()->json([
+            'message' => 'Seat receipt number updated successfully',
+            'order' => $order->load(['items.product', 'trackingHistory']),
         ]);
     }
 

@@ -6,19 +6,35 @@
         </div>
     </div>
     
+    <!-- Alert messages -->
+    <div class="alert alert-{{alertType}} alert-dismissible fade show" role="alert" ng-if="showAlert">
+        {{alertMessage}}
+        <button type="button" class="btn-close" ng-click="showAlert = false"></button>
+    </div>
+    
     <div class="card shadow-sm">
         <div class="card-header bg-white">
             <div class="row align-items-center">
                 <div class="col">
-                    <h5 class="mb-0">All Orders</h5>
+                    <h5 class="mb-0">Paid Orders</h5>
                 </div>
-                <div class="col-auto">
+                <div class="col-md-3">
                     <div class="input-group">
                         <input type="text" class="form-control" placeholder="Search orders..." ng-model="searchQuery">
                         <button class="btn btn-outline-secondary" type="button">
                             <i class="fas fa-search"></i>
                         </button>
                     </div>
+                </div>
+                <div class="col-md-2">
+                    <select class="form-select" ng-model="filterStatus" ng-change="loadOrders()">
+                        <option value="">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="shipped">Shipped</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -32,23 +48,24 @@
                             <th>Customer</th>
                             <th>Total</th>
                             <th>Status</th>
+                            <th>Seat Receipt</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr ng-if="loading">
-                            <td colspan="6" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                             </td>
                         </tr>
                         <tr ng-if="!loading && (!orders || orders.length === 0)">
-                            <td colspan="6" class="text-center py-4">
+                            <td colspan="7" class="text-center py-4">
                                 <p class="mb-0 text-muted">No orders found</p>
                             </td>
                         </tr>
-                        <tr ng-repeat="order in orders | filter:searchQuery">
+                        <tr ng-repeat="order in orders | filter:searchQuery track by $index">
                             <td>
                                 <a ng-href="/admin/order/{{order.id}}" class="text-decoration-none">
                                     #ORD-{{order.id | number:3}}
@@ -56,7 +73,7 @@
                             </td>
                             <td>{{order.created_at | date:'dd MMM yyyy'}}</td>
                             <td>{{order.user.name}}</td>
-                            <td>Rp{{order.total | number}}</td>
+                            <td>Rp{{order.total_amount | number}}</td>
                             <td>
                                 <span class="badge" ng-class="{
                                     'bg-warning': order.status === 'pending',
@@ -68,6 +85,7 @@
                                     {{order.status}}
                                 </span>
                             </td>
+                            <td>{{order.seat_receipt_number || 'Not assigned'}}</td>
                             <td class="text-end">
                                 <a ng-href="/admin/order/{{order.id}}" class="btn btn-sm btn-outline-primary">
                                     <i class="fas fa-eye"></i> View

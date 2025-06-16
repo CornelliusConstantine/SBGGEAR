@@ -232,7 +232,38 @@ app.config(['$routeProvider', '$locationProvider', function($routeProvider, $loc
 }]);
 
 // Run block to check authentication status on app start
-app.run(['$rootScope', '$location', '$window', 'AuthService', 'CartService', function($rootScope, $location, $window, AuthService, CartService) {
+app.run(['$rootScope', '$location', '$window', '$http', 'AuthService', 'CartService', 
+    function($rootScope, $location, $window, $http, AuthService, CartService) {
+    
+    // Fetch CSRF token
+    $http.get('/csrf-token')
+        .then(function(response) {
+            if (response.data && response.data.csrf_token) {
+                // Store token in meta tag
+                var metaTag = document.querySelector('meta[name="csrf-token"]');
+                if (metaTag) {
+                    metaTag.setAttribute('content', response.data.csrf_token);
+                } else {
+                    // Create meta tag if it doesn't exist
+                    metaTag = document.createElement('meta');
+                    metaTag.setAttribute('name', 'csrf-token');
+                    metaTag.setAttribute('content', response.data.csrf_token);
+                    document.head.appendChild(metaTag);
+                }
+                
+                // Store in window.Laravel for compatibility
+                if (!$window.Laravel) {
+                    $window.Laravel = {};
+                }
+                $window.Laravel.csrfToken = response.data.csrf_token;
+                
+                console.log('CSRF token fetched successfully');
+            }
+        })
+        .catch(function(error) {
+            console.error('Failed to fetch CSRF token:', error);
+        });
+    
     // Check authentication on app start
     AuthService.checkAuth()
         .then(function(user) {
@@ -287,6 +318,27 @@ app.run(['$rootScope', '$location', '$window', 'AuthService', 'CartService', fun
         $window.history.replaceState({}, document.title, path);
         $location.path(path).replace();
     }
+
+    // Load Midtrans script
+    var midtransSnapUrl = document.querySelector('meta[name="midtrans-snap-url"]');
+    var midtransClientKey = document.querySelector('meta[name="midtrans-client-key"]');
+
+    if (midtransSnapUrl && midtransClientKey) {
+        var snapUrl = midtransSnapUrl.getAttribute('content');
+        var clientKey = midtransClientKey.getAttribute('content');
+        
+        if (snapUrl && clientKey) {
+            console.log('Loading Midtrans Snap.js with client key:', clientKey);
+            var script = document.createElement('script');
+            script.src = snapUrl;
+            script.setAttribute('data-client-key', clientKey);
+            document.head.appendChild(script);
+        } else {
+            console.error('Missing Midtrans configuration: snapUrl or clientKey is not set');
+        }
+    } else {
+        console.error('Missing Midtrans meta tags in HTML');
+    }
 }]);
 
 // Global HTTP interceptor for authentication
@@ -303,7 +355,26 @@ app.factory('AuthInterceptor', ['$q', '$location', '$window', function($q, $loca
     };
 }]);
 
+// CSRF Token Interceptor
+app.factory('CSRFInterceptor', ['$window', function($window) {
+    return {
+        request: function(config) {
+            // Try to get the CSRF token from meta tag
+            var csrfToken = document.querySelector('meta[name="csrf-token"]');
+            
+            if (csrfToken) {
+                config.headers['X-CSRF-TOKEN'] = csrfToken.getAttribute('content');
+            } else if ($window.Laravel && $window.Laravel.csrfToken) {
+                config.headers['X-CSRF-TOKEN'] = $window.Laravel.csrfToken;
+            }
+            
+            return config;
+        }
+    };
+}]);
+
 // Configure HTTP interceptors
 app.config(['$httpProvider', function($httpProvider) {
     $httpProvider.interceptors.push('AuthInterceptor');
+    $httpProvider.interceptors.push('CSRFInterceptor');
 }]); 

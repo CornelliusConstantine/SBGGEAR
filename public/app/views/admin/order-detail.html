@@ -96,7 +96,20 @@
                     <div class="mt-3">
                         <h6 class="text-muted mb-2">Shipping Method</h6>
                         <p class="mb-1">{{order.shipping_method}}</p>
-                        <p class="mb-0">Tracking: {{order.tracking_number || 'Not available'}}</p>
+                        <p class="mb-0">Tracking: {{order.tracking_number || 'Not available'}}
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-2" ng-click="addTrackingNumber()">
+                                <i class="fas fa-edit"></i> Update
+                            </button>
+                        </p>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <h6 class="text-muted mb-2">Seat Receipt Number</h6>
+                        <p class="mb-0">{{order.seat_receipt_number || 'Not assigned'}}
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-2" ng-click="addSeatReceiptNumber()">
+                                <i class="fas fa-edit"></i> Update
+                            </button>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -175,4 +188,40 @@
             </div>
         </div>
     </div>
-</div> 
+</div>
+
+<!-- Tracking Number Modal Template -->
+<script type="text/ng-template" id="trackingNumberModal.html">
+    <div class="modal-header">
+        <h5 class="modal-title">Update Tracking Number</h5>
+        <button type="button" class="btn-close" ng-click="cancel()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="trackingNumber" class="form-label">Tracking Number</label>
+            <input type="text" class="form-control" id="trackingNumber" ng-model="trackingNumber" placeholder="Enter tracking number">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" ng-click="cancel()">Cancel</button>
+        <button type="button" class="btn btn-primary" ng-click="save()">Save</button>
+    </div>
+</script>
+
+<!-- Seat Receipt Number Modal Template -->
+<script type="text/ng-template" id="seatReceiptNumberModal.html">
+    <div class="modal-header">
+        <h5 class="modal-title">Update Seat Receipt Number</h5>
+        <button type="button" class="btn-close" ng-click="cancel()"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-3">
+            <label for="seatReceiptNumber" class="form-label">Seat Receipt Number</label>
+            <input type="text" class="form-control" id="seatReceiptNumber" ng-model="seatReceiptNumber" placeholder="Enter seat receipt number">
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" ng-click="cancel()">Cancel</button>
+        <button type="button" class="btn btn-primary" ng-click="save()">Save</button>
+    </div>
+</script> 

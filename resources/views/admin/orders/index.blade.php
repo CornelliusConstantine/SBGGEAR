@@ -10,6 +10,30 @@
         <li class="breadcrumb-item active">Orders</li>
     </ol>
     
+    <!-- Success Message -->
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+    
+    <!-- Auth Debug Info (Development Only) -->
+    @if(config('app.debug'))
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <i class="fas fa-bug me-1"></i>
+            Authentication Debug Info
+        </div>
+        <div class="card-body">
+            <p><strong>User:</strong> {{ Auth::user()->name }} ({{ Auth::user()->email }})</p>
+            <p><strong>Role:</strong> {{ Auth::user()->role }}</p>
+            <p><strong>Authenticated:</strong> {{ Auth::check() ? 'Yes' : 'No' }}</p>
+            <p><strong>Session ID:</strong> {{ session()->getId() }}</p>
+        </div>
+    </div>
+    @endif
+    
     <!-- Filters -->
     <div class="card mb-4">
         <div class="card-header">
@@ -161,9 +185,26 @@ function loadOrders(page = 1) {
     // Show loading
     document.getElementById('orders-body').innerHTML = '<tr><td colspan="7" class="text-center">Loading orders...</td></tr>';
     
-    // Fetch orders
-    fetch(`/api/admin/orders?${queryParams}`)
-        .then(response => response.json())
+    // Get CSRF token
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    // Fetch orders with credentials and CSRF token
+    fetch(`/admin/api/orders?${queryParams}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin' // Include cookies in the request
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}, URL: ${response.url}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.data.length === 0) {
                 document.getElementById('orders-body').innerHTML = '<tr><td colspan="7" class="text-center">No orders found</td></tr>';
@@ -210,7 +251,7 @@ function loadOrders(page = 1) {
         })
         .catch(error => {
             console.error('Error loading orders:', error);
-            document.getElementById('orders-body').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Failed to load orders</td></tr>';
+            document.getElementById('orders-body').innerHTML = `<tr><td colspan="7" class="text-center text-danger">Failed to load orders: ${error.message}</td></tr>`;
         });
 }
 

@@ -1,6 +1,6 @@
 'use strict';
 
-app.controller('AdminCategoryController', ['$scope', 'ProductService', '$timeout', function($scope, ProductService, $timeout) {
+app.controller('AdminCategoryController', ['$scope', 'ProductService', '$timeout', '$http', function($scope, ProductService, $timeout, $http) {
     // Initialize controller
     $scope.init = function() {
         console.log('Initializing AdminCategoryController');
@@ -17,8 +17,36 @@ app.controller('AdminCategoryController', ['$scope', 'ProductService', '$timeout
         $scope.categoryError = null;
         $scope.isEditingCategory = false;
         
+        // Check for CSRF token, fetch if needed
+        $scope.ensureCsrfToken();
+        
         // Load categories
         $scope.loadCategories();
+    };
+    
+    // Ensure CSRF token is available
+    $scope.ensureCsrfToken = function() {
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (!csrfToken) {
+            // Fetch CSRF token if not available
+            $http.get('/csrf-token')
+                .then(function(response) {
+                    if (response.data && response.data.token) {
+                        // Create meta tag if it doesn't exist
+                        var meta = document.querySelector('meta[name="csrf-token"]');
+                        if (!meta) {
+                            meta = document.createElement('meta');
+                            meta.setAttribute('name', 'csrf-token');
+                            document.head.appendChild(meta);
+                        }
+                        meta.setAttribute('content', response.data.token);
+                        console.log('CSRF token retrieved successfully');
+                    }
+                })
+                .catch(function(error) {
+                    console.error('Failed to fetch CSRF token', error);
+                });
+        }
     };
     
     // Load all categories

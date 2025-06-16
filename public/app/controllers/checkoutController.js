@@ -58,6 +58,21 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
         }
     }
 
+    // Helper function to get auth headers
+    function getAuthHeaders() {
+        var token = localStorage.getItem('token');
+        var headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        };
+        
+        if (token) {
+            headers['Authorization'] = 'Bearer ' + token;
+        }
+        
+        return headers;
+    }
+
     // Initialize checkout
     $scope.init = function() {
         // Initialize variables
@@ -99,6 +114,77 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
             shipping: 0,
             total: 0
         };
+        
+        // Check if we're on a specific page in the checkout flow
+        var currentPath = $location.path();
+        
+        // Check for Midtrans redirect parameters in URL
+        var orderId = $location.search().order_id;
+        var transactionId = $location.search().transaction_id;
+        var transactionStatus = $location.search().transaction_status;
+        
+        console.log('URL parameters:', {
+            orderId: orderId,
+            transactionId: transactionId,
+            transactionStatus: transactionStatus
+        });
+        
+        // If we have redirect parameters from Midtrans, handle them
+        if (orderId && (transactionId || transactionStatus)) {
+            console.log('Detected Midtrans redirect with parameters');
+            
+            // Store payment details
+            localStorage.setItem('payment_details', JSON.stringify({
+                orderNumber: orderId,
+                transactionId: transactionId || 'unknown',
+                transactionStatus: transactionStatus || 'settlement',
+                paymentType: $location.search().payment_type || 'unknown'
+            }));
+            
+            // If we're not already on the confirmation page, redirect there
+            if (currentPath !== '/checkout/confirmation') {
+                $location.path('/checkout/confirmation').search('order_number', orderId);
+                return;
+            }
+        }
+        
+        // Check if we're on the confirmation page
+        if (currentPath.startsWith('/checkout/confirmation')) {
+            // Load order data if available
+            var orderId = $routeParams.id;
+            var orderNumber = $location.search().order_number;
+            
+            if (orderId) {
+                // Load order by ID
+                $scope.loadOrderById(orderId);
+            } else if (orderNumber) {
+                // Load order by order number
+                $scope.loadOrderByNumber(orderNumber);
+            } else {
+                // Check if we have payment details in localStorage
+                var savedPaymentDetails = localStorage.getItem('payment_details');
+                if (savedPaymentDetails) {
+                    var paymentDetails = JSON.parse(savedPaymentDetails);
+                    $scope.payment.orderNumber = paymentDetails.orderNumber;
+                    $scope.payment.transactionId = paymentDetails.transactionId;
+                    $scope.payment.transactionStatus = paymentDetails.transactionStatus;
+                    
+                    // Try to load order by order number
+                    if (paymentDetails.orderNumber) {
+                        $scope.loadOrderByNumber(paymentDetails.orderNumber);
+                    } else {
+                        // Show generic confirmation
+                        $scope.genericConfirmation = true;
+                        $scope.loading = false;
+                    }
+                } else {
+                    // Show generic confirmation
+                    $scope.genericConfirmation = true;
+                    $scope.loading = false;
+                }
+            }
+            return;
+        }
         
         // Check if we're on the payment page
         if ($location.path() === '/checkout/payment') {
@@ -359,7 +445,7 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
             // Load Snap.js dynamically
             var script = document.createElement('script');
             
-            // Try to get the snap URL from a data attribute if available
+            // Try to get the snap URL from a meta attribute if available
             var snapUrl = document.querySelector('meta[name="midtrans-snap-url"]');
             script.src = snapUrl ? snapUrl.getAttribute('content') : 'https://app.sandbox.midtrans.com/snap/snap.js';
             
@@ -423,33 +509,31 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
     $scope.processPayment = function() {
         $scope.payment.loading = true;
         
-        // Check if Snap is loaded
-        if (typeof snap === 'undefined') {
-            console.error('Snap is not loaded');
-            $scope.showToast('error', 'Payment gateway is not initialized. Please refresh the page.');
-            $scope.payment.loading = false;
-            return;
-        }
+        console.log('Processing payment...');
         
+        // Check if we have a snap token
         if (!$scope.payment.snapToken) {
-            console.log('Payment token not available, attempting to get a new one');
+            console.log('No payment token available, getting a new one...');
             $scope.showToast('info', 'Initializing payment gateway...');
             
-            // Try to get a new token
+            // Get a new payment token
             $scope.getPaymentToken()
                 .then(function(response) {
-                    console.log('Successfully retrieved new token');
-                    // Continue with payment process
-                    $scope.openSnapPayment();
+                    console.log('Successfully retrieved payment token');
+                    // Open the Snap payment window
+                    $timeout(function() {
+                        $scope.openSnapPayment();
+                    }, 1000);
                 })
                 .catch(function(error) {
-                    console.error('Failed to get new payment token:', error);
-                    $scope.showToast('error', 'Payment token not available. Please refresh and try again.');
+                    console.error('Failed to get payment token:', error);
+                    $scope.showToast('error', 'Failed to initialize payment. Please try again.');
                     $scope.payment.loading = false;
                 });
             return;
         }
         
+        // We have a token, open the Snap payment window
         $scope.openSnapPayment();
     };
     
@@ -458,6 +542,14 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
         console.log('Opening Snap payment with token:', $scope.payment.snapToken);
         
         try {
+            // Make sure snap is defined
+            if (typeof snap === 'undefined') {
+                console.error('Snap.js is not loaded properly');
+                $scope.showToast('error', 'Payment gateway is not initialized. Please refresh the page.');
+                $scope.payment.loading = false;
+                return;
+            }
+            
             // Open Midtrans Snap payment page
             snap.pay($scope.payment.snapToken, {
                 onSuccess: function(result) {
@@ -531,7 +623,7 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
                     processVerifiedPayment(result);
                 } else {
                     // Payment verification failed, but we'll still try to process it
-                    console.warn('Payment verification failed, attempting to process anyway');
+                    console.warn('Payment verification pending, attempting to process anyway');
                     $scope.showToast('warning', 'Payment verification pending. Processing payment...');
                     processVerifiedPayment(result);
                 }
@@ -570,6 +662,11 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
                 $scope.order = response.order;
                 
                 // Automatically redirect to confirmation page after 1 second
+                $timeout(function() {
+                    $scope.proceedToConfirmation();
+                }, 1000);
+            } else {
+                // If we don't have the order data, just redirect
                 $timeout(function() {
                     $scope.proceedToConfirmation();
                 }, 1000);
@@ -618,10 +715,61 @@ app.controller('CheckoutController', ['$scope', '$http', '$location', '$q', '$ti
         if ($scope.order && $scope.order.id) {
             // If we have an order ID, navigate to specific order confirmation
             $location.path('/checkout/confirmation/' + $scope.order.id);
+        } else if ($scope.payment.orderNumber) {
+            // If we don't have order ID but have order number, try to use that
+            $location.path('/checkout/confirmation').search({order_number: $scope.payment.orderNumber});
         } else {
             // Otherwise navigate to generic confirmation
             $location.path('/checkout/confirmation');
         }
+    };
+
+    // Load order by ID
+    $scope.loadOrderById = function(orderId) {
+        $scope.loading = true;
+        $http.get('/api/orders/' + orderId, {
+            headers: getAuthHeaders()
+        })
+        .then(function(response) {
+            $scope.order = response.data;
+            $scope.genericConfirmation = false;
+            $scope.loading = false;
+            safeApply();
+        })
+        .catch(function(error) {
+            console.error('Error loading order by ID:', error);
+            $scope.genericConfirmation = true;
+            $scope.loading = false;
+            $scope.showToast('error', 'Failed to load order details');
+            safeApply();
+        });
+    };
+    
+    // Load order by order number
+    $scope.loadOrderByNumber = function(orderNumber) {
+        $scope.loading = true;
+        $http.get('/api/orders', {
+            params: { order_number: orderNumber },
+            headers: getAuthHeaders()
+        })
+        .then(function(response) {
+            if (response.data && response.data.data && response.data.data.length > 0) {
+                // Get the first order that matches
+                $scope.order = response.data.data[0];
+                $scope.genericConfirmation = false;
+            } else {
+                $scope.genericConfirmation = true;
+            }
+            $scope.loading = false;
+            safeApply();
+        })
+        .catch(function(error) {
+            console.error('Error loading order by number:', error);
+            $scope.genericConfirmation = true;
+            $scope.loading = false;
+            $scope.showToast('error', 'Failed to load order details');
+            safeApply();
+        });
     };
 
     // Initialize controller

@@ -68,7 +68,7 @@
                 'id' => auth()->user()->id,
                 'name' => auth()->user()->name,
                 'email' => auth()->user()->email,
-                'isAdmin' => auth()->user()->is_admin ? true : false
+                'isAdmin' => auth()->user()->isAdmin()
             ] : null,
             'baseUrl' => url('/')
         ]) !!};
@@ -115,6 +115,7 @@
     <script src="{{ asset('app/controllers/authController.js') }}"></script>
     <script src="{{ asset('app/controllers/adminProductController.js') }}"></script>
     <script src="{{ asset('app/controllers/adminCategoryController.js') }}"></script>
+    <script src="{{ asset('app/controllers/adminOrderController.js') }}"></script>
     
     <!-- Directives -->
     <script src="{{ asset('app/directives/productCard.js') }}"></script>

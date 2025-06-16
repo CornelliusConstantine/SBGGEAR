@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class LoginController extends Controller
 {
@@ -48,11 +49,31 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        // Check if there's a redirect parameter
-        if ($request->has('redirect')) {
-            return redirect($request->redirect);
+        // Log user info for debugging
+        Log::info('User authenticated', [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'role' => $user->role,
+            'redirect_param' => $request->input('redirect')
+        ]);
+        
+        // If user is admin, redirect to admin dashboard
+        if ($user->isAdmin()) {
+            Log::info('Redirecting admin user to dashboard');
+            if ($request->has('redirect') && strpos($request->input('redirect'), '/admin/') !== false) {
+                return redirect($request->input('redirect'));
+            }
+            return redirect('/admin');
         }
         
+        // Check if there's a redirect parameter
+        if ($request->has('redirect')) {
+            Log::info('Redirecting user to: ' . $request->input('redirect'));
+            return redirect($request->input('redirect'));
+        }
+        
+        Log::info('Redirecting user to default location: ' . $this->redirectPath());
         return redirect()->intended($this->redirectPath());
     }
     
@@ -64,7 +85,13 @@ class LoginController extends Controller
      */
     public function showLoginForm(Request $request)
     {
-        $redirect = $request->redirect ?? '';
+        // Log the redirect parameter for debugging
+        Log::info('Login form shown with redirect', [
+            'redirect' => $request->input('redirect'),
+            'url' => $request->fullUrl()
+        ]);
+        
+        $redirect = $request->input('redirect', '');
         return view('auth.login', compact('redirect'));
     }
 }

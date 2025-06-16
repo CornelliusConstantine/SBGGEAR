@@ -281,6 +281,12 @@ app.controller('AdminProductController', ['$scope', '$routeParams', '$location',
         // Create FormData for file uploads
         var formData = new FormData();
         
+        // Add CSRF token to FormData
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        if (csrfToken) {
+            formData.append('_token', csrfToken);
+        }
+        
         // Ensure boolean fields are properly formatted
         var productData = angular.copy($scope.product);
         productData.is_active = productData.is_active === true;

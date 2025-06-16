@@ -15,8 +15,23 @@ class MidtransService
 {
     public function __construct()
     {
-        // Configuration is handled by MidtransServiceProvider
-        // This ensures Midtrans is configured before any service methods are called
+        // Ensure Midtrans is configured properly
+        if (empty(Config::$serverKey)) {
+            Config::$serverKey = config('midtrans.server_key');
+            Config::$clientKey = config('midtrans.client_key');
+            Config::$isProduction = config('midtrans.is_production');
+            Config::$isSanitized = config('midtrans.is_sanitized');
+            Config::$is3ds = config('midtrans.is_3ds');
+            
+            // Log configuration
+            Log::info('Midtrans configuration loaded', [
+                'server_key' => !empty(Config::$serverKey) ? 'Set' : 'Not set',
+                'client_key' => !empty(Config::$clientKey) ? 'Set' : 'Not set',
+                'is_production' => Config::$isProduction ? 'true' : 'false',
+                'is_sanitized' => Config::$isSanitized ? 'true' : 'false',
+                'is_3ds' => Config::$is3ds ? 'true' : 'false',
+            ]);
+        }
     }
 
     /**
@@ -52,7 +67,12 @@ class MidtransService
                         'country_code' => 'IDN',
                     ],
                 ],
-                'item_details' => []
+                'item_details' => [],
+                'callbacks' => [
+                    'finish' => url('/checkout/confirmation'),
+                    'error' => url('/checkout/payment'),
+                    'pending' => url('/checkout/confirmation'),
+                ]
             ];
 
             // Add order items to Midtrans parameters

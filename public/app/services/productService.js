@@ -222,16 +222,20 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         return deferred.promise;
     };
     
-    // Admin: Create a new product
+    // Admin: Create a product
     service.createProduct = function(productData) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
+        // Get CSRF token
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        var headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': undefined // Let the browser set the content type for FormData
+        };
+        
         $http.post(API_URL + '/admin/products', productData, {
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': undefined // Let the browser set the content type for FormData
-            },
+            headers: headers,
             transformRequest: angular.identity // Don't transform the FormData
         })
             .then(function(response) {
@@ -254,11 +258,15 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
+        // Get CSRF token
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        var headers = {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': undefined // Let the browser set the content type for FormData
+        };
+        
         $http.post(API_URL + '/admin/products/' + id, productData, {
-            headers: {
-                'Authorization': 'Bearer ' + token,
-                'Content-Type': undefined // Let the browser set the content type for FormData
-            },
+            headers: headers,
             transformRequest: angular.identity // Don't transform the FormData
         })
             .then(function(response) {
@@ -285,7 +293,7 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         var attemptDeletion = function(retryCount) {
             console.log('Attempting to delete product ID:', id);
             
-            $http.delete(API_URL + '/products/' + id, {
+            $http.delete(API_URL + '/admin/products/' + id, {
                 headers: {
                     'Authorization': 'Bearer ' + token
                 }
@@ -337,10 +345,14 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
+        // Get CSRF token
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         $http.post(API_URL + '/admin/categories', categoryData, {
             headers: {
                 'Authorization': 'Bearer ' + token,
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken
             }
         })
             .then(function(response) {
@@ -363,9 +375,13 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
+        // Get CSRF token
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         $http.put(API_URL + '/admin/categories/' + id, categoryData, {
             headers: {
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + token,
+                'X-CSRF-TOKEN': csrfToken
             }
         })
             .then(function(response) {
@@ -383,9 +399,13 @@ app.service('ProductService', ['$http', '$q', function($http, $q) {
         var deferred = $q.defer();
         var token = localStorage.getItem('token');
         
+        // Get CSRF token
+        var csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        
         $http.delete(API_URL + '/admin/categories/' + id, {
             headers: {
-                'Authorization': 'Bearer ' + token
+                'Authorization': 'Bearer ' + token,
+                'X-CSRF-TOKEN': csrfToken
             }
         })
             .then(function(response) {

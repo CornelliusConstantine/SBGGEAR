@@ -44,7 +44,10 @@ app.factory('PaymentService', ['$http', function($http) {
                     if (error.data && error.data.message) {
                         return Promise.reject(error.data.message);
                     }
-                    return Promise.reject('Failed to get payment token');
+                    if (error.status === 500) {
+                        return Promise.reject('Server error: Payment gateway configuration issue');
+                    }
+                    return Promise.reject('Failed to get payment token: ' + (error.statusText || 'Unknown error'));
                 });
         },
         

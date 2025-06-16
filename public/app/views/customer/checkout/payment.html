@@ -168,7 +168,7 @@
     <div class="row" ng-if="!loading">
         <div class="col-lg-8">
             <!-- Payment Success Message (shown after successful payment) -->
-            <div class="card mb-4" ng-if="payment.transactionStatus === 'settlement' || payment.transactionStatus === 'capture'">
+            <div class="card mb-4" ng-if="payment.transactionId && (payment.transactionStatus === 'settlement' || payment.transactionStatus === 'capture')">
                 <div class="card-body payment-success">
                     <i class="fas fa-check-circle"></i>
                     <h3 class="mb-3">Payment Successful!</h3>
@@ -180,7 +180,7 @@
             </div>
             
             <!-- Payment Method (hidden after successful payment) -->
-            <div class="card mb-4" ng-if="!payment.transactionStatus || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
+            <div class="card mb-4" ng-if="!payment.transactionId || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
                 <div class="card-header py-3">
                     <h5 class="mb-0">Payment Method</h5>
                 </div>
@@ -229,7 +229,7 @@
                             <p class="mb-0"><strong>{{shipping.courier.toUpperCase()}} - {{shipping.serviceName}} (Rp{{shipping.cost | number}})</strong></p>
                         </div>
                     </div>
-                    <div class="mt-3" ng-if="!payment.transactionStatus || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
+                    <div class="mt-3" ng-if="!payment.transactionId || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
                         <a href="#!/checkout/shipping" class="btn btn-sm btn-outline-secondary">
                             <i class="fas fa-edit me-1"></i> Edit
                         </a>
@@ -239,17 +239,17 @@
             
             <!-- Navigation Buttons -->
             <div class="d-flex justify-content-between mt-4">
-                <a href="#!/checkout/shipping" class="btn btn-outline-secondary" ng-if="!payment.transactionStatus || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
+                <a href="#!/checkout/shipping" class="btn btn-outline-secondary" ng-if="!payment.transactionId || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
                     <i class="fas fa-arrow-left me-2"></i>Back to Shipping
                 </a>
                 
                 <!-- Pay Now button (hidden after successful payment) -->
-                <button class="btn btn-primary" id="pay-button" ng-click="processPayment()" ng-if="!payment.transactionStatus || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
+                <button class="btn btn-primary" id="pay-button" ng-click="processPayment()" ng-if="!payment.transactionId || (payment.transactionStatus !== 'settlement' && payment.transactionStatus !== 'capture')">
                     Pay Now<i class="fas fa-lock ms-2"></i>
                 </button>
                 
                 <!-- Continue to Confirmation button (shown after successful payment) -->
-                <button class="btn btn-success" ng-click="proceedToConfirmation()" ng-if="payment.transactionStatus === 'settlement' || payment.transactionStatus === 'capture'">
+                <button class="btn btn-success" ng-click="proceedToConfirmation()" ng-if="payment.transactionId && (payment.transactionStatus === 'settlement' || payment.transactionStatus === 'capture')">
                     Continue to Confirmation <i class="fas fa-arrow-right ms-2"></i>
                 </button>
             </div>

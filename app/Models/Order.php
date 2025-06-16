@@ -23,6 +23,7 @@ class Order extends Model
         'midtrans_response',
         'shipping_method',
         'tracking_number',
+        'seat_receipt_number',
         'shipping_status',
         'shipping_name',
         'shipping_phone',
